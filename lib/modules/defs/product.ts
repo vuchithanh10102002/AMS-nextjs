@@ -1,4 +1,4 @@
-import { exec, query } from "@/lib/db";
+import { db, table } from "@/lib/db";
 import type { Field, ModuleDef, Option } from "../types";
 
 export const productFlags = { color: false, flashsale: true };
@@ -28,46 +28,48 @@ async function syncVariants(nodeId: number, form: FormData) {
   if (!form.has("_variants")) return;
   const rows = readVariants(form);
   const keep = rows.map((r) => r.size_id);
-  if (keep.length) await exec("DELETE FROM images WHERE node_id = ? AND (size_id IS NULL OR size_id NOT IN (?))", [nodeId, keep]);
-  else await exec("DELETE FROM images WHERE node_id = ?", [nodeId]);
-  const existing = await query<{ id: number; size_id: number }>("SELECT id, size_id FROM images WHERE node_id = ? ORDER BY id ASC", [nodeId]);
+  if (keep.length) await db.images.deleteMany({ where: { node_id: nodeId, OR: [{ size_id: null }, { size_id: { notIn: keep } }] } });
+  else await db.images.deleteMany({ where: { node_id: nodeId } });
+  const existing = await db.images.findMany({ where: { node_id: nodeId }, select: { id: true, size_id: true }, orderBy: { id: "asc" } });
   for (const r of rows) {
     const hits = existing.filter((e) => e.size_id === r.size_id);
     if (hits.length) {
-      await exec("UPDATE images SET ? WHERE id = ?", [r, hits[0].id]);
-      if (hits.length > 1) await exec("DELETE FROM images WHERE id IN (?)", [hits.slice(1).map((h) => h.id)]);
-    } else await exec("INSERT INTO images SET ?", [{ ...r, node_id: nodeId, image: "", color_id: 0 }]);
+      await db.images.updateMany({ where: { id: hits[0].id }, data: r });
+      if (hits.length > 1) await db.images.deleteMany({ where: { id: { in: hits.slice(1).map((h) => h.id) } } });
+    } else await db.images.create({ data: { ...r, node_id: nodeId, image: "", color_id: 0 } });
   }
 }
 
 async function syncFilters(nodeId: number, form: FormData) {
   if (!form.has("_filters")) return;
   const wanted = [...new Set(form.getAll("filter_item").map(Number).filter((n) => n > 0))];
-  if (wanted.length) await exec("DELETE FROM filter_linkeds WHERE node_id = ? AND filter_item_id NOT IN (?)", [nodeId, wanted]);
-  else await exec("DELETE FROM filter_linkeds WHERE node_id = ?", [nodeId]);
-  const have = new Set((await query<{ filter_item_id: number }>("SELECT filter_item_id FROM filter_linkeds WHERE node_id = ?", [nodeId])).map((r) => r.filter_item_id));
+  if (wanted.length) await db.filter_linkeds.deleteMany({ where: { node_id: nodeId, filter_item_id: { notIn: wanted } } });
+  else await db.filter_linkeds.deleteMany({ where: { node_id: nodeId } });
+  const have = new Set((await db.filter_linkeds.findMany({ where: { node_id: nodeId }, select: { filter_item_id: true } })).map((r) => r.filter_item_id));
   const add = wanted.filter((x) => !have.has(x));
-  if (add.length) await exec("INSERT INTO filter_linkeds (node_id, filter_item_id) VALUES ?", [add.map((x) => [nodeId, x])]);
+  if (add.length) await db.filter_linkeds.createMany({ data: add.map((filter_item_id) => ({ node_id: nodeId, filter_item_id })) });
 }
 
 export async function copyProductLinks(newId: number, srcId: number) {
-  await exec(
-    "INSERT INTO images (node_id, image, color_id, size_id, price, price_off, price_vip, price_gold, price_member, group_img) SELECT ?, image, color_id, size_id, price, price_off, price_vip, price_gold, price_member, group_img FROM images WHERE node_id = ?",
-    [newId, srcId],
-  );
-  await exec("INSERT INTO filter_linkeds (node_id, filter_item_id) SELECT ?, filter_item_id FROM filter_linkeds WHERE node_id = ?", [newId, srcId]);
+  const images = await db.images.findMany({
+    where: { node_id: srcId },
+    select: { image: true, color_id: true, size_id: true, price: true, price_off: true, price_vip: true, price_gold: true, price_member: true, group_img: true },
+  });
+  if (images.length) await db.images.createMany({ data: images.map((i) => ({ ...i, node_id: newId })) });
+  const links = await db.filter_linkeds.findMany({ where: { node_id: srcId }, select: { filter_item_id: true } });
+  if (links.length) await db.filter_linkeds.createMany({ data: links.map((l) => ({ node_id: newId, filter_item_id: l.filter_item_id })) });
 }
 
 export async function deleteProductLinks(ids: number[]) {
   if (!ids.length) return;
-  await exec("DELETE FROM images WHERE node_id IN (?)", [ids]);
-  await exec("DELETE FROM filter_linkeds WHERE node_id IN (?)", [ids]);
-  await exec("DELETE FROM wishlists WHERE product_node_id IN (?)", [ids]);
-  await exec("DELETE FROM comments WHERE node_id IN (?)", [ids]);
+  await db.images.deleteMany({ where: { node_id: { in: ids } } });
+  await db.filter_linkeds.deleteMany({ where: { node_id: { in: ids } } });
+  await db.wishlists.deleteMany({ where: { product_node_id: { in: ids } } });
+  await db.comments.deleteMany({ where: { node_id: { in: ids } } });
 }
 
-async function simpleOptions(table: string): Promise<Option[]> {
-  const rows = await query<{ id: number; title: string | null; status: number | null }>(`SELECT id, title, status FROM \`${table}\` ORDER BY pos DESC, id DESC`);
+async function simpleOptions(name: string): Promise<Option[]> {
+  const rows: { id: number; title: string | null; status: number | null }[] = await table(name).findMany({ select: { id: true, title: true, status: true }, orderBy: [{ pos: "desc" }, { id: "desc" }] });
   return rows.map((r) => ({ value: String(r.id), label: `${(r.title ?? "").trim()}${Number(r.status) === 1 ? "" : " (ẩn)"}` }));
 }
 
@@ -120,8 +122,12 @@ const fields: Field[] = [
 
 const hooks: NonNullable<ModuleDef["hooks"]> & { afterCopy: (newId: number, srcId: number) => Promise<void> } = {
   load: async (row) => {
-    row.variants = await query("SELECT size_id, price, price_vip, price_gold, price_member FROM images WHERE node_id = ? ORDER BY group_img ASC, id ASC", [row.id]);
-    row.filter_items = (await query<{ filter_item_id: number }>("SELECT filter_item_id FROM filter_linkeds WHERE node_id = ?", [row.id])).map((r) => String(r.filter_item_id));
+    row.variants = await db.images.findMany({
+      where: { node_id: row.id },
+      select: { size_id: true, price: true, price_vip: true, price_gold: true, price_member: true },
+      orderBy: [{ group_img: "asc" }, { id: "asc" }],
+    });
+    row.filter_items = (await db.filter_linkeds.findMany({ where: { node_id: row.id }, select: { filter_item_id: true } })).map((r) => String(r.filter_item_id));
     return row;
   },
   beforeSave: ({ main }, ctx) => {
@@ -153,7 +159,7 @@ export const product: ModuleDef = {
   previewLink: true,
   list: {
     pageSize: 20,
-    order: "n.pos DESC, n.id DESC",
+    order: [{ node: { pos: "desc" } }, { node: { id: "desc" } }],
     filters: [
       { kind: "search", name: "s", label: "Tìm theo tên hoặc mã", columns: ["title", "code"] },
       { kind: "category", name: "list_category", label: "Mục lục", ctype: "product" },
@@ -183,8 +189,8 @@ export const product: ModuleDef = {
     colors: () => simpleOptions("colors"),
     flashsales: () => simpleOptions("flashsales"),
     filterTree: async () => {
-      const groups = await query<{ id: number; title: string | null }>("SELECT id, title FROM filters ORDER BY pos ASC, id DESC");
-      const items = await query<{ id: number; filter_id: number; title: string | null }>("SELECT id, filter_id, title FROM filter_items ORDER BY pos ASC, id ASC");
+      const groups = await db.filters.findMany({ select: { id: true, title: true }, orderBy: [{ pos: "asc" }, { id: "desc" }] });
+      const items = await db.filter_items.findMany({ select: { id: true, filter_id: true, title: true }, orderBy: [{ pos: "asc" }, { id: "asc" }] });
       return groups.flatMap((g) => [
         { value: `g:${g.id}`, label: (g.title ?? "").trim() },
         ...items.filter((i) => i.filter_id === g.id).map((i) => ({ value: String(i.id), label: (i.title ?? "").trim() })),

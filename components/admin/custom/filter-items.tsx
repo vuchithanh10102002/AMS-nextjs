@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,11 +8,12 @@ import type { ClientField } from "@/lib/modules/types";
 
 type Item = { key: number; id: string; title: string; content: string };
 
+let seq = 0;
+
 export function FilterItems({ value }: { field: ClientField; value?: unknown }) {
-  const seq = useRef(0);
   const init = Array.isArray(value) ? (value as { id: number; title: string | null; content: string | null }[]) : [];
   const make = (it?: { id?: number; title?: string | null; content?: string | null }): Item => ({
-    key: seq.current++,
+    key: seq++,
     id: it?.id ? String(it.id) : "",
     title: it?.title ?? "",
     content: it?.content ?? "",

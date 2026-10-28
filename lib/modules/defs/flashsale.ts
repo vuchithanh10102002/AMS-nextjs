@@ -1,4 +1,4 @@
-import { exec } from "@/lib/db";
+import { db } from "@/lib/db";
 import type { ModuleDef } from "../types";
 
 export const flashsale: ModuleDef = {
@@ -9,7 +9,7 @@ export const flashsale: ModuleDef = {
   statusToggle: true,
   list: {
     pageSize: 12,
-    order: "m.pos DESC, m.id DESC",
+    order: [{ pos: "desc" }, { id: "desc" }],
     filters: [{ kind: "search", name: "s", label: "Tìm theo tên", columns: ["title"] }],
     columns: [
       { name: "image", label: "Hình ảnh", kind: "image" },
@@ -42,7 +42,7 @@ export const flashsale: ModuleDef = {
       }
     },
     afterDelete: async (ids) => {
-      await exec("UPDATE products SET flashsale_id = NULL WHERE flashsale_id IN (?)", [ids]);
+      await db.products.updateMany({ where: { flashsale_id: { in: ids } }, data: { flashsale_id: null } });
     },
   },
 };

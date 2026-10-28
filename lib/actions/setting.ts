@@ -1,7 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { exec, first, query } from "@/lib/db";
+import { revalidatePath, updateTag } from "next/cache";
+import { db } from "@/lib/db";
 import { sendMail } from "@/lib/mail";
 import { authorize } from "@/lib/perm";
 import { normalizeMediaPath } from "@/lib/media";
@@ -14,7 +14,7 @@ export async function saveSettings(_: SettingState, form: FormData): Promise<Set
   try {
     await authorize("setting", "edit");
     const allowed = await allowedSettingNames();
-    const existing = new Map((await query<{ name: string; value: string | null }>("SELECT name, value FROM settings")).map((r) => [r.name, r.value ?? ""]));
+    const existing = new Map((await db.settings.findMany({ select: { name: true, value: true } })).map((r) => [r.name, r.value ?? ""]));
     for (const [name, item] of allowed) {
       const value = form.get(`s:${name}`);
       if (typeof value === "string" && item.maxlength > 0 && value.length > item.maxlength && value !== existing.get(name))
@@ -27,12 +27,12 @@ export async function saveSettings(_: SettingState, form: FormData): Promise<Set
       if (item.type === "password" && !value) continue;
       if (item.type === "file") value = normalizeMediaPath(value);
       if (item.type === "select" && item.options && !item.options.some((o) => o.value === value)) continue;
-      if (existing.has(name)) await exec("UPDATE settings SET value = ? WHERE name = ?", [value, name]);
+      if (existing.has(name)) await db.settings.updateMany({ where: { name }, data: { value } });
       else
-        await exec("INSERT INTO settings SET ?", [{ name, label: item.label, value, type: item.type === "select" ? "option" : item.type === "textarea" ? "textarea" : "text", status: 0, pos: 1 }]);
+        await db.settings.create({ data: { name, label: item.label, value, type: item.type === "select" ? "option" : item.type === "textarea" ? "textarea" : "text", status: 0, pos: 1 } });
     }
     if (form.has("_theme")) {
-      const row = await first<{ value: string | null }>("SELECT value FROM settings WHERE name = 'theme_setting'");
+      const row = await db.settings.findFirst({ where: { name: "theme_setting" }, select: { value: true } });
       let theme: Record<string, Record<string, string>> = {};
       try {
         theme = JSON.parse(row?.value || "{}");
@@ -41,9 +41,10 @@ export async function saveSettings(_: SettingState, form: FormData): Promise<Set
         theme[g] ??= {};
         for (const k of THEME_KEYS) theme[g][k.key] = String(form.get(`t:${g}:${k.key}`) ?? "").trim();
       }
-      await exec("UPDATE settings SET value = ? WHERE name = 'theme_setting'", [JSON.stringify(theme)]);
+      await db.settings.updateMany({ where: { name: "theme_setting" }, data: { value: JSON.stringify(theme) } });
     }
     revalidatePath("/admin", "layout");
+    updateTag("site");
     return { ok: true, message: "Đã cập nhật cấu hình", at: Date.now() };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Có lỗi xảy ra", at: Date.now() };

@@ -1,18 +1,22 @@
 import "server-only";
 import { cache } from "react";
-import { first, query } from "./db";
+import { cacheLife, cacheTag } from "next/cache";
+import { db } from "./db";
 
-export const getSettings = cache(async () => {
-  const rows = await query<{ name: string; value: string | null }>("SELECT name, value FROM settings");
+export async function getSettings() {
+  "use cache";
+  cacheLife("site");
+  cacheTag("site");
+  const rows = await db.settings.findMany({ select: { name: true, value: true } });
   return Object.fromEntries(rows.map((r) => [r.name, r.value ?? ""])) as Record<string, string>;
-});
+}
 
 export const getBadges = cache(async () => {
   const [orders, contacts] = await Promise.all([
-    first<{ n: number }>("SELECT COUNT(*) n FROM order_bills WHERE status = 0"),
-    first<{ n: number }>("SELECT COUNT(*) n FROM contacts WHERE status = 0"),
+    db.order_bills.count({ where: { status: 0 } }),
+    db.contacts.count({ where: { status: 0 } }),
   ]);
-  return { orders: orders?.n ?? 0, contacts: contacts?.n ?? 0 };
+  return { orders, contacts };
 });
 
 export function siteUrl() {

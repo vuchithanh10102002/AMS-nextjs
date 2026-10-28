@@ -21,7 +21,7 @@ export const banner: ModuleDef = {
   statusToggle: true,
   list: {
     pageSize: 10,
-    order: "m.pos DESC, m.id DESC",
+    order: [{ pos: "desc" }, { id: "desc" }],
     filters: [
       { kind: "search", name: "s", label: "Tìm theo tiêu đề", columns: ["title"] },
       { kind: "select", name: "t", label: "Loại banner", column: "type", options: bannerTypes },

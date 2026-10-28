@@ -11,6 +11,13 @@ import { cn } from "@/lib/utils";
 
 type Item = { name: string; dir: boolean; path: string; size: number; mtime: number };
 
+async function getDir(d: string): Promise<{ items: Item[]; dir?: string }> {
+  const res = await fetch(`/api/media?dir=${encodeURIComponent(d)}`);
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data;
+}
+
 export function MediaPicker({
   open,
   onOpenChange,
@@ -24,33 +31,41 @@ export function MediaPicker({
   multiple?: boolean;
   root?: "images" | "files";
 }) {
-  const [dir, setDir] = useState(root);
+  const [dir, setDir] = useState<string>(root);
   const [items, setItems] = useState<Item[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(open);
   const [selected, setSelected] = useState<string[]>([]);
   const [folder, setFolder] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const load = useCallback(async (d: string) => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/media?dir=${encodeURIComponent(d)}`);
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      setItems(data.items);
-      setDir(data.dir || d);
-    } catch (e) {
-      toast.add({ type: "error", title: "Lỗi", description: e instanceof Error ? e.message : "Không tải được thư mục" });
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const show = useCallback(
+    (d: string, p: Promise<{ items: Item[]; dir?: string }>) =>
+      p
+        .then((data) => {
+          setItems(data.items);
+          setDir(data.dir || d);
+        })
+        .catch((e) => toast.add({ type: "error", title: "Lỗi", description: e instanceof Error ? e.message : "Không tải được thư mục" }))
+        .finally(() => setLoading(false)),
+    []
+  );
 
-  useEffect(() => {
+  const load = (d: string) => {
+    setLoading(true);
+    return show(d, getDir(d));
+  };
+
+  const [wasOpen, setWasOpen] = useState(open);
+  if (wasOpen !== open) {
+    setWasOpen(open);
     if (open) {
       setSelected([]);
-      load(dir);
+      setLoading(true);
     }
+  }
+
+  useEffect(() => {
+    if (open) show(dir, getDir(dir));
   }, [open]);
 
   const post = async (body: FormData) => {

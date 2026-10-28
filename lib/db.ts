@@ -1,71 +1,155 @@
 import "server-only";
-import mysql, { type Pool, type ResultSetHeader, type RowDataPacket } from "mysql2/promise";
+import { PrismaMariaDb } from "@prisma/adapter-mariadb";
+import { PrismaClient } from "@/prisma/generated/client";
+import schemaFields from "@/prisma/fields.json";
 
-const globalForDb = globalThis as unknown as { pool?: Pool };
+export type Row = Record<string, any>;
 
-export const pool =
-  globalForDb.pool ??
-  mysql.createPool({
+export type Plain<T> = T extends Date ? string : T extends bigint ? number : T extends (infer U)[] ? Plain<U>[] : T extends object ? { [K in keyof T]: Plain<T[K]> } : T;
+
+const FIELDS = schemaFields as Record<string, Record<string, string>>;
+const SCALARS = new Set(["Int", "Float", "BigInt", "String", "DateTime", "Decimal", "Json", "Bytes"]);
+const OPS = new Set(["equals", "not", "lt", "lte", "gt", "gte", "in", "notIn"]);
+const REL_OPS = new Set(["some", "every", "none", "is", "isNot"]);
+const WRITE_OPS = new Set(["create", "update", "updateMany", "upsert", "createMany", "createManyAndReturn", "updateManyAndReturn"]);
+
+function fieldType(model: string, name: string) {
+  return FIELDS[model]?.[name]?.replace(/(\[\]|\?)$/, "");
+}
+
+function isFieldRef(v: unknown) {
+  return !!v && typeof v === "object" && "modelName" in v && "name" in v;
+}
+
+function toNumber(type: string, v: unknown) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return null;
+  return type === "Int" ? Math.trunc(n) : type === "BigInt" ? BigInt(Math.trunc(n)) : n;
+}
+
+function toDate(v: unknown) {
+  if (v instanceof Date) return v;
+  const s = String(v);
+  const d = new Date(s.length <= 10 ? `${s}T00:00:00Z` : s.replace(" ", "T") + "Z");
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function castValue(type: string, v: unknown, forWhere = false): unknown {
+  if (v == null || isFieldRef(v)) return v;
+  switch (type) {
+    case "Int":
+    case "Float":
+    case "BigInt":
+      if (v === "" && !forWhere) return null;
+      return toNumber(type, v) ?? (forWhere ? v : null);
+    case "String":
+      return typeof v === "string" ? v : String(v);
+    case "DateTime":
+      return v === "" ? null : toDate(v);
+    default:
+      return v;
+  }
+}
+
+function castFilter(type: string, v: unknown): unknown {
+  if (v == null || typeof v !== "object" || v instanceof Date || isFieldRef(v)) return castValue(type, v, true);
+  return Object.fromEntries(
+    Object.entries(v).map(([op, x]) => {
+      if (op === "in" || op === "notIn") return [op, Array.isArray(x) ? x.map((y) => castValue(type, y, true)) : x];
+      if (op === "not") return [op, castFilter(type, x)];
+      return [op, OPS.has(op) ? castValue(type, x, true) : x];
+    }),
+  );
+}
+
+function castWhere(model: string, where: unknown): unknown {
+  if (!where || typeof where !== "object") return where;
+  const out: Row = {};
+  for (const [k, v] of Object.entries(where)) {
+    if (k === "AND" || k === "OR" || k === "NOT") {
+      out[k] = Array.isArray(v) ? v.map((w) => castWhere(model, w)) : castWhere(model, v);
+      continue;
+    }
+    const type = fieldType(model, k);
+    if (!type) out[k] = v;
+    else if (SCALARS.has(type)) out[k] = castFilter(type, v);
+    else if (v && typeof v === "object" && Object.keys(v).some((op) => REL_OPS.has(op)))
+      out[k] = Object.fromEntries(Object.entries(v).map(([op, w]) => [op, REL_OPS.has(op) ? castWhere(type, w) : w]));
+    else out[k] = castWhere(type, v);
+  }
+  return out;
+}
+
+function castData(model: string, data: unknown): unknown {
+  if (Array.isArray(data)) return data.map((d) => castData(model, d));
+  if (!data || typeof data !== "object") return data;
+  const out: Row = {};
+  for (const [k, v] of Object.entries(data)) {
+    const raw = FIELDS[model]?.[k];
+    if (!raw || !SCALARS.has(raw.replace(/\?$/, ""))) continue;
+    const type = raw.replace(/\?$/, "");
+    const value = v && typeof v === "object" && !(v instanceof Date) ? v : castValue(type, v);
+    if (value === undefined || (value === null && !raw.endsWith("?"))) continue;
+    out[k] = value;
+  }
+  return out;
+}
+
+function castArgs(model: string, operation: string, args: Row) {
+  const next: Row = { ...args };
+  if ("where" in next) next.where = castWhere(model, next.where);
+  if (WRITE_OPS.has(operation) && "data" in next) next.data = castData(model, next.data);
+  if (operation === "upsert") {
+    next.create = castData(model, next.create);
+    next.update = castData(model, next.update);
+  }
+  return next;
+}
+
+function plain(v: unknown): unknown {
+  if (typeof v === "bigint") return Number(v);
+  if (v instanceof Date) {
+    const iso = v.toISOString();
+    return iso.endsWith("T00:00:00.000Z") ? iso.slice(0, 10) : iso.slice(0, 19).replace("T", " ");
+  }
+  if (Array.isArray(v)) return v.map(plain);
+  if (v && typeof v === "object" && Object.getPrototypeOf(v) === Object.prototype) {
+    for (const k of Object.keys(v)) (v as Row)[k] = plain((v as Row)[k]);
+  }
+  return v;
+}
+
+function create() {
+  const adapter = new PrismaMariaDb({
     host: process.env.DB_HOST ?? "127.0.0.1",
     port: Number(process.env.DB_PORT ?? 3306),
     user: process.env.DB_USER ?? "root",
     password: process.env.DB_PASS ?? "",
     database: process.env.DB_NAME,
-    charset: "utf8mb4",
     connectionLimit: 10,
-    dateStrings: true,
   });
-
-if (process.env.NODE_ENV !== "production") globalForDb.pool = pool;
-
-export type Row = Record<string, any>;
-
-export async function query<T = Row>(sql: string, params: unknown[] = []): Promise<T[]> {
-  const [rows] = await pool.query<RowDataPacket[]>(sql, params);
-  return rows as T[];
+  return new PrismaClient({ adapter }).$extends({
+    query: {
+      $allModels: {
+        async $allOperations({ model, operation, args, query }) {
+          return plain(await query(castArgs(model, operation, (args ?? {}) as Row)));
+        },
+      },
+    },
+  });
 }
 
-export async function first<T = Row>(sql: string, params: unknown[] = []): Promise<T | null> {
-  const rows = await query<T>(sql, params);
-  return rows[0] ?? null;
+const globalForDb = globalThis as unknown as { db?: ReturnType<typeof create> };
+
+export const db = globalForDb.db ?? create();
+
+if (process.env.NODE_ENV !== "production") globalForDb.db = db;
+
+export function table(name: string): any {
+  if (!FIELDS[name]) throw new Error(`Bảng không tồn tại: ${name}`);
+  return (db as any)[name];
 }
 
-export async function exec(sql: string, params: unknown[] = []): Promise<ResultSetHeader> {
-  const [res] = await pool.query<ResultSetHeader>(sql, params);
-  return res;
-}
-
-const columnCache = new Map<string, Set<string>>();
-
-export async function columns(table: string): Promise<Set<string>> {
-  const hit = columnCache.get(table);
-  if (hit) return hit;
-  const rows = await query<{ Field: string }>(`SHOW COLUMNS FROM \`${table}\``);
-  const set = new Set(rows.map((r) => r.Field));
-  columnCache.set(table, set);
-  return set;
-}
-
-export async function pick(table: string, data: Row): Promise<Row> {
-  const cols = await columns(table);
-  const out: Row = {};
-  for (const [k, v] of Object.entries(data)) if (cols.has(k) && k !== "id") out[k] = v;
-  return out;
-}
-
-export async function insert(table: string, data: Row): Promise<number> {
-  const row = await pick(table, data);
-  const res = await exec(`INSERT INTO \`${table}\` SET ?`, [row]);
-  return res.insertId;
-}
-
-export async function update(table: string, id: number | string, data: Row): Promise<void> {
-  const row = await pick(table, data);
-  if (!Object.keys(row).length) return;
-  await exec(`UPDATE \`${table}\` SET ? WHERE id = ?`, [row, id]);
-}
-
-export async function remove(table: string, ids: (number | string)[]): Promise<void> {
-  if (!ids.length) return;
-  await exec(`DELETE FROM \`${table}\` WHERE id IN (?)`, [ids]);
+export function columns(name: string): Set<string> {
+  return new Set(Object.entries(FIELDS[name] ?? {}).filter(([, t]) => SCALARS.has(t.replace(/\?$/, ""))).map(([k]) => k));
 }

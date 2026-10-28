@@ -1,14 +1,20 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Shell } from "@/site/components/shell";
+import { after } from "next/server";
+import { Shell } from "@/site/components/layout/shell";
 import { site } from "@/site/lib/ctx";
-import { link } from "@/site/lib/data";
 import { pageMeta } from "@/site/lib/meta";
-import { countView, resolve } from "@/site/lib/resolve";
-import { ProductDetail } from "@/site/views/product-detail";
-import { ProductList } from "@/site/views/product-list";
-import { About, Brands, NewsDetail, NewsList, PageDetail } from "@/site/views/pages";
-import { Page404 } from "@/site/views/page-404";
+import { countView } from "@/site/lib/queries/node";
+import { resolve } from "@/site/lib/resolve";
+import { link } from "@/site/lib/url";
+import { NewsDetail } from "@/site/views/news/detail";
+import { NewsList } from "@/site/views/news/list";
+import { About } from "@/site/views/page/about";
+import { Brands } from "@/site/views/page/brands";
+import { PageDetail } from "@/site/views/page/detail";
+import { Page404 } from "@/site/views/page/not-found";
+import { ProductDetail } from "@/site/views/product/detail";
+import { ProductList } from "@/site/views/product/list";
 
 export async function generateMetadata({ params }: PageProps<"/[...slug]">): Promise<Metadata> {
   const r = await resolve((await params).slug);
@@ -56,7 +62,8 @@ export default async function SlugPage({ params, searchParams }: PageProps<"/[..
       );
     return <Shell here={{ cur }}>{view}</Shell>;
   }
-  await countView(Number(r.data.node_id));
+  const nodeId = r.data.node_id;
+  after(() => countView(nodeId));
   return (
     <Shell here={{ cur: r.cat }}>
       {r.kind === "product" ? <ProductDetail data={r.data} cat={r.cat} /> : <NewsDetail data={r.data} cat={r.cat} />}

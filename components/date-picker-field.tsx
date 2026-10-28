@@ -19,12 +19,6 @@ interface DatePickerFieldProps {
     placeholder?: string;
     className?: string;
 }
-function parseLocalDate(value: string): Date | undefined {
-    if (!value) return undefined;
-    const [year, month, day] = value.split("-").map(Number);
-    return new Date(year, month - 1, day);
-}
-
 function toLocalIsoDate(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");

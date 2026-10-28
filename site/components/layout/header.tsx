@@ -1,6 +1,8 @@
 import { site } from "@/site/lib/ctx";
-import { catLink, categoryByTemplate, childrenOf, getHangs, menuRoots, src, type Cat } from "@/site/lib/data";
-import { Adm } from "./adm";
+import { categoryByTemplate, childrenOf, menuRoots, type Cat } from "@/site/lib/queries/category";
+import { getHangs } from "@/site/lib/queries/rows";
+import { catLink, src } from "@/site/lib/url";
+import { Adm } from "@/site/components/adm";
 
 export type Here = { home?: boolean; contact?: boolean; cur?: Cat | null; search?: string };
 
@@ -86,7 +88,7 @@ export async function Header({ here }: { here: Here }) {
                 </li>
                 {roots.map((v, i) => {
                   const sub = subs[i];
-                  const on = cur && cur.lft >= v.lft && cur.rght <= v.rght;
+                  const on = cur && (cur.lft ?? 0) >= (v.lft ?? 0) && (cur.rght ?? 0) <= (v.rght ?? 0);
                   const mega = sub.length > 0 && v.ctype === "product";
                   const cls = [on ? "active" : "", sub.length ? "ams-has-sub" : "", mega ? "ams-has-mega" : ""].filter(Boolean).join(" ");
                   return (

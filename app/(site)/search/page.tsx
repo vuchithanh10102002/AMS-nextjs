@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
 import { siteUrl } from "@/lib/site";
 import { Adm } from "@/site/components/adm";
-import { Hero, Links, NewsItem, Pager, ProductItem } from "@/site/components/blocks";
-import { Shell } from "@/site/components/shell";
+import { Hero } from "@/site/components/hero";
+import { Shell } from "@/site/components/layout/shell";
+import { Links } from "@/site/components/links";
+import { NewsItem } from "@/site/components/news-item";
+import { Pager } from "@/site/components/pager";
+import { ProductItem } from "@/site/components/product-item";
 import { site } from "@/site/lib/ctx";
-import { paged } from "@/site/lib/data";
 import { pageMeta } from "@/site/lib/meta";
-import { queryString } from "@/site/views/product-list";
+import { redirect } from "next/navigation";
+import { newsSearch } from "@/site/lib/queries/news";
+import { outOfRange } from "@/site/lib/queries/paged";
+import { productSearch } from "@/site/lib/queries/product";
+import { queryString } from "@/site/lib/url";
 
 export async function generateMetadata(): Promise<Metadata> {
   const s = await site();
@@ -21,14 +28,9 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
   const type = one("type") === "news" ? "news" : "product";
   const key = one("s");
   const page = Math.max(1, parseInt(one("page"), 10) || 1);
-  const table = type === "news" ? "news" : "products";
-  const where = ["n.type = ?", "n.status = 1"];
-  const params: unknown[] = [type];
-  if (key) {
-    where.push("n.title LIKE ?");
-    params.push(`%${key}%`);
-  }
-  const data = await paged(`FROM nodes n JOIN ${table} m ON m.node_id = n.id WHERE ${where.join(" AND ")}`, params, "n.pos DESC, n.id DESC", page, type === "news" ? 20 : 12, "n.*, m.*, n.id AS node_id");
+  const found = type === "news" ? { type: "news" as const, data: await newsSearch(key, page, 20) } : { type: "product" as const, data: await productSearch(key, page, 12) };
+  const { data } = found;
+  if (outOfRange(data)) redirect("/404.html");
   const total = data.rows.length ? data.total : 0;
   const title = t("general_text_25");
   const base = siteUrl();
@@ -54,10 +56,10 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
           </div>
           {total ? (
             <>
-              {type === "product" ? (
+              {found.type === "product" ? (
                 <div className="ams-sr-grid">
                   <div className="row clearfix">
-                    {data.rows.map((v) => (
+                    {found.data.rows.map((v) => (
                       <div key={v.node_id} className="ams-sr-col">
                         <ProductItem v={v} />
                       </div>
@@ -66,7 +68,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
                 </div>
               ) : (
                 <div className="ams-tt-list ams-sr-news">
-                  {data.rows.map((v) => (
+                  {found.data.rows.map((v) => (
                     <NewsItem key={v.node_id} v={v} />
                   ))}
                 </div>

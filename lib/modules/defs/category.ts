@@ -1,4 +1,4 @@
-import { exec, query, type Row } from "@/lib/db";
+import { db, type Row } from "@/lib/db";
 import { categoryOptions, descendantIds, rebuildNestedSet } from "@/lib/categories";
 import type { ListParams } from "@/lib/crud";
 import type { ModuleDef, Option } from "../types";
@@ -91,7 +91,7 @@ export const category: ModuleDef = {
   hooks: {
     load: async (row) => ({
       ...row,
-      link: (await query<{ link: string | null }>("SELECT link FROM categories WHERE id = ?", [row._mid]))[0]?.link ?? "",
+      link: (await db.categories.findUnique({ where: { id: row._mid }, select: { link: true } }))?.link ?? "",
       parent_id: row.parent_id && row.parent_id !== row._mid ? row.parent_id : "",
       template_news: row.ctype === "news" ? row.template ?? "" : "",
       template_page: row.ctype !== "news" ? row.template ?? "" : "",
@@ -126,13 +126,13 @@ export const category: ModuleDef = {
       for (const id of roots) for (const d of await descendantIds(id)) all.add(d);
       const catIds = [...all];
       if (catIds.length) {
-        const nodes = await query<{ node_id: number }>("SELECT node_id FROM categories WHERE id IN (?)", [catIds]);
-        const nodeIds = nodes.map((n) => n.node_id).filter(Boolean);
-        await exec("DELETE FROM category_linkeds WHERE category_id IN (?)", [catIds]);
-        await exec("DELETE FROM categories WHERE id IN (?)", [catIds]);
+        const nodes = await db.categories.findMany({ where: { id: { in: catIds } }, select: { node_id: true } });
+        const nodeIds = nodes.map((n) => n.node_id).filter((id): id is number => !!id);
+        await db.category_linkeds.deleteMany({ where: { category_id: { in: catIds } } });
+        await db.categories.deleteMany({ where: { id: { in: catIds } } });
         if (nodeIds.length) {
-          await exec("DELETE FROM category_linkeds WHERE node_id IN (?)", [nodeIds]);
-          await exec("DELETE FROM nodes WHERE id IN (?) AND type = 'category'", [nodeIds]);
+          await db.category_linkeds.deleteMany({ where: { node_id: { in: nodeIds } } });
+          await db.nodes.deleteMany({ where: { id: { in: nodeIds }, type: "category" } });
         }
       }
       await rebuildNestedSet();
@@ -141,13 +141,26 @@ export const category: ModuleDef = {
 };
 
 export async function categoryTreeRows(params: ListParams) {
-  const rows = await query<Row>(
-    `SELECT n.id, n.title, n.slug, n.pos, n.status, n.robots, c.id AS _mid, c.parent_id, c.ctype, c.link, c.lft, c.rght,
-       c.menu, c.featured, c.footer_1, c.footer_2, c.home_menu,
-       (SELECT COUNT(*) FROM category_linkeds cl WHERE cl.category_id = c.id) AS _linked
-     FROM categories c INNER JOIN nodes n ON n.id = c.node_id
-     ORDER BY n.pos DESC, c.id DESC`,
-  );
+  const cats = await db.categories.findMany({
+    where: { node: { isNot: null } },
+    select: {
+      id: true,
+      parent_id: true,
+      ctype: true,
+      link: true,
+      lft: true,
+      rght: true,
+      menu: true,
+      featured: true,
+      footer_1: true,
+      footer_2: true,
+      home_menu: true,
+      node: { select: { id: true, title: true, slug: true, pos: true, status: true, robots: true } },
+      _count: { select: { category_linkeds: true } },
+    },
+    orderBy: [{ node: { pos: "desc" } }, { id: "desc" }],
+  });
+  const rows: Row[] = cats.map(({ id, node, _count, ...c }) => ({ ...node, _mid: id, ...c, _linked: _count.category_linkeds }));
   const ids = new Set(rows.map((r) => Number(r._mid)));
   const children = new Map<number | null, Row[]>();
   for (const r of rows) {

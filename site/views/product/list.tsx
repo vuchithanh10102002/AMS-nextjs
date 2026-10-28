@@ -1,28 +1,20 @@
+import { redirect } from "next/navigation";
 import { Adm } from "@/site/components/adm";
-import { Hero, Links, Pager, ProductItem } from "@/site/components/blocks";
+import { Hero } from "@/site/components/hero";
+import { Links } from "@/site/components/links";
+import { Pager } from "@/site/components/pager";
+import { ProductItem } from "@/site/components/product-item";
 import { site } from "@/site/lib/ctx";
 import { crumbHtml } from "@/site/lib/crumb";
-import { catLink, categoryById, childrenOf, getHangs, getNodes, productList, src, type Cat } from "@/site/lib/data";
-
-export type Query = Record<string, string | string[] | undefined>;
+import { childrenOf, rootOf, type Cat } from "@/site/lib/queries/category";
+import { countProducts } from "@/site/lib/queries/node";
+import { outOfRange } from "@/site/lib/queries/paged";
+import { productList } from "@/site/lib/queries/product";
+import { getHangs } from "@/site/lib/queries/rows";
+import { catLink, queryString, src, type Query } from "@/site/lib/url";
 
 const one = (q: Query, k: string) => (Array.isArray(q[k]) ? q[k]![0] : q[k]) ?? "";
 const ids = (v: string) => v.split(",").map((x) => parseInt(x, 10)).filter((x) => x > 0);
-
-async function rootOf(cat: Cat): Promise<Cat> {
-  const p = Number(cat.parent_id);
-  if (p > 0) {
-    const parent = await categoryById(p);
-    if (parent) return rootOf(parent);
-  }
-  return cat;
-}
-
-export function queryString(q: Query) {
-  const u = new URLSearchParams();
-  for (const [k, v] of Object.entries(q)) for (const x of Array.isArray(v) ? v : [v ?? ""]) u.append(k, x);
-  return u.toString();
-}
 
 export async function ProductList({ cur, page, q, base }: { cur: Cat; page: number; q: Query; base: string }) {
   const s = await site();
@@ -45,15 +37,16 @@ export async function ProductList({ cur, page, q, base }: { cur: Cat; page: numb
     .filter((k) => k.includes("item-"))
     .map((k) => parseInt(one(q, k).replace("item-", "").replace(/[^0-9]/g, ""), 10))
     .filter((x) => x > 0);
-  const data = await productList(cur, { brand: one(q, "brand"), cat: one(q, "cat"), items, sort: one(q, "sort"), page }, 16);
+  const data = await productList(cur.id, { brand: one(q, "brand"), cat: one(q, "cat"), items, sort: one(q, "sort"), page }, 16);
+  if (outOfRange(data)) redirect("/404.html");
   const facets = await Promise.all(
     groups.map(async (g) => ({
       g,
-      items: await Promise.all((await childrenOf(g)).map(async (c) => ({ c, n: (await getNodes("product", { categoryId: c.id, limit: 1000 })).length }))),
+      items: await Promise.all((await childrenOf(g)).map(async (c) => ({ c, n: await countProducts(c.id) }))),
     })),
   );
   const brandCounts = await Promise.all(
-    hangs.map(async (h) => ({ h, n: (await getNodes("product", { categoryId: root.id, where: "m.hang_id = ?", params: [h.id], limit: 1000 })).length })),
+    hangs.map(async (h) => ({ h, n: await countProducts(root.id, h.id) })),
   );
   const any = selCat.length > 0 || selBrand.length > 0;
 
@@ -165,7 +158,7 @@ export async function ProductList({ cur, page, q, base }: { cur: Cat; page: numb
               {hangs.slice(0, 3).map((h) => (
                 <div key={h.id} className="ams-sp-brand-lg">
                   <a href={`${rootLink}?brand=${h.id}`} className="ams-sp-brand-box">
-                    {h.image ? <img src={src(h.image)} alt={h.title} loading="lazy" /> : null}
+                    {h.image ? <img src={src(h.image)} alt={h.title ?? undefined} loading="lazy" /> : null}
                   </a>
                   <Adm m="hang" v={h.id} />
                 </div>
@@ -175,7 +168,7 @@ export async function ProductList({ cur, page, q, base }: { cur: Cat; page: numb
               {hangs.slice(3).map((h) => (
                 <div key={h.id} className="ams-sp-brand-sm">
                   <a href={`${rootLink}?brand=${h.id}`} className="ams-sp-brand-box">
-                    {h.image ? <img src={src(h.image)} alt={h.title} loading="lazy" /> : null}
+                    {h.image ? <img src={src(h.image)} alt={h.title ?? undefined} loading="lazy" /> : null}
                   </a>
                   <Adm m="hang" v={h.id} />
                 </div>

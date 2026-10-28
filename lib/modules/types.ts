@@ -97,15 +97,14 @@ export type ModuleDef = {
   list: {
     columns: Column[];
     filters?: FilterDef[];
-    order?: string;
+    order?: Row[];
     pageSize?: number;
-    where?: string;
-    params?: unknown[];
+    where?: Row;
     toggles?: string[];
   };
   form?: { tabs?: string[]; fields: Field[] };
   options?: Record<string, () => Promise<Option[]>>;
-  scope?: (admin: Admin) => { where: string; params: unknown[] } | null;
+  scope?: (admin: Admin) => Row | null;
   hooks?: {
     load?: (row: Row) => Promise<Row> | Row;
     beforeSave?: (data: { node: Row; main: Row }, ctx: Ctx) => Promise<void> | void;

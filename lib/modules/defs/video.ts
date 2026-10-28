@@ -8,7 +8,7 @@ export const video: ModuleDef = {
   statusToggle: true,
   list: {
     pageSize: 12,
-    order: "m.pos DESC, m.id DESC",
+    order: [{ pos: "desc" }, { id: "desc" }],
     filters: [{ kind: "search", name: "s", label: "Nhập video cần tìm kiếm...", columns: ["title"] }],
     columns: [
       { name: "image", label: "Ảnh", kind: "image" },

@@ -13,7 +13,7 @@ export const contact: ModuleDef = {
   statusToggle: true,
   list: {
     pageSize: 12,
-    order: "m.status ASC, m.id DESC",
+    order: [{ status: "asc" }, { id: "desc" }],
     filters: [
       { kind: "search", name: "s", label: "Tìm theo tên, email, SĐT, nội dung", columns: ["fullname", "email", "phone", "title", "content"] },
       { kind: "select", name: "status", label: "Trạng thái", column: "status", options: contactStatus },

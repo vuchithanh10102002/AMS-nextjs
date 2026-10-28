@@ -1,4 +1,4 @@
-import { first } from "@/lib/db";
+import { db } from "@/lib/db";
 import type { ModuleDef } from "../types";
 
 export const coupon: ModuleDef = {
@@ -8,7 +8,7 @@ export const coupon: ModuleDef = {
   statusToggle: true,
   list: {
     pageSize: 50,
-    order: "m.id DESC",
+    order: [{ id: "desc" }],
     filters: [
       { kind: "search", name: "s", label: "Tìm theo tên hoặc mã", columns: ["title", "code"] },
       { kind: "select", name: "status", label: "Trạng thái", column: "status", options: [{ value: "1", label: "Đang bật" }, { value: "0", label: "Đang tắt" }] },
@@ -42,7 +42,7 @@ export const coupon: ModuleDef = {
       if (!Number.isInteger(percent) || percent < 0 || percent > 100) throw new Error("Giảm theo phần trăm phải từ 0 đến 100");
       main.percent = percent;
       if (Number(main.price ?? 0) < 0) throw new Error("Số tiền giảm không hợp lệ");
-      if (await first("SELECT id FROM coupons WHERE code = ? AND id <> ?", [main.code, ctx.id ?? 0])) throw new Error("Mã coupon đã tồn tại");
+      if (await db.coupons.findFirst({ where: { code: main.code, id: { not: ctx.id ?? 0 } }, select: { id: true } })) throw new Error("Mã coupon đã tồn tại");
       if (ctx.isNew) main.created = Math.floor(Date.now() / 1000);
     },
   },

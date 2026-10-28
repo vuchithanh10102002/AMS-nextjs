@@ -8,7 +8,7 @@ export const subcriber: ModuleDef = {
   edits: false,
   list: {
     pageSize: 15,
-    order: "m.id DESC",
+    order: [{ id: "desc" }],
     filters: [
       { kind: "search", name: "s", label: "Tìm theo email", columns: ["email"] },
       { kind: "daterange", name: "created", label: "Ngày đăng ký", column: "created", unix: true },

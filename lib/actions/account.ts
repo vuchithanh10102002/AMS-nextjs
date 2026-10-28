@@ -2,7 +2,7 @@
 
 import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
-import { exec, first } from "@/lib/db";
+import { db } from "@/lib/db";
 import { normalizeMediaPath } from "@/lib/media";
 import { requireAdmin } from "@/lib/session";
 
@@ -26,11 +26,11 @@ export async function saveProfile(_: ProfileState, form: FormData): Promise<Prof
     if (next) {
       if (next.length < 6) throw new Error("Mật khẩu mới tối thiểu 6 ký tự");
       if (next !== confirm) throw new Error("Nhập lại mật khẩu mới không khớp");
-      const row = await first<{ password: string | null }>("SELECT password FROM admins WHERE id = ?", [admin.id]);
+      const row = await db.admins.findUnique({ where: { id: admin.id }, select: { password: true } });
       if (!row || row.password !== md5(current)) throw new Error("Mật khẩu hiện tại không đúng");
       data.password = md5(next);
     }
-    await exec("UPDATE admins SET ? WHERE id = ?", [data, admin.id]);
+    await db.admins.updateMany({ where: { id: admin.id }, data });
     revalidatePath("/admin", "layout");
     return { ok: true, message: next ? "Đã cập nhật thông tin và mật khẩu" : "Cập nhật thành công", at: Date.now() };
   } catch (e) {

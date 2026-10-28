@@ -1,16 +1,19 @@
 import "server-only";
-import { cache } from "react";
-import { exec } from "@/lib/db";
-import { categoryByNode, categoryOfNode, nodeBySlug, nodeDetail, type Cat } from "./data";
-import type { Row } from "@/lib/db";
+import { cacheLife, cacheTag } from "next/cache";
+import { categoryByNode, categoryOfNode, type Cat } from "./queries/category";
+import { newsDetail, nodeBySlug, productDetail, type NewsRow, type ProductRow } from "./queries/node";
 
 export type Resolved =
   | { kind: "category"; cur: Cat; page: number; base: string }
-  | { kind: "product" | "news"; data: Row; cat: Cat | null }
+  | { kind: "product"; data: ProductRow; cat: Cat | null }
+  | { kind: "news"; data: NewsRow; cat: Cat | null }
   | { kind: "redirect"; to: string }
   | null;
 
-export const resolve = cache(async (parts: string[]): Promise<Resolved> => {
+export async function resolve(parts: string[]): Promise<Resolved> {
+  "use cache";
+  cacheLife("site");
+  cacheTag("site");
   if (parts.length > 2) return null;
   const slug = decodeURIComponent(parts[0]).replace(/\.html$/, "");
   if (!/^[a-zA-Z0-9-]+$/.test(slug)) return null;
@@ -23,19 +26,18 @@ export const resolve = cache(async (parts: string[]): Promise<Resolved> => {
   const node = await nodeBySlug(slug);
   if (!node) return null;
   if (node.type === "category") {
-    const cur = await categoryByNode(Number(node.id));
+    const cur = await categoryByNode(node.id);
     if (!cur || cur.node.status != 1) return null;
     if (cur.ctype === "link") return { kind: "redirect", to: String(cur.link ?? "/") };
     return { kind: "category", cur, page, base: "/" + decodeURIComponent(parts[0]) };
   }
-  if (node.type === "product" || node.type === "news") {
-    const data = await nodeDetail(node.type, Number(node.id));
-    if (!data) return null;
-    return { kind: node.type, data, cat: await categoryOfNode(Number(node.id)) };
+  if (node.type === "product") {
+    const data = await productDetail(node.id);
+    return data ? { kind: "product", data, cat: await categoryOfNode(node.id) } : null;
+  }
+  if (node.type === "news") {
+    const data = await newsDetail(node.id);
+    return data ? { kind: "news", data, cat: await categoryOfNode(node.id) } : null;
   }
   return null;
-});
-
-export async function countView(nodeId: number) {
-  await exec("UPDATE nodes SET views = views + 1 WHERE id = ?", [nodeId]);
 }

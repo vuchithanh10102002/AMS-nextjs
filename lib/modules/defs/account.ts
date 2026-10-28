@@ -1,4 +1,4 @@
-import { exec, first } from "@/lib/db";
+import { db } from "@/lib/db";
 import type { ModuleDef, Option } from "../types";
 
 export const PERM_ACTS = ["list", "add", "edit", "delete"] as const;
@@ -42,10 +42,10 @@ export const account: ModuleDef = {
   title: "Tài khoản quản trị",
   table: "admins",
   statusToggle: true,
-  scope: (admin) => ({ where: "m.id <> 1 AND m.id <> ?", params: [admin.id] }),
+  scope: (admin) => ({ AND: [{ id: { not: 1 } }, { id: { not: admin.id } }] }),
   list: {
     pageSize: 20,
-    order: "m.id DESC",
+    order: [{ id: "desc" }],
     filters: [
       { kind: "search", name: "s", label: "Tên đăng nhập, họ tên, email...", columns: ["username", "fullname", "email", "phone"] },
       { kind: "select", name: "status", label: "Trạng thái", column: "status", options: [{ value: "1", label: "Hoạt động" }, { value: "0", label: "Khoá" }] },
@@ -78,7 +78,7 @@ export const account: ModuleDef = {
       if ("username" in main) {
         main.username = String(main.username).trim();
         if (!/^[A-Za-z0-9_.@-]{3,32}$/.test(main.username)) throw new Error("Tên đăng nhập 3–32 ký tự, chỉ gồm chữ, số và . _ - @");
-        const dup = await first("SELECT id FROM admins WHERE username = ? AND id <> ? LIMIT 1", [main.username, ctx.id ?? 0]);
+        const dup = await db.admins.findFirst({ where: { username: main.username, id: { not: ctx.id ?? 0 } }, select: { id: true } });
         if (dup) throw new Error("Tên đăng nhập đã tồn tại");
       }
       if (main.email) {
@@ -94,7 +94,7 @@ export const account: ModuleDef = {
       if (ctx.isNew) main.status ??= 1;
     },
     afterDelete: async (ids) => {
-      await exec("UPDATE news SET admin_id = 1 WHERE admin_id IN (?)", [ids]);
+      await db.news.updateMany({ where: { admin_id: { in: ids } }, data: { admin_id: 1 } });
     },
   },
 };

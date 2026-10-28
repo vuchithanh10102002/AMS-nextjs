@@ -5,7 +5,7 @@ import { Pencil, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { first, query } from "@/lib/db";
+import { db } from "@/lib/db";
 import { can } from "@/lib/perm";
 import { requireAdmin } from "@/lib/session";
 
@@ -30,16 +30,13 @@ export default async function LangListPage({ searchParams }: PageProps<"/admin/l
   if (!can(admin, "lang", "list")) redirect("/admin?denied=1");
   const s = one("s").trim();
   const page = Math.max(1, Number(one("page")) || 1);
-  const where = s ? "WHERE `key` LIKE ? OR vi LIKE ? OR en LIKE ?" : "";
-  const args = s ? [`%${s}%`, `%${s}%`, `%${s}%`] : [];
-  const [total, rows] = await Promise.all([
-    first<{ n: number }>(`SELECT COUNT(*) n FROM langs ${where}`, args),
-    query<{ id: number; key: string; vi: string | null; en: string | null }>(
-      `SELECT id, \`key\`, vi, en FROM langs ${where} ORDER BY id DESC LIMIT ? OFFSET ?`,
-      [...args, PAGE_SIZE, (page - 1) * PAGE_SIZE],
-    ),
+  const where = s ? { OR: [{ key: { contains: s } }, { vi: { contains: s } }, { en: { contains: s } }] } : {};
+  const [n, rows] = await Promise.all([
+    db.langs.count({ where }),
+    db.langs.findMany({ where, select: { id: true, key: true, vi: true, en: true }, orderBy: { id: "desc" }, take: PAGE_SIZE, skip: (page - 1) * PAGE_SIZE }) as Promise<
+      { id: number; key: string; vi: string | null; en: string | null }[]
+    >,
   ]);
-  const n = total?.n ?? 0;
   const pages = Math.max(1, Math.ceil(n / PAGE_SIZE));
   const href = (p: number) => `/admin/lang?${new URLSearchParams({ ...(s ? { s } : {}), page: String(p) })}`;
 

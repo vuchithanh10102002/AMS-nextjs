@@ -1,5 +1,4 @@
-import { distinctOptions } from "@/lib/crud";
-import { exec } from "@/lib/db";
+import { db } from "@/lib/db";
 import { orderStatus } from "@/lib/order-status";
 import type { ModuleDef } from "../types";
 
@@ -10,7 +9,7 @@ export const cart: ModuleDef = {
   adds: false,
   list: {
     pageSize: 20,
-    order: "m.id DESC",
+    order: [{ id: "desc" }],
     filters: [
       { kind: "search", name: "s", label: "Tên, SĐT, email, địa chỉ người đặt", columns: ["nguoi_nhan", "dienthoai_nhan", "email_nhan", "diachi_nhan"] },
       { kind: "select", name: "status", label: "Trạng thái", column: "status", options: orderStatus },
@@ -30,15 +29,18 @@ export const cart: ModuleDef = {
     ],
   },
   options: {
-    customers: () =>
-      distinctOptions("SELECT id value, CONCAT(COALESCE(NULLIF(fullname, ''), username, CONCAT('#', id)), ' – ', COALESCE(phone, '')) label FROM customers ORDER BY id DESC"),
+    customers: async () =>
+      (await db.customers.findMany({ select: { id: true, fullname: true, username: true, phone: true }, orderBy: { id: "desc" } })).map((c) => ({
+        value: String(c.id),
+        label: `${c.fullname || (c.username ?? `#${c.id}`)} – ${c.phone ?? ""}`.trim(),
+      })),
   },
   hooks: {
     decorate: (rows) => {
       for (const r of rows) r._code = `#${r.id}`;
     },
     afterDelete: async (ids) => {
-      await exec("DELETE FROM orders WHERE bill_id IN (?)", [ids]);
+      await db.orders.deleteMany({ where: { bill_id: { in: ids } } });
     },
   },
 };

@@ -13,9 +13,11 @@ export function NewsTags({ field, value }: { field: ClientField; value: unknown 
 
   useEffect(() => {
     if (timer.current) clearTimeout(timer.current);
-    if (!text.trim()) return setHints([]);
+    if (!text.trim()) return;
     timer.current = setTimeout(async () => setHints(await suggestTags(text)), 300);
   }, [text]);
+
+  const shown = text.trim() ? hints : [];
 
   const add = (raw: string) => {
     const parts = raw.split(",").map((t) => t.trim()).filter(Boolean);
@@ -53,9 +55,9 @@ export function NewsTags({ field, value }: { field: ClientField; value: unknown 
           onBlur={() => setTimeout(() => setHints([]), 150)}
         />
       </div>
-      {hints.length > 0 && (
+      {shown.length > 0 && (
         <div className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-popover p-1 shadow-md">
-          {hints
+          {shown
             .filter((h) => !tags.includes(h))
             .map((h) => (
               <button key={h} type="button" className="block w-full rounded px-2 py-1 text-left text-sm hover:bg-muted" onMouseDown={() => add(h)}>

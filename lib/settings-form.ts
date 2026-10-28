@@ -1,5 +1,5 @@
 import "server-only";
-import { query } from "./db";
+import { db } from "./db";
 
 export type SettingItem = {
   name: string;
@@ -86,7 +86,10 @@ function itemType(t: string | null): SettingItem["type"] {
 }
 
 export async function loadSettingForm() {
-  const rows = await query<Row>("SELECT name, label, value, type, status, maxlength FROM settings ORDER BY pos DESC, id ASC");
+  const rows = (await db.settings.findMany({
+    select: { name: true, label: true, value: true, type: true, status: true, maxlength: true },
+    orderBy: [{ pos: "desc" }, { id: "asc" }],
+  })) as Row[];
   const byName = new Map(rows.map((r) => [r.name, r]));
   const extraNames = new Set(EXTRA.flatMap((g) => g.items.map((i) => i.name)));
   const general: SettingGroup = {

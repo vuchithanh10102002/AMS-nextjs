@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { LangEditForm } from "@/components/admin/lang/lang-forms";
 import { SetBreadcrumb } from "@/components/set-breadcrumb";
-import { first, query } from "@/lib/db";
+import { db } from "@/lib/db";
 import { LANG_MODES, LANGS, modeFromQuery, type LangMode } from "@/lib/lang-modes";
 import declared from "@/site/lang-modes.json";
 import { can } from "@/lib/perm";
@@ -24,18 +24,16 @@ export default async function LangEditPage({ params, searchParams }: PageProps<"
   const admin = await requireAdmin();
   if (!can(admin, "lang", "edit")) redirect("/admin?denied=1");
   const key = decodeURIComponent(raw);
-  const row = await first<LangRow>("SELECT `key`, vi, en FROM langs WHERE `key` = ?", [key]);
+  const row = (await db.langs.findUnique({ where: { key }, select: { key: true, vi: true, en: true } })) as LangRow | null;
   if (!row) notFound();
   const lang = LANGS.find((l) => l.value === sp.lang)?.value ?? "vi";
   const value = String(row[lang] ?? "");
   const fixed = (declared as Record<string, string>)[key];
   const mode = LANG_MODES.find((m) => m.value === fixed)?.value ?? modeFromQuery(sp) ?? guessMode(value);
-  const sats = await query<LangRow>("SELECT `key`, vi, en FROM langs WHERE `key` IN (?, ?, ?, ?)", [
-    `${key}_link`,
-    `${key}_title`,
-    `${key}_description`,
-    `${key}-mobile`,
-  ]);
+  const sats = (await db.langs.findMany({
+    where: { key: { in: [`${key}_link`, `${key}_title`, `${key}_description`, `${key}-mobile`] } },
+    select: { key: true, vi: true, en: true },
+  })) as LangRow[];
   const sat = (suffix: string) => {
     const r = sats.find((s) => s.key === key + suffix);
     return r ? String(r[lang] ?? "") : null;

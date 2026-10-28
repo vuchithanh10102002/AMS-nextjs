@@ -1,5 +1,5 @@
 import "server-only";
-import { exec, query } from "./db";
+import { db } from "./db";
 
 export type CategoryNode = {
   id: number;
@@ -11,11 +11,11 @@ export type CategoryNode = {
 };
 
 async function loadAll() {
-  return query<{ id: number; node_id: number; parent_id: number | null; title: string | null; ctype: string; status: number | null; pos: number | null }>(
-    `SELECT c.id, c.node_id, c.parent_id, c.ctype, n.title, n.status, n.pos
-     FROM categories c LEFT JOIN nodes n ON n.id = c.node_id
-     ORDER BY n.pos DESC, c.lft ASC, c.id ASC`,
-  );
+  const rows = await db.categories.findMany({
+    select: { id: true, node_id: true, parent_id: true, ctype: true, node: { select: { title: true, status: true, pos: true } } },
+    orderBy: [{ node: { pos: "desc" } }, { lft: "asc" }, { id: "asc" }],
+  });
+  return rows.map(({ node, ...c }) => ({ ...c, ctype: c.ctype ?? "", node_id: c.node_id ?? 0, title: node?.title ?? null, status: node?.status ?? null, pos: node?.pos ?? null }));
 }
 
 export async function categoryTree(opts: { ctype?: string | string[]; activeOnly?: boolean } = {}) {
@@ -50,7 +50,7 @@ export async function categoryOptions(ctype?: string | string[], activeOnly = fa
 }
 
 export async function descendantIds(categoryId: number) {
-  const rows = await query<{ id: number; parent_id: number | null }>("SELECT id, parent_id FROM categories");
+  const rows = await db.categories.findMany({ select: { id: true, parent_id: true } });
   const out = new Set<number>([categoryId]);
   let grew = true;
   while (grew) {
@@ -65,9 +65,7 @@ export async function descendantIds(categoryId: number) {
 }
 
 export async function rebuildNestedSet() {
-  const rows = await query<{ id: number; parent_id: number | null }>(
-    "SELECT c.id, c.parent_id FROM categories c LEFT JOIN nodes n ON n.id = c.node_id ORDER BY c.lft ASC, c.id ASC",
-  );
+  const rows = await db.categories.findMany({ select: { id: true, parent_id: true }, orderBy: [{ lft: "asc" }, { id: "asc" }] });
   const ids = new Set(rows.map((r) => r.id));
   const children = new Map<number | null, number[]>();
   for (const r of rows) {
@@ -86,29 +84,27 @@ export async function rebuildNestedSet() {
   };
   for (const id of children.get(null) ?? []) walk(id);
   for (const r of rows) if (!seen.has(r.id)) walk(r.id);
-  for (const [lft, rght, id] of updates) await exec("UPDATE categories SET lft = ?, rght = ? WHERE id = ?", [lft, rght, id]);
+  for (const [lft, rght, id] of updates) await db.categories.updateMany({ where: { id }, data: { lft, rght } });
 }
 
 export async function linkedCategoryIds(nodeId: number) {
-  const rows = await query<{ category_id: number }>("SELECT category_id FROM category_linkeds WHERE node_id = ?", [nodeId]);
+  const rows = await db.category_linkeds.findMany({ where: { node_id: nodeId }, select: { category_id: true } });
   return rows.map((r) => String(r.category_id));
 }
 
 export async function setLinkedCategories(nodeId: number, categoryIds: (string | number)[]) {
-  await exec("DELETE FROM category_linkeds WHERE node_id = ?", [nodeId]);
+  await db.category_linkeds.deleteMany({ where: { node_id: nodeId } });
   const unique = [...new Set(categoryIds.map(Number).filter((n) => n > 0))];
-  if (unique.length)
-    await exec("INSERT INTO category_linkeds (category_id, node_id) VALUES ?", [unique.map((c) => [c, nodeId])]);
+  if (unique.length) await db.category_linkeds.createMany({ data: unique.map((category_id) => ({ category_id, node_id: nodeId })) });
 }
 
 export async function categoryNamesByNode(nodeIds: number[]) {
   if (!nodeIds.length) return new Map<number, string[]>();
-  const rows = await query<{ node_id: number; title: string }>(
-    `SELECT cl.node_id, n.title FROM category_linkeds cl
-     JOIN categories c ON c.id = cl.category_id JOIN nodes n ON n.id = c.node_id
-     WHERE cl.node_id IN (?)`,
-    [nodeIds],
-  );
+  const links = await db.category_linkeds.findMany({
+    where: { node_id: { in: nodeIds } },
+    select: { node_id: true, category: { select: { node: { select: { title: true } } } } },
+  });
+  const rows = links.flatMap((l) => (l.node_id != null && l.category?.node ? [{ node_id: l.node_id, title: l.category.node.title }] : []));
   const map = new Map<number, string[]>();
   for (const r of rows) {
     if (!map.has(r.node_id)) map.set(r.node_id, []);

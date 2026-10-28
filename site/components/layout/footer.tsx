@@ -1,7 +1,9 @@
 import { site } from "@/site/lib/ctx";
-import { catLink, categoriesWhere, categoryByTemplate, childrenOf, getHangs, menuRoots, src } from "@/site/lib/data";
+import { categoriesWhere, categoryByTemplate, childrenOf, menuRoots } from "@/site/lib/queries/category";
+import { getHangs } from "@/site/lib/queries/rows";
+import { catLink, src } from "@/site/lib/url";
 import { ICONS, SPRITE, VIDEO_MODAL } from "@/site/static/tail";
-import { Adm } from "./adm";
+import { Adm } from "@/site/components/adm";
 import type { Here } from "./header";
 
 function langLink(s: string) {
@@ -12,7 +14,7 @@ export async function Footer({ here }: { here: Here }) {
   const s = await site();
   const { t, tr, settings } = s;
   const tel = t("company_hotline").replace(/[^0-9+]/g, "");
-  const cols = await Promise.all([1, 2, 3, 4].map((i) => categoriesWhere(`footer_${i}`)));
+  const cols = await Promise.all(([1, 2, 3, 4] as const).map((i) => categoriesWhere(`footer_${i}`)));
   const roots = await menuRoots();
   const subs = await Promise.all(roots.map((v) => childrenOf(v)));
   const th = await categoryByTemplate("thuong-hieu");

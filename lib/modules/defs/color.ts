@@ -1,4 +1,4 @@
-import { exec } from "@/lib/db";
+import { db } from "@/lib/db";
 import { slugify } from "@/lib/slug";
 import type { ModuleDef } from "../types";
 
@@ -10,7 +10,7 @@ export const color: ModuleDef = {
   statusToggle: true,
   list: {
     pageSize: 12,
-    order: "m.pos DESC, m.id DESC",
+    order: [{ pos: "desc" }, { id: "desc" }],
     filters: [{ kind: "search", name: "s", label: "Tìm theo tên", columns: ["title", "color"] }],
     columns: [
       { name: "title", label: "Tên", link: true },
@@ -35,7 +35,9 @@ export const color: ModuleDef = {
       if (ctx.isNew) main.pos ??= 1;
     },
     afterDelete: async (ids) => {
-      for (const id of ids) await exec("UPDATE products SET colors = REPLACE(colors, ?, ',') WHERE colors LIKE ?", [`,${id},`, `%,${id},%`]);
+      for (const id of ids)
+        for (const p of await db.products.findMany({ where: { colors: { contains: `,${id},` } }, select: { id: true, colors: true } }))
+          await db.products.updateMany({ where: { id: p.id }, data: { colors: String(p.colors).split(`,${id},`).join(",") } });
     },
   },
 };

@@ -1,20 +1,21 @@
-import type { Row } from "@/lib/db";
 import { siteUrl } from "@/lib/site";
 import { Adm } from "@/site/components/adm";
-import { Links, ProductItem } from "@/site/components/blocks";
+import { Links } from "@/site/components/links";
+import { ProductItem } from "@/site/components/product-item";
 import { site } from "@/site/lib/ctx";
 import { crumbHtml } from "@/site/lib/crumb";
-import { getNodes, src, type Cat } from "@/site/lib/data";
+import type { Cat } from "@/site/lib/queries/category";
+import { productsIn, type ProductRow } from "@/site/lib/queries/node";
+import { strip } from "@/site/lib/text";
+import { src, tel } from "@/site/lib/url";
 
-const strip = (s: string) => s.replace(/<[^>]*>/g, "");
-
-export async function ProductDetail({ data, cat }: { data: Row; cat: Cat | null }) {
+export async function ProductDetail({ data, cat }: { data: ProductRow; cat: Cat | null }) {
   const s = await site();
   const { t, tr } = s;
   const name = tr(data, "title");
   const imgs = [String(data.image ?? ""), ...String(data.images ?? "").split(",")].filter(Boolean);
   const hotline = t("company_hotline");
-  const related = cat ? await getNodes("product", { categoryId: cat.id, where: "n.id <> ?", params: [data.node_id], limit: 8 }) : [];
+  const related = cat ? await productsIn(cat.id, 8, data.node_id) : [];
   const attrs = tr(data, "content_2");
   const base = siteUrl();
 
@@ -63,7 +64,7 @@ export async function ProductDetail({ data, cat }: { data: Row; cat: Cat | null 
             <div
               className="ams-pd-call"
               dangerouslySetInnerHTML={{
-                __html: `${s.ta("product_text_7", "text")} <a href="tel:${hotline.replace(/[^0-9+]/g, "")}"><svg width="17" height="17"><use href="#i-call"></use></svg>${hotline}</a>`,
+                __html: `${s.ta("product_text_7", "text")} <a href="tel:${tel(hotline)}"><svg width="17" height="17"><use href="#i-call"></use></svg>${hotline}</a>`,
               }}
             />
           </div>

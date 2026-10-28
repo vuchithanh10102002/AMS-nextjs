@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { categoryNamesByNode } from "@/lib/categories";
-import { query, first } from "@/lib/db";
+import { db } from "@/lib/db";
 import { can } from "@/lib/perm";
 import { requireAdmin } from "@/lib/session";
 import { mediaUrl } from "@/lib/site";
@@ -27,18 +27,29 @@ export default async function SearchPage({ searchParams }: PageProps<"/admin/sea
   let rows: Hit[] = [];
   let total = 0;
   if (s && types.length) {
-    const where = "n.type IN (?) AND n.title LIKE ?";
-    const params = [types, `%${s}%`];
-    [rows, total] = await Promise.all([
-      query<Hit>(
-        `SELECT n.id, n.title, n.type, n.status, COALESCE(p.image, nw.image) image FROM nodes n
-         LEFT JOIN products p ON n.type = 'product' AND p.node_id = n.id
-         LEFT JOIN news nw ON n.type = 'news' AND nw.node_id = n.id
-         WHERE ${where} ORDER BY n.pos DESC, n.id DESC LIMIT ? OFFSET ?`,
-        [...params, LIMIT, (page - 1) * LIMIT],
-      ),
-      first<{ n: number }>(`SELECT COUNT(*) n FROM nodes n WHERE ${where}`, params).then((r) => r?.n ?? 0),
+    const where = { type: { in: types }, title: { contains: s } };
+    const [hits, n] = await Promise.all([
+      db.nodes.findMany({
+        where,
+        select: {
+          id: true,
+          title: true,
+          type: true,
+          status: true,
+          products: { select: { image: true }, orderBy: { id: "asc" }, take: 1 },
+          news: { select: { image: true }, orderBy: { id: "asc" }, take: 1 },
+        },
+        orderBy: [{ pos: "desc" }, { id: "desc" }],
+        take: LIMIT,
+        skip: (page - 1) * LIMIT,
+      }),
+      db.nodes.count({ where }),
     ]);
+    rows = hits.map(({ products, news, ...h }) => ({
+      ...(h as Omit<Hit, "image">),
+      image: (h.type === "product" ? products[0]?.image : h.type === "news" ? news[0]?.image : null) ?? null,
+    }));
+    total = n;
   }
   const cats = await categoryNamesByNode(rows.filter((r) => r.type !== "category").map((r) => r.id));
   const pages = Math.ceil(total / LIMIT);
@@ -90,7 +101,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/admin/sea
           {Array.from({ length: pages }, (_, i) => i + 1)
             .filter((p) => p === 1 || p === pages || Math.abs(p - page) <= 2)
             .map((p) => (
-              <Button key={p} size="sm" variant={p === page ? "default" : "outline"} render={<Link href={href(p)} />}>
+              <Button key={p} size="sm" variant={p === page ? "default" : "outline"} nativeButton={false} render={<Link href={href(p)} />}>
                 {p}
               </Button>
             ))}

@@ -9,6 +9,10 @@ const sitePath = (() => {
 })();
 
 const nextConfig: NextConfig = {
+  cacheComponents: true,
+  cacheLife: {
+    site: { stale: 300, revalidate: 60, expire: 86400 },
+  },
   experimental: {
     globalNotFound: true,
     serverActions: { bodySizeLimit: "20mb" },

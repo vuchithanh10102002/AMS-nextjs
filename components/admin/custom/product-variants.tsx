@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MoneyInput, SelectInput } from "@/components/admin/fields";
@@ -8,6 +8,8 @@ import type { ClientField } from "@/lib/modules/types";
 
 type Variant = { size_id?: number | string | null; price?: number | null; price_vip?: number | null; price_gold?: number | null; price_member?: number | null };
 type Row = Variant & { key: number };
+
+let seq = 0;
 
 const PRICES = [
   ["v_price", "price", "Giá bán"],
@@ -17,8 +19,7 @@ const PRICES = [
 ] as const;
 
 export function ProductVariants({ field, value }: { field: ClientField; value?: unknown }) {
-  const seq = useRef(0);
-  const [rows, setRows] = useState<Row[]>(() => (Array.isArray(value) ? (value as Variant[]) : []).map((v) => ({ ...v, key: seq.current++ })));
+  const [rows, setRows] = useState<Row[]>(() => (Array.isArray(value) ? (value as Variant[]) : []).map((v) => ({ ...v, key: seq++ })));
   const [sizes, setSizes] = useState<Record<number, string>>(() => Object.fromEntries(rows.map((r) => [r.key, r.size_id ? String(r.size_id) : ""])));
   const options = field.options ?? [];
   const dup = (key: number) => {
@@ -54,7 +55,7 @@ export function ProductVariants({ field, value }: { field: ClientField; value?: 
           </Button>
         </div>
       ))}
-      <Button type="button" variant="outline" className="w-fit" onClick={() => setRows((s) => [...s, { key: seq.current++ }])}>
+      <Button type="button" variant="outline" className="w-fit" onClick={() => setRows((s) => [...s, { key: seq++ }])}>
         <Plus /> Thêm dòng giá
       </Button>
     </div>

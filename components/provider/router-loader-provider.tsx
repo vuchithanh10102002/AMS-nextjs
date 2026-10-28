@@ -20,11 +20,14 @@ export function RouteLoaderProvider({ children }: { children: React.ReactNode })
   // const searchParams = useSearchParams();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
+  const [shownPath, setShownPath] = useState(pathname);
+  if (shownPath !== pathname) {
+    setShownPath(pathname);
     setLoading(false);
-    if (timeoutRef.current) {
-    clearTimeout(timeoutRef.current);
-    }
+  }
+
+  useEffect(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
   }, [pathname]);
 
   useEffect(() => {

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { first, query } from "@/lib/db";
+import { db } from "@/lib/db";
 import { orderStatus } from "@/lib/order-status";
 import { can } from "@/lib/perm";
 import { requireAdmin } from "@/lib/session";
@@ -11,12 +11,12 @@ import { requireAdmin } from "@/lib/session";
 export const metadata: Metadata = { title: "Tổng quan" };
 
 const STATS = [
-  { perm: "product", label: "Sản phẩm", url: "/admin/product", sql: "SELECT COUNT(*) n FROM nodes WHERE type = 'product'" },
-  { perm: "news", label: "Bài viết", url: "/admin/news", sql: "SELECT COUNT(*) n FROM nodes WHERE type = 'news'" },
-  { perm: "cart", label: "Đơn hàng mới", url: "/admin/cart", sql: "SELECT COUNT(*) n FROM order_bills WHERE status = 0" },
-  { perm: "contact", label: "Liên hệ chưa đọc", url: "/admin/contact", sql: "SELECT COUNT(*) n FROM contacts WHERE status = 0" },
-  { perm: "customer", label: "Khách hàng", url: "/admin/customer", sql: "SELECT COUNT(*) n FROM customers" },
-  { perm: "subcriber", label: "Đăng ký nhận tin", url: "/admin/subcriber", sql: "SELECT COUNT(*) n FROM subcribers" },
+  { perm: "product", label: "Sản phẩm", url: "/admin/product", count: () => db.nodes.count({ where: { type: "product" } }) },
+  { perm: "news", label: "Bài viết", url: "/admin/news", count: () => db.nodes.count({ where: { type: "news" } }) },
+  { perm: "cart", label: "Đơn hàng mới", url: "/admin/cart", count: () => db.order_bills.count({ where: { status: 0 } }) },
+  { perm: "contact", label: "Liên hệ chưa đọc", url: "/admin/contact", count: () => db.contacts.count({ where: { status: 0 } }) },
+  { perm: "customer", label: "Khách hàng", url: "/admin/customer", count: () => db.customers.count() },
+  { perm: "subcriber", label: "Đăng ký nhận tin", url: "/admin/subcriber", count: () => db.subcribers.count() },
 ];
 
 type Order = { id: number; nguoi_nhan: string; dienthoai_nhan: string; cart_sum: number; status: number; created: number };
@@ -30,12 +30,16 @@ export default async function DashboardPage({ searchParams }: PageProps<"/admin"
   const admin = await requireAdmin();
   const stats = STATS.filter((s) => can(admin, s.perm, "list"));
   const [counts, orders, contacts] = await Promise.all([
-    Promise.all(stats.map((s) => first<{ n: number }>(s.sql).then((r) => r?.n ?? 0))),
+    Promise.all(stats.map((s) => s.count())),
     can(admin, "cart", "list")
-      ? query<Order>("SELECT id, nguoi_nhan, dienthoai_nhan, cart_sum, status, created FROM order_bills ORDER BY id DESC LIMIT 8")
+      ? (db.order_bills.findMany({
+          select: { id: true, nguoi_nhan: true, dienthoai_nhan: true, cart_sum: true, status: true, created: true },
+          orderBy: { id: "desc" },
+          take: 8,
+        }) as Promise<Order[]>)
       : [],
     can(admin, "contact", "list")
-      ? query<Contact>("SELECT id, fullname, title, phone, status, created FROM contacts ORDER BY id DESC LIMIT 8")
+      ? (db.contacts.findMany({ select: { id: true, fullname: true, title: true, phone: true, status: true, created: true }, orderBy: { id: "desc" }, take: 8 }) as Promise<Contact[]>)
       : [],
   ]);
 

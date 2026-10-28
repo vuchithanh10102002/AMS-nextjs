@@ -1,7 +1,7 @@
 import { Adm } from "@/site/components/adm";
-import { Shell } from "@/site/components/shell";
+import { Shell } from "@/site/components/layout/shell";
 import { site } from "@/site/lib/ctx";
-import { src } from "@/site/lib/data";
+import { src } from "@/site/lib/url";
 
 export async function Page404() {
   const s = await site();

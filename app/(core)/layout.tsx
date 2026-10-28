@@ -10,6 +10,8 @@ const inter = Inter({ subsets: ["latin", "vietnamese"], variable: "--font-sans" 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
+export const instant = false;
+
 export const metadata: Metadata = {
   title: { default: "Quản trị", template: "%s | Quản trị" },
   robots: { index: false, follow: false },

@@ -28,7 +28,10 @@ export function AccountRoles({ field, value }: { field: ClientField; value: unkn
   const set = (keys: string[], on: boolean) =>
     setRoles((prev) => {
       const next = new Set(prev);
-      for (const k of keys) on ? next.add(k) : next.delete(k);
+      for (const k of keys) {
+        if (on) next.add(k);
+        else next.delete(k);
+      }
       return next;
     });
 

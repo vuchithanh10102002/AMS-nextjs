@@ -1,4 +1,4 @@
-import { query } from "@/lib/db";
+import { db } from "@/lib/db";
 import { can } from "@/lib/perm";
 import { requireAdmin } from "@/lib/session";
 
@@ -11,27 +11,17 @@ export async function GET(request: Request) {
   const admin = await requireAdmin();
   if (!can(admin, "subcriber", "list")) return new Response("Bạn không có quyền", { status: 403 });
   const url = new URL(request.url);
-  const where: string[] = [];
-  const args: unknown[] = [];
   const s = url.searchParams.get("s")?.trim();
-  if (s) {
-    where.push("email LIKE ?");
-    args.push(`%${s}%`);
-  }
   const from = unix(url.searchParams.get("created_from"));
   const to = unix(url.searchParams.get("created_to"), true);
-  if (from) {
-    where.push("created >= ?");
-    args.push(from);
-  }
-  if (to) {
-    where.push("created <= ?");
-    args.push(to);
-  }
-  const rows = await query<{ id: number; email: string | null; created: number | null }>(
-    `SELECT id, email, created FROM subcribers ${where.length ? `WHERE ${where.join(" AND ")}` : ""} ORDER BY id DESC`,
-    args,
-  );
+  const rows = await db.subcribers.findMany({
+    where: {
+      ...(s ? { email: { contains: s } } : {}),
+      ...(from || to ? { created: { ...(from ? { gte: from } : {}), ...(to ? { lte: to } : {}) } } : {}),
+    },
+    select: { id: true, email: true, created: true },
+    orderBy: { id: "desc" },
+  });
   const cell = (v: unknown) => {
     const t = String(v ?? "");
     const safe = /^[=+\-@\t\r]/.test(t) ? `'${t}` : t;

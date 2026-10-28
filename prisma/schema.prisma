@@ -1,0 +1,880 @@
+generator client {
+  provider = "prisma-client"
+  output   = "./generated"
+}
+
+datasource db {
+  provider     = "mysql"
+}
+
+model admins {
+  id          Int     @id @default(autoincrement())
+  webi_uid    String? @db.VarChar(256)
+  parent_id   Int?
+  lft         Int?
+  rght        Int?
+  username    String? @db.VarChar(32)
+  password    String? @db.VarChar(32)
+  image       String? @db.VarChar(255)
+  images      String? @db.LongText
+  fullname    String? @db.VarChar(34)
+  email       String? @db.VarChar(64)
+  phone       String? @db.VarChar(255)
+  description String? @db.Text
+  content     String? @db.Text
+  role        String? @db.Text
+  last_logged Int?
+  status      Int?    @default(1)
+}
+
+model agencies {
+  id          Int     @id @default(autoincrement())
+  title       String? @db.VarChar(255)
+  image       String? @db.VarChar(255)
+  address     String? @db.VarChar(255)
+  map         String? @db.VarChar(255)
+  phone       String? @db.VarChar(255)
+  email       String? @db.VarChar(255)
+  website     String? @db.VarChar(255)
+  description String? @db.Text
+  content     String? @db.Text
+  featured    Int?
+  pos         Int?
+  status      Int?    @default(1)
+}
+
+model banners {
+  id             Int     @id @default(autoincrement())
+  title          String? @db.VarChar(255)
+  title_en       String? @db.VarChar(255)
+  description    String? @db.Text
+  description_en String? @db.Text
+  image          String? @db.VarChar(255)
+  images         String? @db.LongText
+  link           String? @default("#") @db.VarChar(255)
+  type           String? @db.VarChar(32)
+  category_id    Int?    @default(0)
+  collection_id  Int?
+  pos            Int?    @default(1)
+  status         Int?    @default(1)
+}
+
+model categories {
+  id                 Int                @id @default(autoincrement())
+  title              String?            @db.VarChar(64)
+  title_en           String?            @db.VarChar(255)
+  description        String?            @db.Text
+  description_en     String?            @db.Text
+  page_title         String?            @db.VarChar(255)
+  page_title_en      String?            @db.VarChar(255)
+  content            String?            @db.Text
+  content_en         String?            @db.Text
+  node_id            Int?
+  parent_id          Int?
+  link               String?            @db.VarChar(255)
+  image              String?            @db.VarChar(255)
+  image2             String?            @db.VarChar(255)
+  images             String?            @db.Text
+  lft                Int?
+  rght               Int?
+  seo_title          String?            @db.VarChar(255)
+  seo_title_en       String?            @db.VarChar(255)
+  seo_keyword        String?            @db.VarChar(255)
+  seo_keyword_en     String?            @db.VarChar(255)
+  seo_description    String?            @db.Text
+  seo_description_en String?            @db.Text
+  menu               Int?               @default(1)
+  sidebar            Int?               @default(0)
+  footer_1           Int?               @default(0)
+  footer_2           Int?               @default(0)
+  footer_3           Int?               @default(0)
+  footer_4           Int?               @default(0)
+  ctype              String?            @default("news") @db.VarChar(12)
+  navbar             Int?               @default(0)
+  dropdown           Int?               @default(0)
+  home_menu          Int?               @default(0)
+  featured           Int                @default(0)
+  word_count         Int?               @default(1)
+  template           String?            @db.VarChar(32)
+  hang_id_list       String?            @db.Text
+  filter_id_list     String?            @db.Text
+  filter_price       String?            @db.Text
+  robots             Int?               @default(1)
+  node               nodes?             @relation(fields: [node_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  category_linkeds   category_linkeds[]
+
+  @@index([node_id], map: "node_id")
+  @@index([parent_id], map: "parent_id")
+}
+
+model category_linkeds {
+  id          Int         @id @default(autoincrement())
+  category_id Int?
+  node_id     Int?
+  node        nodes?      @relation(fields: [node_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  category    categories? @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([category_id], map: "category_id")
+  @@index([node_id], map: "node_id")
+}
+
+model cities {
+  id        Int    @id @default(autoincrement())
+  mien_id   Int?
+  title     String @db.VarChar(255)
+  slug      String @db.VarChar(255)
+  latitude  Float?
+  longitude Float?
+  pos       Int    @default(1)
+  status    Int    @default(1)
+}
+
+model collections {
+  id              Int     @id @default(autoincrement())
+  title           String? @db.VarChar(255)
+  description     String? @db.Text
+  content         String? @db.Text
+  image           String? @db.VarChar(255)
+  images          String? @db.Text
+  seo_title       String? @db.VarChar(255)
+  seo_keyword     String? @db.VarChar(255)
+  seo_description String? @db.Text
+  focus_keyword   String? @db.VarChar(255)
+  pos             Int?    @default(1)
+  status          Int?    @default(1)
+}
+
+model colors {
+  id          Int     @id @default(autoincrement())
+  title       String? @db.VarChar(64)
+  slug        String? @db.VarChar(255)
+  color       String? @db.VarChar(255)
+  image       String? @db.VarChar(255)
+  description String? @db.Text
+  content     String? @db.Text
+  featured    Int?    @default(0)
+  status      Int?    @default(1)
+  pos         Int?    @default(1)
+}
+
+model combos {
+  id           Int     @id @default(autoincrement())
+  node_id      Int?
+  title        String? @db.VarChar(255)
+  image        String? @db.Text
+  price        String? @db.VarChar(255)
+  price_save   Int?
+  content      String? @db.Text
+  description  String? @db.Text
+  product_id   String? @db.Text
+  product_main Int?
+  created      Int?
+  pos          Int?    @default(0)
+  status       Int?    @default(0)
+  show         Int?    @default(0)
+  node         nodes?  @relation(fields: [node_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model comments {
+  id        Int     @id @default(autoincrement())
+  node_id   Int?
+  parent_id Int?    @default(0)
+  images    String? @db.LongText
+  title     String? @db.VarChar(255)
+  fullname  String? @db.VarChar(64)
+  content   String? @db.Text
+  phone     String? @db.VarChar(128)
+  email     String? @db.VarChar(128)
+  website   String? @db.VarChar(128)
+  stars     Int?    @default(5)
+  created   Int?
+  status    Int?    @default(0)
+  node      nodes?  @relation(fields: [node_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([node_id], map: "node_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model commissions {
+  id               Int     @id @default(autoincrement())
+  order_id         Int?
+  title            String? @db.Text
+  customer_id      Int?
+  customer_name    String? @db.Text
+  child_id         Int?
+  child_name       String? @db.Text
+  price            BigInt?
+  commission_price BigInt?
+  percent          Int?
+  created          Int?
+}
+
+model contacts {
+  id       Int     @id @default(autoincrement())
+  title    String? @db.VarChar(255)
+  fullname String? @db.VarChar(64)
+  email    String? @db.VarChar(64)
+  address  String? @db.VarChar(255)
+  phone    String? @db.VarChar(64)
+  content  String? @db.Text
+  status   Int?    @default(0)
+  created  String? @db.VarChar(255)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model coupons {
+  id          Int     @id @default(autoincrement())
+  title       String? @db.VarChar(255)
+  slug        String? @db.VarChar(255)
+  code        String? @db.VarChar(64)
+  price       Int?    @default(0)
+  percent     Int?    @default(0)
+  for_sum     Int?
+  created     Int?
+  expired     Int?
+  description String? @db.Text
+  content     String? @db.Text
+  featured    Int?    @default(0)
+  status      Int?
+  pos         Int?
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model customers {
+  id               Int     @id @default(autoincrement())
+  parent_id        Int?
+  lft              Int?
+  rght             Int?
+  status           Int?    @default(1)
+  anhchi           String? @db.VarChar(64)
+  fullname         String? @db.VarChar(34)
+  gender           String? @db.VarChar(5)
+  lastname         String? @db.VarChar(30)
+  username         String? @db.VarChar(32)
+  password         String? @db.VarChar(32)
+  recover_password String? @db.VarChar(255)
+  phone            String? @db.VarChar(32)
+  email            String? @db.VarChar(128)
+  address          String? @db.Text
+  created          Int?
+  date             Int?
+  avatar           String? @db.Text
+  wishlist         String? @db.LongText
+  link_facebook    String? @db.Text
+  refviews         Int?
+  level            String? @db.Text
+}
+
+model districts {
+  id         Int     @id @default(autoincrement())
+  title      String? @db.VarChar(100)
+  city_id    Int?
+  slug       String? @db.VarChar(255)
+  lat        String? @db.VarChar(255)
+  lng        String? @db.VarChar(255)
+  pos        Int     @default(1)
+  phone      String? @db.VarChar(255)
+  google_map String? @db.Text
+  address    String? @db.VarChar(255)
+
+  @@index([city_id], map: "provinceid")
+}
+
+model documents {
+  id       Int     @id @default(autoincrement())
+  node_id  Int?
+  title    String? @db.VarChar(255)
+  title_en String? @db.VarChar(255)
+  image    String? @db.VarChar(255)
+  link     String? @default("#") @db.VarChar(255)
+  phone    String? @db.VarChar(255)
+  pos      Int?    @default(1)
+
+  @@index([node_id], map: "node_id")
+}
+
+model faqs {
+  id             Int     @id @default(autoincrement())
+  title          String? @db.Text
+  title_en       String  @db.Text
+  image          String? @db.VarChar(255)
+  image2         String? @db.VarChar(255)
+  description    String? @db.Text
+  description_en String  @db.Text
+  content        String? @db.Text
+  content_en     String  @db.Text
+  status         Int?    @default(1) @db.TinyInt
+  featured       Int?    @default(0)
+  created        Int?
+  modified       Int?
+  pos            Int?
+}
+
+model filter_items {
+  id             Int              @id @default(autoincrement())
+  filter_id      Int?
+  title          String?          @db.VarChar(255)
+  content        String?          @db.Text
+  pos            Int?             @default(1)
+  filter_linkeds filter_linkeds[]
+  filter         filters?         @relation(fields: [filter_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([filter_id], map: "filter_id")
+}
+
+model filter_linkeds {
+  id             Int           @id @default(autoincrement())
+  node_id        Int?
+  filter_item_id Int?
+  node           nodes?        @relation(fields: [node_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  item           filter_items? @relation(fields: [filter_item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([filter_item_id], map: "filter_item_id")
+  @@index([node_id], map: "node_id")
+}
+
+model filters {
+  id           Int            @id @default(autoincrement())
+  title        String?        @db.VarChar(64)
+  image        String?        @db.VarChar(255)
+  pos          Int?           @default(1)
+  filter_items filter_items[]
+}
+
+model flashsales {
+  id              Int     @id @default(autoincrement())
+  title           String? @db.VarChar(255)
+  price           Int?    @default(0)
+  price_percent   Int?    @default(0)
+  created         Int?
+  expired         Int?
+  image           String? @db.Text
+  images          String? @db.LongText
+  description     String? @db.Text
+  category_id     Int?
+  status          Int?
+  product_node_id Int?
+  pos             Int?    @default(1)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model hangs {
+  id              Int     @id @default(autoincrement())
+  title           String? @db.VarChar(64)
+  slug            String? @db.VarChar(255)
+  image           String? @db.VarChar(255)
+  description     String? @db.Text
+  content         String? @db.Text
+  website         String? @db.VarChar(255)
+  featured        Int?    @default(0)
+  active_category Int?    @default(0)
+  status          Int?    @default(1)
+  pos             Int?    @default(1)
+  test2           String? @db.Text
+  test_field      String? @db.VarChar(222)
+}
+
+model images {
+  id           Int     @id @default(autoincrement())
+  node_id      Int?
+  image        String? @db.VarChar(255)
+  color_id     Int?    @default(0)
+  size_id      Int?    @default(0)
+  price        Int?    @default(0)
+  price_off    Int     @default(0)
+  price_vip    Int?    @default(0)
+  price_gold   Int     @default(0)
+  price_member Int     @default(0)
+  group_img    Int?
+  node         nodes?  @relation(fields: [node_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([node_id], map: "node_id")
+}
+
+model langs {
+  id  Int     @id @default(autoincrement())
+  key String? @unique(map: "key") @db.VarChar(64)
+  vi  String? @db.Text
+  en  String? @db.Text
+  jp  String? @db.Text
+  cn  String? @db.Text
+  kr  String? @db.Text
+  pos Int?    @default(1)
+}
+
+model logs {
+  id       Int     @id @default(autoincrement())
+  link     String? @db.VarChar(255)
+  msg      String? @db.VarChar(255)
+  referrer String? @db.VarChar(255)
+  created  Int?
+}
+
+model materials {
+  id          Int     @id @default(autoincrement())
+  title       String? @db.VarChar(64)
+  slug        String? @db.VarChar(255)
+  material    String? @db.VarChar(255)
+  image       String? @db.VarChar(255)
+  description String? @db.Text
+  content     String? @db.Text
+  featured    Int?    @default(0)
+  status      Int?    @default(1)
+  pos         Int?    @default(1)
+}
+
+model miens {
+  id       Int     @id @default(autoincrement())
+  title    String? @db.VarChar(64)
+  title_en String? @db.VarChar(64)
+}
+
+model news {
+  id                 Int     @id @default(autoincrement())
+  node_id            Int?
+  image              String? @db.VarChar(255)
+  image2             String? @db.VarChar(255)
+  images             String? @db.LongText
+  description        String? @db.Text
+  description_en     String? @db.Text
+  content            String? @db.Text
+  content_en         String? @db.Text
+  admin_id           Int?    @default(1)
+  resource           String? @db.VarChar(255)
+  seo_title          String? @db.VarChar(255)
+  seo_title_en       String? @db.VarChar(255)
+  seo_keyword        String? @db.VarChar(120)
+  seo_keyword_en     String? @db.VarChar(255)
+  seo_description    String? @db.Text
+  seo_description_en String? @db.Text
+  star_1             Int?    @default(0)
+  star_2             Int?    @default(0)
+  star_3             Int?    @default(0)
+  star_4             Int?    @default(0)
+  star_5             Int?    @default(0)
+  star_avg           Int?    @default(0)
+  status             Int?    @default(1) @db.TinyInt
+  featured           Int?    @default(0)
+  node               nodes?  @relation(fields: [node_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([node_id], map: "node_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model nodes {
+  id               Int                @id @default(autoincrement())
+  title            String?            @db.VarChar(128)
+  title_en         String?            @db.VarChar(255)
+  slug             String?            @db.VarChar(128)
+  link             String?            @db.VarChar(255)
+  type             String?            @db.VarChar(12)
+  pos              Int?               @default(1)
+  robots           Int?               @default(1)
+  views            Int?               @default(0)
+  lang             String?            @db.VarChar(32)
+  lang_node_id     Int?
+  is_ai_content    Int                @default(0)
+  created          Int?
+  modified         Int?
+  status           Int?               @default(1)
+  products         products[]
+  news             news[]
+  categories       categories[]
+  category_linkeds category_linkeds[]
+  combos           combos[]
+  comments         comments[]
+  filter_linkeds   filter_linkeds[]
+  images           images[]
+  orders           orders[]
+  rates            rates[]
+  tags             tags[]             @relation("tag_node")
+  tagged           tags[]             @relation("tag_tag")
+  wishlists        wishlists[]
+
+  @@index([slug], map: "slug")
+}
+
+model order_bills {
+  id              Int      @id @default(autoincrement())
+  customer_id     Int?
+  cart_sum        Int?
+  coupon_code     String?  @db.VarChar(128)
+  coupon_discount Int?     @default(0)
+  paid_cart       Int?     @default(0)
+  thanh_toan      Int?     @default(0)
+  nguoi_nhan      String?  @db.VarChar(255)
+  dienthoai_nhan  String?  @db.VarChar(255)
+  email_nhan      String?  @db.VarChar(255)
+  diachi_nhan     String?  @db.VarChar(255)
+  status          Int?     @default(0)
+  created         Int?
+  points          Int?     @default(0)
+  bonus_points    Int?     @default(0)
+  content         String?  @db.VarChar(255)
+  orders          orders[]
+}
+
+model orders {
+  id             Int          @id @default(autoincrement())
+  title          String?      @db.VarChar(255)
+  anhchi         String?      @db.VarChar(64)
+  image          String?      @db.VarChar(255)
+  customer_id    Int?
+  node_id        Int?
+  bill_id        Int?
+  quanity        Int?
+  extra          String?      @db.VarChar(255)
+  price          Int?
+  sum_price      Int?         @default(0)
+  content        String?      @db.Text
+  city_id        Int?
+  dv_price       String?      @db.VarChar(64)
+  created        DateTime?    @db.Date
+  status         Int          @default(0)
+  code           String?      @db.VarChar(255)
+  size           String?      @db.VarChar(255)
+  referer_source String?      @db.VarChar(255)
+  thoigian       String?      @db.VarChar(64)
+  fullname_nhan  String?      @db.VarChar(255)
+  phone_nhan     String?      @db.VarChar(255)
+  thanhtoan      Int?         @default(0)
+  address_nhan   String?      @db.VarChar(255)
+  codegg         Int?
+  comment        String?      @db.Text
+  node           nodes?       @relation(fields: [node_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  bill           order_bills? @relation(fields: [bill_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model partners {
+  id    Int     @id @default(autoincrement())
+  title String? @db.VarChar(255)
+  image String? @db.VarChar(255)
+  link  String? @default("#") @db.VarChar(255)
+  phone String? @db.VarChar(255)
+  pos   Int?    @default(1)
+}
+
+model pictures {
+  id              Int     @id @default(autoincrement())
+  node_id         Int?
+  image           String? @db.VarChar(255)
+  description     String? @db.Text
+  content         String? @db.Text
+  description_en  String? @db.Text
+  content_en      String? @db.Text
+  seo_title       String? @db.VarChar(255)
+  seo_keyword     String? @db.VarChar(120)
+  seo_description String? @db.Text
+  focus_keyword   String? @db.VarChar(64)
+  status          Int?    @default(1) @db.TinyInt
+  featured        Int?    @default(0)
+}
+
+model prices {
+  id             Int     @id @default(autoincrement())
+  title          String? @db.VarChar(64)
+  title_en       String? @db.VarChar(255)
+  slug           String? @db.VarChar(255)
+  image          String? @db.VarChar(255)
+  description    String? @db.Text
+  description_en String? @db.Text
+  content        String? @db.Text
+  content_en     String? @db.Text
+  website        String? @db.VarChar(255)
+  featured       Int?    @default(0)
+  pos            Int?    @default(1)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model products {
+  id                 Int     @id @default(autoincrement())
+  code               String? @db.VarChar(128)
+  node_id            Int?
+  image              String? @db.VarChar(255)
+  image2             String? @db.VarChar(255)
+  images             String? @db.LongText
+  content            String? @db.Text
+  content_en         String? @db.Text
+  content_2          String? @db.Text
+  content_2_en       String? @db.Text
+  description        String? @db.Text
+  description_en     String? @db.Text
+  status             Int?    @default(1)
+  newest             Int?    @default(0)
+  featured           Int?    @default(0)
+  best_sales         Int?    @default(0)
+  seo_title          String? @db.VarChar(255)
+  seo_title_en       String? @db.VarChar(255)
+  seo_description    String? @db.VarChar(255)
+  seo_description_en String? @db.Text
+  seo_keyword        String? @db.VarChar(255)
+  seo_keyword_en     String? @db.VarChar(255)
+  price              Int?    @default(0)
+  price_vip          Int     @default(0)
+  price_gold         Int     @default(0)
+  price_member       Int     @default(0)
+  price_renew        Int?    @default(0)
+  price_off          Int?    @default(0)
+  price_nhap         Int?
+  price_buon         Int?
+  price_ctv          Int?
+  quantity           Int?
+  storages           String? @db.Text
+  branch_id          Int?    @default(0)
+  supplier_id        Int?    @default(0)
+  buys               Int?    @default(0)
+  purchases          Int?    @default(0)
+  sell_off           String? @db.VarChar(128)
+  gender             String? @db.VarChar(128)
+  extra              String? @db.Text
+  baohanh            String? @db.Text
+  type               String? @db.VarChar(3)
+  hang_id            Int?
+  nhasx              String? @db.VarChar(255)
+  agency_id          Int?
+  khuyenmai          String? @db.Text
+  flashsale_id       Int?
+  sizes              String? @db.VarChar(255)
+  colors             String? @db.Text
+  slm_deleted        Int     @default(0)
+  star_1             Int?    @default(0)
+  star_2             Int?    @default(0)
+  star_3             Int?    @default(0)
+  star_4             Int?    @default(0)
+  star_5             Int?    @default(0)
+  star_avg           Int?    @default(0)
+  parent_id          Int?
+  footer_1           Int     @default(0)
+  footer_2           Int     @default(0)
+  footer_3           Int     @default(0)
+  footer_4           Int     @default(0)
+  top_search         Int     @default(0)
+  node               nodes?  @relation(fields: [node_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([node_id], map: "node_id")
+  @@index([node_id], map: "node_id_2")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model rates {
+  id             Int     @id @default(autoincrement())
+  title          String? @db.VarChar(255)
+  title_en       String  @db.VarChar(255)
+  slug           String? @db.VarChar(255)
+  node_id        Int?
+  image          String? @db.VarChar(255)
+  description    String? @db.Text
+  description_en String? @db.Text
+  content        String? @db.Text
+  content_en     String? @db.Text
+  admin_id       Int?    @default(1)
+  status         Int?    @default(1)
+  featured       Int?    @default(0)
+  fullname       String? @db.VarChar(255)
+  fullname_en    String  @db.VarChar(255)
+  age            String? @db.VarChar(128)
+  age_en         String  @db.VarChar(128)
+  address        String? @db.VarChar(255)
+  address_en     String  @db.VarChar(255)
+  phone          String? @db.VarChar(255)
+  created        Int?
+  pos            Int?    @default(0)
+  nghenghiep     String? @db.VarChar(128)
+  nghenghiep_en  String  @db.VarChar(255)
+  customer_id    Int?
+  parent_id      Int?
+  email          String? @db.VarChar(255)
+  show_in        String  @default("'\\\\'0\\\\''") @db.Text
+  stars          Int?    @default(1)
+  node           nodes?  @relation(fields: [node_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model redirects {
+  id             Int     @id @default(autoincrement())
+  node_id        Int?
+  from_link      String? @db.VarChar(266)
+  to_link        String? @db.VarChar(255)
+  slug           String? @db.VarChar(255)
+  image          String? @db.VarChar(255)
+  description    String? @db.Text
+  description_en String? @db.Text
+  content        String? @db.Text
+  content_en     String? @db.Text
+  website        String? @db.VarChar(255)
+  featured       Int?    @default(0)
+  pos            Int?    @default(1)
+  created        Int?
+  type           Int?    @default(301)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model settings {
+  id        Int     @id @default(autoincrement())
+  label     String? @db.VarChar(64)
+  guide     String? @db.Text
+  name      String? @unique(map: "name") @db.VarChar(32)
+  value     String? @db.Text
+  pos       Int?    @default(1)
+  type      String? @default("text") @db.VarChar(32)
+  status    Int?    @default(1) @db.TinyInt
+  maxlength Int?    @default(0)
+
+  @@index([name], map: "name_2")
+}
+
+model sizes {
+  id          Int     @id @default(autoincrement())
+  title       String? @db.VarChar(64)
+  slug        String? @db.VarChar(255)
+  size        String? @db.VarChar(64)
+  image       String? @db.VarChar(255)
+  description String? @db.Text
+  content     String? @db.Text
+  featured    Int?    @default(0)
+  status      Int     @default(1)
+  pos         Int?    @default(1)
+}
+
+model subcribers {
+  id      Int     @id @default(autoincrement())
+  email   String? @db.VarChar(64)
+  created Int?
+}
+
+model supports {
+  id          Int     @id @default(autoincrement())
+  title       String? @db.VarChar(64)
+  slug        String? @db.VarChar(255)
+  image       String? @db.VarChar(255)
+  zalo        String? @db.VarChar(64)
+  skype       String? @db.VarChar(64)
+  phone       String? @db.VarChar(64)
+  email       String? @db.VarChar(64)
+  role        String? @db.VarChar(128)
+  description String? @db.Text
+  content     String? @db.Text
+  featured    Int?
+  pos         Int?    @default(1)
+  status      Int?    @default(1)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model tags {
+  id              Int     @id @default(autoincrement())
+  node_id         Int?
+  node_tag_id     Int?
+  seo_title       String? @db.VarChar(255)
+  seo_description String? @db.Text
+  seo_keyword     String? @db.VarChar(255)
+  node            nodes?  @relation("tag_node", fields: [node_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tag             nodes?  @relation("tag_tag", fields: [node_tag_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model teams {
+  id             Int     @id @default(autoincrement())
+  fullname       String? @db.VarChar(128)
+  fullname_en    String? @db.VarChar(128)
+  team_position  String? @default("1") @db.VarChar(255)
+  image          String? @db.VarChar(255)
+  description    String? @db.Text
+  description_en String? @db.Text
+  content        String? @db.Text
+  content_en     String? @db.Text
+  featured       Int?
+  pos            Int?    @default(1)
+  status         Int?    @default(1)
+  facebook       String? @db.VarChar(255)
+  twitter        String? @db.VarChar(255)
+  linkedin       String? @db.VarChar(255)
+}
+
+model users {
+  id       Int     @id @default(autoincrement())
+  username String? @db.VarChar(32)
+  password String? @db.VarChar(32)
+  fullname String? @db.VarChar(34)
+  email    String? @db.VarChar(64)
+}
+
+model videos {
+  id              Int     @id @default(autoincrement())
+  title           String? @db.VarChar(255)
+  node_id         Int?
+  image           String? @db.VarChar(255)
+  video           String? @db.Text
+  description     String? @db.Text
+  content         String? @db.Text
+  description_en  String? @db.Text
+  content_en      String? @db.Text
+  admin_id        Int?    @default(1)
+  seo_title       String? @db.VarChar(255)
+  seo_keyword     String? @db.VarChar(120)
+  seo_description String? @db.Text
+  focus_keyword   String? @db.VarChar(64)
+  status          Int?    @default(1) @db.TinyInt
+  featured        Int?    @default(0)
+  pos             Int?    @default(0)
+}
+
+model visitors {
+  id  Int  @id @default(autoincrement())
+  y   Int?
+  m   Int?
+  d1  Int?
+  d2  Int?
+  d3  Int?
+  d4  Int?
+  d5  Int?
+  d6  Int?
+  d7  Int?
+  d8  Int?
+  d9  Int?
+  d10 Int?
+  d11 Int?
+  d12 Int?
+  d13 Int?
+  d14 Int?
+  d15 Int?
+  d16 Int?
+  d17 Int?
+  d18 Int?
+  d19 Int?
+  d20 Int?
+  d21 Int?
+  d22 Int?
+  d23 Int?
+  d24 Int?
+  d25 Int?
+  d26 Int?
+  d27 Int?
+  d28 Int?
+  d29 Int?
+  d30 Int?
+  d31 Int?
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model votes {
+  news_id Int?
+  ip      String? @db.VarChar(32)
+
+  @@index([ip], map: "ip")
+  @@index([news_id], map: "news_id")
+  @@ignore
+}
+
+model wishlists {
+  id              Int     @id @default(autoincrement())
+  customer_id     Int?
+  product_node_id Int?
+  image           String? @db.VarChar(255)
+  title           String? @db.VarChar(64)
+  description     String? @db.Text
+  price           Int?
+  content         String? @db.Text
+  created         Int?    @default(0)
+  modified        Int?    @default(0)
+  status          Int?    @default(1)
+  pos             Int?    @default(1)
+  node            nodes?  @relation(fields: [product_node_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}

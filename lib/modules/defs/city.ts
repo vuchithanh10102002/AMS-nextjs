@@ -1,5 +1,4 @@
-import { distinctOptions } from "@/lib/crud";
-import { exec, query } from "@/lib/db";
+import { db } from "@/lib/db";
 import { slugify } from "@/lib/slug";
 import type { ModuleDef } from "../types";
 
@@ -10,11 +9,11 @@ export const city: ModuleDef = {
   positions: true,
   statusToggle: true,
   options: {
-    miens: () => distinctOptions("SELECT id value, title label FROM miens ORDER BY id"),
+    miens: async () => (await db.miens.findMany({ select: { id: true, title: true }, orderBy: { id: "asc" } })).map((m) => ({ value: String(m.id), label: String(m.title ?? "").trim() })),
   },
   list: {
     pageSize: 100,
-    order: "m.pos DESC, m.id DESC",
+    order: [{ pos: "desc" }, { id: "desc" }],
     filters: [
       { kind: "search", name: "s", label: "Tìm theo tên", columns: ["title"] },
       { kind: "select", name: "mien_id", label: "Miền", column: "mien_id", optionsKey: "miens" },
@@ -45,11 +44,11 @@ export const city: ModuleDef = {
       }
     },
     decorate: async (rows) => {
-      const miens = new Map((await query<{ id: number; title: string }>("SELECT id, title FROM miens")).map((m) => [m.id, m.title]));
+      const miens = new Map((await db.miens.findMany({ select: { id: true, title: true } })).map((m) => [m.id, m.title]));
       for (const r of rows) r._mien = miens.get(Number(r.mien_id)) ?? "";
     },
     afterDelete: async (ids) => {
-      await exec("UPDATE districts SET city_id = NULL WHERE city_id IN (?)", [ids]);
+      await db.districts.updateMany({ where: { city_id: { in: ids } }, data: { city_id: null } });
     },
   },
 };

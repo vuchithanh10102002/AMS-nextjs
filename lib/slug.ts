@@ -1,10 +1,10 @@
-import { first } from "./db";
+import { db } from "./db";
 import { slugify } from "./slug-client";
 
 export { slugify };
 
 export async function slugTaken(slug: string, excludeNodeId?: number | null) {
-  const row = await first("SELECT id FROM nodes WHERE slug = ? AND id <> ? LIMIT 1", [slug, excludeNodeId ?? 0]);
+  const row = await db.nodes.findFirst({ where: { slug, id: { not: excludeNodeId ?? 0 } }, select: { id: true } });
   return !!row;
 }
 

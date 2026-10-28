@@ -1,5 +1,4 @@
-import { distinctOptions } from "@/lib/crud";
-import { query } from "@/lib/db";
+import { db } from "@/lib/db";
 import { slugify } from "@/lib/slug";
 import type { ModuleDef } from "../types";
 
@@ -9,11 +8,11 @@ export const district: ModuleDef = {
   table: "districts",
   positions: true,
   options: {
-    cities: () => distinctOptions("SELECT id value, title label FROM cities ORDER BY pos DESC, title"),
+    cities: async () => (await db.cities.findMany({ select: { id: true, title: true }, orderBy: [{ pos: "desc" }, { title: "asc" }] })).map((c) => ({ value: String(c.id), label: String(c.title ?? "").trim() })),
   },
   list: {
     pageSize: 10,
-    order: "m.pos DESC, m.id DESC",
+    order: [{ pos: "desc" }, { id: "desc" }],
     filters: [
       { kind: "search", name: "s", label: "Tìm theo tên, điện thoại", columns: ["title", "phone"] },
       { kind: "select", name: "city_id", label: "Tỉnh/Thành phố", column: "city_id", optionsKey: "cities" },
@@ -43,7 +42,7 @@ export const district: ModuleDef = {
     },
     decorate: async (rows) => {
       const ids = [...new Set(rows.map((r) => Number(r.city_id)).filter(Boolean))];
-      const cities = ids.length ? await query<{ id: number; title: string }>("SELECT id, title FROM cities WHERE id IN (?)", [ids]) : [];
+      const cities = ids.length ? await db.cities.findMany({ where: { id: { in: ids } }, select: { id: true, title: true } }) : [];
       const byId = new Map(cities.map((c) => [c.id, c.title]));
       for (const r of rows) r._city = byId.get(Number(r.city_id)) ?? "";
     },

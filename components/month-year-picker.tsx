@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Calendar, Check, ChevronDown } from "lucide-react";
+import { Calendar, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MonthSelection } from "@/lib/helper";
 

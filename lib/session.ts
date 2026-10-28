@@ -2,7 +2,7 @@ import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { first } from "./db";
+import { db } from "./db";
 
 export const SESSION_COOKIE = "nh_admin";
 const MAX_AGE = 60 * 60 * 24 * 7;
@@ -67,10 +67,10 @@ export async function clearSession() {
 export async function currentAdmin(): Promise<Admin | null> {
   const s = decodeSession((await cookies()).get(SESSION_COOKIE)?.value);
   if (!s) return null;
-  return first<Admin>(
-    "SELECT id, parent_id, username, fullname, email, phone, image, role, status FROM admins WHERE id = ?",
-    [s.id],
-  );
+  return db.admins.findUnique({
+    where: { id: s.id },
+    select: { id: true, parent_id: true, username: true, fullname: true, email: true, phone: true, image: true, role: true, status: true },
+  }) as Promise<Admin | null>;
 }
 
 export async function requireAdmin(): Promise<Admin> {

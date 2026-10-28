@@ -48,3 +48,5 @@ next-env.d.ts
 # local
 CLAUDE.md
 AGENTS.md
+
+/prisma/generated

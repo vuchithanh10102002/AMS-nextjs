@@ -8,7 +8,7 @@ export const rate: ModuleDef = {
   statusToggle: true,
   list: {
     pageSize: 20,
-    order: "m.pos DESC, m.id DESC",
+    order: [{ pos: "desc" }, { id: "desc" }],
     filters: [{ kind: "search", name: "s", label: "Nhập từ khóa cần tìm kiếm...", columns: ["title", "fullname"] }],
     columns: [
       { name: "title", label: "Vị trí", link: true },

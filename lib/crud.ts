@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { columns as tableColumns, exec, first, pool, query, type Row } from "./db";
+import { columns, db, table, type Row } from "./db";
 import { descendantIds, linkedCategoryIds, setLinkedCategories, categoryNamesByNode } from "./categories";
 import { slugTaken, uniqueSlug, slugify } from "./slug";
 import type { Admin } from "./session";
@@ -16,82 +16,60 @@ function fieldTarget(def: ModuleDef, f: Field) {
 }
 
 function flatten(def: ModuleDef, raw: Row): Row {
-  if (!def.node) return raw;
-  const m = raw.m ?? {};
-  const n = raw.n ?? {};
+  const { node: n = {}, ...m } = raw;
   const extra = Object.fromEntries((def.form?.fields ?? []).filter((f) => f.target === "node" && f.name in n).map((f) => [f.name, n[f.name]]));
   return { ...m, ...extra, _mid: m.id, node: n, id: n.id, title: n.title, slug: n.slug, pos: n.pos, status: n.status, created: n.created, modified: n.modified, robots: n.robots, link: n.link };
 }
 
-function fromClause(def: ModuleDef) {
-  if (!def.node) return `\`${def.table}\` m`;
-  return `nodes n INNER JOIN \`${def.table}\` m ON m.node_id = n.id`;
+function onNode(def: ModuleDef, name: string) {
+  return !!def.node && NODE_COLS.includes(name);
 }
 
-function col(def: ModuleDef, name: string) {
-  if (name.includes(".")) return name;
-  if (def.node && NODE_COLS.includes(name)) return `n.\`${name}\``;
-  return `m.\`${name}\``;
+function cond(def: ModuleDef, name: string, filter: unknown): Row {
+  return onNode(def, name) ? { node: { is: { [name]: filter } } } : { [name]: filter };
+}
+
+function baseWhere(def: ModuleDef, admin?: Admin): Row[] {
+  const and: Row[] = [];
+  if (def.node) and.push({ node: { is: { type: def.node } } });
+  const scope = admin ? def.scope?.(admin) : null;
+  if (scope) and.push(scope);
+  return and;
 }
 
 export async function listRecords(def: ModuleDef, params: ListParams, admin: Admin) {
-  const where: string[] = [];
-  const args: unknown[] = [];
-  if (def.node) {
-    where.push("n.type = ?");
-    args.push(def.node);
-  }
-  if (def.list.where) {
-    where.push(def.list.where);
-    args.push(...(def.list.params ?? []));
-  }
-  const scope = def.scope?.(admin);
-  if (scope) {
-    where.push(scope.where);
-    args.push(...scope.params);
-  }
+  const and = baseWhere(def, admin);
+  if (def.list.where) and.push(def.list.where);
   for (const f of def.list.filters ?? []) {
     const v = params[f.name]?.trim();
     if (f.kind === "daterange") {
       const from = params[`${f.name}_from`];
       const to = params[`${f.name}_to`];
-      if (from) {
-        where.push(`${col(def, f.column)} >= ?`);
-        args.push(f.unix ? Math.floor(new Date(from + "T00:00:00").getTime() / 1000) : from);
-      }
-      if (to) {
-        where.push(`${col(def, f.column)} <= ?`);
-        args.push(f.unix ? Math.floor(new Date(to + "T23:59:59").getTime() / 1000) : to + " 23:59:59");
-      }
+      if (from) and.push(cond(def, f.column, { gte: f.unix ? Math.floor(new Date(from + "T00:00:00").getTime() / 1000) : from }));
+      if (to) and.push(cond(def, f.column, { lte: f.unix ? Math.floor(new Date(to + "T23:59:59").getTime() / 1000) : to + " 23:59:59" }));
       continue;
     }
     if (!v) continue;
-    if (f.kind === "search") {
-      where.push("(" + f.columns.map((c) => `${col(def, c)} LIKE ?`).join(" OR ") + ")");
-      f.columns.forEach(() => args.push(`%${v}%`));
-    } else if (f.kind === "select") {
-      where.push(`${col(def, f.column)} = ?`);
-      args.push(v);
-    } else if (f.kind === "category") {
-      const ids = await descendantIds(Number(v));
-      where.push(`${def.node ? "n.id" : "m.node_id"} IN (SELECT node_id FROM category_linkeds WHERE category_id IN (?))`);
-      args.push(ids);
+    if (f.kind === "search") and.push({ OR: f.columns.map((c) => cond(def, c, { contains: v })) });
+    else if (f.kind === "select") and.push(cond(def, f.column, v));
+    else if (f.kind === "category") {
+      const links = await db.category_linkeds.findMany({ where: { category_id: { in: await descendantIds(Number(v)) } }, select: { node_id: true } });
+      and.push({ node_id: { in: links.map((l) => l.node_id).filter((id): id is number => id != null) } });
     }
   }
-  const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
+  const where = and.length ? { AND: and } : {};
   const pageSize = def.list.pageSize ?? 20;
   const page = Math.max(1, Number(params.page) || 1);
-  const sort = params.sort && /^[a-z0-9_]+$/.test(params.sort) ? params.sort : null;
-  const dir = params.dir === "asc" ? "ASC" : "DESC";
-  const order = sort ? `${col(def, sort)} ${dir}` : def.list.order ?? (def.node ? "n.pos DESC, n.id DESC" : "m.id DESC");
+  const dir = params.dir === "asc" ? "asc" : "desc";
+  const sort = params.sort && (onNode(def, params.sort) || columns(def.table).has(params.sort)) ? params.sort : null;
+  const orderBy = sort
+    ? [onNode(def, sort) ? { node: { [sort]: dir } } : { [sort]: dir }]
+    : def.list.order ?? (def.node ? [{ node: { pos: "desc" } }, { node: { id: "desc" } }] : [{ id: "desc" }]);
 
-  const total = (await first<{ n: number }>(`SELECT COUNT(*) n FROM ${fromClause(def)} ${whereSql}`, args))?.n ?? 0;
-  const [raw] = await pool.query({
-    sql: `SELECT ${def.node ? "n.*, m.*" : "m.*"} FROM ${fromClause(def)} ${whereSql} ORDER BY ${order} LIMIT ? OFFSET ?`,
-    values: [...args, pageSize, (page - 1) * pageSize],
-    nestTables: def.node ? true : undefined,
-  } as any);
-  const rows = (raw as Row[]).map((r) => (def.node ? flatten(def, r) : r));
+  const model = table(def.table);
+  const total: number = await model.count({ where });
+  const raw: Row[] = await model.findMany({ where, orderBy, take: pageSize, skip: (page - 1) * pageSize, include: def.node ? { node: true } : undefined });
+  const rows = raw.map((r) => (def.node ? flatten(def, r) : r));
 
   if (def.list.columns.some((c) => c.kind === "categories")) {
     const names = await categoryNamesByNode(rows.map((r) => Number(def.node ? r.id : r.node_id)).filter(Boolean));
@@ -103,12 +81,9 @@ export async function listRecords(def: ModuleDef, params: ListParams, admin: Adm
 
 export async function getRecord(def: ModuleDef, id: number, admin?: Admin): Promise<Row | null> {
   const scope = admin ? def.scope?.(admin) : null;
-  const [raw] = await pool.query({
-    sql: `SELECT ${def.node ? "n.*, m.*" : "m.*"} FROM ${fromClause(def)} WHERE ${def.node ? "n.id" : "m.id"} = ?${scope ? ` AND ${scope.where}` : ""} LIMIT 1`,
-    values: [id, ...(scope?.params ?? [])],
-    nestTables: def.node ? true : undefined,
-  } as any);
-  const hit = (raw as Row[])[0];
+  const and: Row[] = [def.node ? { node_id: id, node: { isNot: null } } : { id }];
+  if (scope) and.push(scope);
+  const hit: Row | null = await table(def.table).findFirst({ where: { AND: and }, orderBy: { id: "asc" }, include: def.node ? { node: true } : undefined });
   if (!hit) return null;
   let row = def.node ? flatten(def, hit) : hit;
   for (const f of def.form?.fields ?? []) if (f.type === "categories") row[f.name] = await linkedCategoryIds(row.id);
@@ -197,12 +172,9 @@ export async function saveRecord(def: ModuleDef, id: number | null, form: FormDa
       node.modified = now;
       node.pos ??= 1;
       node.status ??= 1;
-      const nodeCols = await tableColumns("nodes");
-      const res = await exec("INSERT INTO nodes SET ?", [Object.fromEntries(Object.entries(node).filter(([k]) => nodeCols.has(k)))]);
-      const nodeId = res.insertId;
+      const { id: nodeId } = await db.nodes.create({ data: omit(node, "id") as any });
       main.node_id = nodeId;
-      const mainCols = await tableColumns(def.table);
-      await exec(`INSERT INTO \`${def.table}\` SET ?`, [Object.fromEntries(Object.entries(main).filter(([k]) => mainCols.has(k) && k !== "id"))]);
+      await table(def.table).create({ data: omit(main, "id") });
       id = nodeId;
     } else {
       if ("slug" in node) {
@@ -210,27 +182,24 @@ export async function saveRecord(def: ModuleDef, id: number | null, form: FormDa
         if (await slugTaken(String(node.slug), id)) throw new Error("Slug đã tồn tại, vui lòng chọn slug khác");
       }
       node.modified = now;
-      const nodeCols = await tableColumns("nodes");
-      const nodeRow = Object.fromEntries(Object.entries(node).filter(([k]) => nodeCols.has(k) && k !== "id"));
-      if (Object.keys(nodeRow).length) await exec("UPDATE nodes SET ? WHERE id = ?", [nodeRow, id]);
-      const mainCols = await tableColumns(def.table);
-      const mainRow = Object.fromEntries(Object.entries(main).filter(([k]) => mainCols.has(k) && k !== "id" && k !== "node_id"));
-      if (before!._mid) {
-        if (Object.keys(mainRow).length) await exec(`UPDATE \`${def.table}\` SET ? WHERE id = ?`, [mainRow, before!._mid]);
-      } else await exec(`INSERT INTO \`${def.table}\` SET ?`, [{ ...mainRow, node_id: id }]);
+      await db.nodes.updateMany({ where: { id }, data: omit(node, "id") });
+      const mainRow = omit(main, "id", "node_id");
+      if (before!._mid) await table(def.table).updateMany({ where: { id: before!._mid }, data: mainRow });
+      else await table(def.table).create({ data: { ...mainRow, node_id: id } });
     }
     for (const ids of Object.values(categories)) await setLinkedCategories(id, ids);
   } else {
-    const mainCols = await tableColumns(def.table);
-    const row = Object.fromEntries(Object.entries(main).filter(([k]) => mainCols.has(k) && k !== "id"));
-    if (!id) {
-      const res = await exec(`INSERT INTO \`${def.table}\` SET ?`, [row]);
-      id = res.insertId;
-    } else if (Object.keys(row).length) await exec(`UPDATE \`${def.table}\` SET ? WHERE id = ?`, [row, id]);
+    const row = omit(main, "id");
+    if (!id) id = (await table(def.table).create({ data: row })).id as number;
+    else await table(def.table).updateMany({ where: { id }, data: row });
   }
 
   await def.hooks?.afterSave?.(id!, { node, main }, { ...ctx, id });
   return id!;
+}
+
+function omit(row: Row, ...keys: string[]) {
+  return Object.fromEntries(Object.entries(row).filter(([k]) => !keys.includes(k)));
 }
 
 export async function deleteRecords(def: ModuleDef, ids: number[], admin: Admin) {
@@ -242,10 +211,10 @@ export async function deleteRecords(def: ModuleDef, ids: number[], admin: Admin)
   const found = rows.map((r) => Number(r.id));
   if (!found.length) return;
   if (def.node) {
-    await exec(`DELETE FROM \`${def.table}\` WHERE node_id IN (?)`, [found]);
-    await exec("DELETE FROM category_linkeds WHERE node_id IN (?)", [found]);
-    await exec("DELETE FROM nodes WHERE id IN (?)", [found]);
-  } else await exec(`DELETE FROM \`${def.table}\` WHERE id IN (?)`, [found]);
+    await table(def.table).deleteMany({ where: { node_id: { in: found } } });
+    await db.category_linkeds.deleteMany({ where: { node_id: { in: found } } });
+    await db.nodes.deleteMany({ where: { id: { in: found } } });
+  } else await table(def.table).deleteMany({ where: { id: { in: found } } });
   await def.hooks?.afterDelete?.(found, rows);
 }
 
@@ -255,9 +224,8 @@ export async function toggleField(def: ModuleDef, id: number, field: string, adm
   const row = await getRecord(def, id, admin);
   if (!row) throw new Error("Không tìm thấy dữ liệu");
   const value = Number(row[field]) ? 0 : 1;
-  if (def.node && field === "status") await exec("UPDATE nodes SET status = ?, modified = ? WHERE id = ?", [value, Math.floor(Date.now() / 1000), id]);
-  else if (def.node) await exec(`UPDATE \`${def.table}\` SET \`${field}\` = ? WHERE id = ?`, [value, row._mid]);
-  else await exec(`UPDATE \`${def.table}\` SET \`${field}\` = ? WHERE id = ?`, [value, id]);
+  if (def.node && field === "status") await db.nodes.updateMany({ where: { id }, data: { status: value, modified: Math.floor(Date.now() / 1000) } });
+  else await table(def.table).updateMany({ where: { id: def.node ? row._mid : id }, data: { [field]: value } });
   return value;
 }
 
@@ -265,9 +233,9 @@ export async function savePositions(def: ModuleDef, positions: Record<string, nu
   for (const [id, pos] of Object.entries(positions)) {
     const row = await getRecord(def, Number(id), admin);
     if (!row) continue;
-    const value = Number.isFinite(pos) ? pos : 1;
-    if (def.node) await exec("UPDATE nodes SET pos = ? WHERE id = ?", [value, id]);
-    else await exec(`UPDATE \`${def.table}\` SET pos = ? WHERE id = ?`, [value, id]);
+    const data = { pos: Number.isFinite(pos) ? pos : 1 };
+    if (def.node) await db.nodes.updateMany({ where: { id: Number(id) }, data });
+    else await table(def.table).updateMany({ where: { id: Number(id) }, data });
   }
 }
 
@@ -275,32 +243,21 @@ export async function copyRecord(def: ModuleDef, id: number, admin: Admin) {
   const row = await getRecord(def, id, admin);
   if (!row) throw new Error("Không tìm thấy dữ liệu");
   if (def.node) {
-    const n = { ...row.node };
-    delete n.id;
+    const n = omit(row.node, "id");
     n.title = `${n.title ?? ""} (copy)`;
     n.slug = await uniqueSlug(String(n.title));
     n.status = 0;
     n.created = n.modified = Math.floor(Date.now() / 1000);
-    const res = await exec("INSERT INTO nodes SET ?", [n]);
-    const m = await first(`SELECT * FROM \`${def.table}\` WHERE id = ?`, [row._mid]);
-    if (m) {
-      delete m.id;
-      m.node_id = res.insertId;
-      await exec(`INSERT INTO \`${def.table}\` SET ?`, [m]);
-    }
-    await setLinkedCategories(res.insertId, await linkedCategoryIds(id));
-    return res.insertId;
+    const { id: nodeId } = await db.nodes.create({ data: n as any });
+    const m: Row | null = await table(def.table).findUnique({ where: { id: row._mid } });
+    if (m) await table(def.table).create({ data: { ...omit(m, "id"), node_id: nodeId } });
+    await setLinkedCategories(nodeId, await linkedCategoryIds(id));
+    return nodeId;
   }
-  const m = await first(`SELECT * FROM \`${def.table}\` WHERE id = ?`, [id]);
-  if (!m) throw new Error("Không tìm thấy dữ liệu");
-  delete m.id;
+  const found: Row | null = await table(def.table).findUnique({ where: { id } });
+  if (!found) throw new Error("Không tìm thấy dữ liệu");
+  const m = omit(found, "id");
   if ("title" in m) m.title = `${m.title ?? ""} (copy)`;
   if ("slug" in m) m.slug = slugify(String(m.title ?? ""));
-  const res = await exec(`INSERT INTO \`${def.table}\` SET ?`, [m]);
-  return res.insertId;
-}
-
-export async function distinctOptions(sql: string, params: unknown[] = []) {
-  const rows = await query<{ value: string | number; label: string }>(sql, params);
-  return rows.map((r) => ({ value: String(r.value), label: String(r.label ?? "").trim() }));
+  return (await table(def.table).create({ data: m })).id as number;
 }

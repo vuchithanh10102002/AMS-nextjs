@@ -1,34 +1,31 @@
-import { exec, first, query, type Row } from "@/lib/db";
+import { db, type Row } from "@/lib/db";
 import { slugify, slugTaken } from "@/lib/slug";
 import type { ModuleDef } from "../types";
 
 export async function ensureTagRows() {
-  await exec(
-    `INSERT INTO tags (node_id, node_tag_id)
-     SELECT n.id, n.id FROM nodes n
-     WHERE n.type = 'tag' AND NOT EXISTS (SELECT 1 FROM tags t WHERE t.node_id = n.id AND t.node_tag_id = n.id)`,
-  );
+  const missing = await db.nodes.findMany({ where: { type: "tag", tags: { none: { node_tag_id: { equals: db.tags.fields.node_id } } } }, select: { id: true } });
+  if (missing.length) await db.tags.createMany({ data: missing.map((n) => ({ node_id: n.id, node_tag_id: n.id })) });
 }
 
 async function findOrCreateTag(title: string) {
   const slug = slugify(title);
   if (!slug) return null;
-  const hit = await first<{ id: number }>("SELECT id FROM nodes WHERE slug = ? AND type = 'tag' LIMIT 1", [slug]);
+  const hit = await db.nodes.findFirst({ where: { slug, type: "tag" }, select: { id: true } });
   if (hit) return hit.id;
   const now = Math.floor(Date.now() / 1000);
   const finalSlug = (await slugTaken(slug)) ? `${slug}-tag` : slug;
-  const res = await exec("INSERT INTO nodes SET ?", [{ title: title.slice(0, 128), slug: finalSlug, type: "tag", pos: 1, status: 1, created: now, modified: now }]);
-  await exec("INSERT INTO tags (node_id, node_tag_id) VALUES (?, ?)", [res.insertId, res.insertId]);
-  return res.insertId;
+  const { id } = await db.nodes.create({ data: { title: title.slice(0, 128), slug: finalSlug, type: "tag", pos: 1, status: 1, created: now, modified: now } });
+  await db.tags.create({ data: { node_id: id, node_tag_id: id } });
+  return id;
 }
 
 export async function loadNewsTags(row: Row) {
-  const tags = await query<{ title: string }>(
-    `SELECT n.title FROM tags t INNER JOIN nodes n ON n.id = t.node_tag_id AND n.type = 'tag'
-     WHERE t.node_id = ? AND t.node_id <> t.node_tag_id ORDER BY t.id`,
-    [row.id],
-  );
-  return { ...row, tags: tags.map((t) => String(t.title ?? "").trim()) };
+  const tags = await db.tags.findMany({
+    where: { node_id: row.id, NOT: { node_tag_id: { equals: db.tags.fields.node_id } }, tag: { is: { type: "tag" } } },
+    select: { tag: { select: { title: true } } },
+    orderBy: { id: "asc" },
+  });
+  return { ...row, tags: tags.map((t) => String(t.tag?.title ?? "").trim()) };
 }
 
 export async function saveNewsTags(newsNodeId: number, form: FormData) {
@@ -39,15 +36,12 @@ export async function saveNewsTags(newsNodeId: number, form: FormData) {
     const id = await findOrCreateTag(t);
     if (id && !ids.includes(id)) ids.push(id);
   }
-  await exec("DELETE FROM tags WHERE node_id = ? AND node_id <> node_tag_id", [newsNodeId]);
-  if (ids.length) await exec("INSERT INTO tags (node_id, node_tag_id) VALUES ?", [ids.map((id) => [newsNodeId, id])]);
+  await db.tags.deleteMany({ where: { node_id: newsNodeId, NOT: { node_tag_id: { equals: db.tags.fields.node_id } } } });
+  if (ids.length) await db.tags.createMany({ data: ids.map((id) => ({ node_id: newsNodeId, node_tag_id: id })) });
 }
 
 export async function searchTags(q: string) {
-  return query<{ title: string }>(
-    "SELECT title FROM nodes WHERE type = 'tag' AND title LIKE ? ORDER BY pos DESC, id DESC LIMIT 20",
-    [`%${q.trim()}%`],
-  );
+  return db.nodes.findMany({ where: { type: "tag", title: { contains: q.trim() } }, select: { title: true }, orderBy: [{ pos: "desc" }, { id: "desc" }], take: 20 });
 }
 
 export const tag: ModuleDef = {
@@ -59,8 +53,8 @@ export const tag: ModuleDef = {
   statusToggle: true,
   list: {
     pageSize: 20,
-    order: "n.pos DESC, n.id DESC",
-    where: "m.node_tag_id = n.id",
+    order: [{ node: { pos: "desc" } }, { node: { id: "desc" } }],
+    where: { node_tag_id: { equals: db.tags.fields.node_id } },
     filters: [{ kind: "search", name: "s", label: "Tìm theo tên tag", columns: ["title", "slug"] }],
     columns: [
       { name: "title", label: "Tên", link: true },
@@ -93,19 +87,17 @@ export const tag: ModuleDef = {
       }
     },
     afterSave: async (id) => {
-      await exec("UPDATE tags SET node_tag_id = node_id WHERE node_id = ? AND node_tag_id IS NULL", [id]);
+      await db.tags.updateMany({ where: { node_id: id, node_tag_id: null }, data: { node_tag_id: id } });
     },
     afterDelete: async (ids) => {
-      await exec("DELETE FROM tags WHERE node_tag_id IN (?)", [ids]);
+      await db.tags.deleteMany({ where: { node_tag_id: { in: ids } } });
     },
     decorate: async (rows) => {
       const ids = rows.map((r) => Number(r.id));
       if (!ids.length) return;
-      const counts = await query<{ id: number; n: number }>(
-        "SELECT node_tag_id id, COUNT(DISTINCT node_id) n FROM tags WHERE node_tag_id IN (?) AND node_id <> node_tag_id GROUP BY node_tag_id",
-        [ids],
-      );
-      const map = new Map(counts.map((c) => [c.id, c.n]));
+      const links = await db.tags.findMany({ where: { node_tag_id: { in: ids }, NOT: { node_tag_id: { equals: db.tags.fields.node_id } } }, select: { node_tag_id: true, node_id: true }, distinct: ["node_tag_id", "node_id"] });
+      const map = new Map<number, number>();
+      for (const l of links) if (l.node_id != null) map.set(Number(l.node_tag_id), (map.get(Number(l.node_tag_id)) ?? 0) + 1);
       for (const r of rows) r._posts = map.get(Number(r.id)) ?? 0;
     },
   },

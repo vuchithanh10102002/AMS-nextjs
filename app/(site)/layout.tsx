@@ -3,6 +3,8 @@ import { site } from "@/site/lib/ctx";
 import { siteUrl } from "@/lib/site";
 import { currentAdmin } from "@/lib/session";
 
+export const instant = false;
+
 const V = "1.0.6";
 const CSS = [
   "css/bootstrap.min.css",

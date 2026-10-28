@@ -1,4 +1,4 @@
-import { exec } from "@/lib/db";
+import { db } from "@/lib/db";
 import type { ModuleDef } from "../types";
 
 export const mien: ModuleDef = {
@@ -7,7 +7,7 @@ export const mien: ModuleDef = {
   table: "miens",
   list: {
     pageSize: 15,
-    order: "m.id ASC",
+    order: [{ id: "asc" }],
     filters: [{ kind: "search", name: "s", label: "Tìm theo tên", columns: ["title", "title_en"] }],
     columns: [
       { name: "title", label: "Tên", link: true },
@@ -22,7 +22,7 @@ export const mien: ModuleDef = {
   },
   hooks: {
     afterDelete: async (ids) => {
-      await exec("UPDATE cities SET mien_id = NULL WHERE mien_id IN (?)", [ids]);
+      await db.cities.updateMany({ where: { mien_id: { in: ids } }, data: { mien_id: null } });
     },
   },
 };

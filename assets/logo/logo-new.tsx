@@ -1,5 +1,5 @@
 // components/logo.tsx
-interface LogoProps extends React.SVGProps<SVGSVGElement> {}
+type LogoProps = React.SVGProps<SVGSVGElement>;
 
 export function Logo({ className, ...props }: LogoProps) {
   return (

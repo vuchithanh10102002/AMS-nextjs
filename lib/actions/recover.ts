@@ -2,7 +2,7 @@
 
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { headers } from "next/headers";
-import { exec, first } from "@/lib/db";
+import { db } from "@/lib/db";
 import { sendMail } from "@/lib/mail";
 
 export type RecoverState = { error?: string; done?: string };
@@ -27,8 +27,8 @@ async function readToken(token: string) {
   try {
     const data = JSON.parse(Buffer.from(payload, "base64url").toString());
     if (typeof data.id !== "number" || data.exp < Date.now()) return null;
-    const admin = await first<{ id: number; password: string }>("SELECT id, password FROM admins WHERE id = ? AND status = 1", [data.id]);
-    if (!admin || admin.password.slice(0, 12) !== data.p) return null;
+    const admin = await db.admins.findFirst({ where: { id: data.id, status: 1 }, select: { id: true, password: true } });
+    if (!admin || (admin.password ?? "").slice(0, 12) !== data.p) return null;
     return admin;
   } catch {
     return null;
@@ -43,14 +43,11 @@ export async function requestReset(_: RecoverState, formData: FormData): Promise
   const email = String(formData.get("email") ?? "").trim();
   if (!email) return { error: "Bạn cần nhập email" };
   const done = { done: "Nếu email có trong hệ thống, đường dẫn đặt lại mật khẩu đã được gửi tới hộp thư (hiệu lực 1 giờ)." };
-  const admin = await first<{ id: number; password: string; username: string }>(
-    "SELECT id, password, username FROM admins WHERE email = ? AND status = 1 ORDER BY id LIMIT 1",
-    [email],
-  );
+  const admin = await db.admins.findFirst({ where: { email, status: 1 }, orderBy: { id: "asc" }, select: { id: true, password: true, username: true } });
   if (!admin) return done;
   const h = await headers();
   const origin = `${h.get("x-forwarded-proto") ?? "http"}://${h.get("host")}`;
-  const link = `${origin}/recover/${makeToken(admin.id, admin.password)}`;
+  const link = `${origin}/recover/${makeToken(admin.id, admin.password ?? "")}`;
   try {
     await sendMail(
       email,
@@ -71,6 +68,6 @@ export async function resetPassword(_: RecoverState, formData: FormData): Promis
   if (password !== confirm) return { error: "Mật khẩu nhập lại không khớp" };
   const admin = await readToken(token);
   if (!admin) return { error: "Đường dẫn không hợp lệ hoặc đã hết hạn" };
-  await exec("UPDATE admins SET password = ? WHERE id = ?", [createHash("md5").update(password).digest("hex"), admin.id]);
+  await db.admins.updateMany({ where: { id: admin.id }, data: { password: createHash("md5").update(password).digest("hex") } });
   return { done: "Đã đặt mật khẩu mới. Bạn có thể đăng nhập." };
 }

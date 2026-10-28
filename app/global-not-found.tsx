@@ -2,6 +2,7 @@ import './globals.css'
 import { Inter } from 'next/font/google'
 import type { Metadata } from 'next'
 import { ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
  
 const inter = Inter({ subsets: ['latin'] })
  
@@ -18,13 +19,13 @@ export default function GlobalNotFound() {
             <h1 className='text-[100px]'>404</h1>
             <h2 className='text-[40px] text-muted-foreground'>Oops, This Page Not Found!</h2>
             <p>The link might be corrupted or this page does not exist.</p>
-            <a 
+            <Link 
             href="/" 
             className='flex gap-2 items-center justify-center text-white bg-primary px-4 py-2 rounded-lg hover:bg-primary/90 mt-4'
             >
                 <ArrowLeft size={18}/>
                 <p>Go back home</p>
-            </a>
+            </Link>
         </div>
       </body>
     </html>

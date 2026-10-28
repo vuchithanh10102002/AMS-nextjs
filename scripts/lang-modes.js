@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { createHmac } = require("crypto");
-const mysql = require("mysql2/promise");
+const mariadb = require("mariadb");
 
 const root = path.resolve(process.argv[2] || ".");
 const env = Object.fromEntries(
@@ -21,9 +21,9 @@ function session(id) {
 }
 
 (async () => {
-  const db = await mysql.createConnection({ host: env.DB_HOST, port: Number(env.DB_PORT || 3306), user: env.DB_USER, password: env.DB_PASS, database: env.DB_NAME });
-  const [admins] = await db.query("SELECT id FROM admins ORDER BY id ASC LIMIT 1");
-  const [nodes] = await db.query("SELECT slug FROM nodes WHERE status = 1 AND slug <> '' ORDER BY id");
+  const db = await mariadb.createConnection({ host: env.DB_HOST, port: Number(env.DB_PORT || 3306), user: env.DB_USER, password: env.DB_PASS, database: env.DB_NAME });
+  const admins = await db.query("SELECT id FROM admins ORDER BY id ASC LIMIT 1");
+  const nodes = await db.query("SELECT slug FROM nodes WHERE status = 1 AND slug <> '' ORDER BY id");
   await db.end();
   const urls = ["", "lien-he", "search?s=a", "404.html", ...nodes.map((n) => `${n.slug}.html`)];
   const cookie = `nh_admin=${session(admins[0].id)}; active_editor=1`;

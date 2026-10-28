@@ -24,7 +24,7 @@ export default async function SubcriberListPage({ searchParams }: PageProps<"/ad
       pageSize={data.pageSize}
       siteUrl={data.siteUrl}
       extraActions={
-        <Button variant="outline" render={<a href={`/admin/subcriber/export${q.size ? `?${q}` : ""}`} />}>
+        <Button variant="outline" nativeButton={false} render={<a href={`/admin/subcriber/export${q.size ? `?${q}` : ""}`} />}>
           <Download /> Xuất CSV
         </Button>
       }

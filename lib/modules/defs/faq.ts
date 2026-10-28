@@ -8,7 +8,7 @@ export const faq: ModuleDef = {
   statusToggle: true,
   list: {
     pageSize: 10,
-    order: "m.pos DESC, m.id DESC",
+    order: [{ pos: "desc" }, { id: "desc" }],
     filters: [{ kind: "search", name: "s", label: "Nhập FAQ cần tìm kiếm...", columns: ["title"] }],
     columns: [
       { name: "title", label: "Câu hỏi", link: true },

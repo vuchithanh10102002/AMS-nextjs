@@ -1,5 +1,4 @@
-import { exec, query } from "@/lib/db";
-import { distinctOptions } from "@/lib/crud";
+import { db } from "@/lib/db";
 import type { ModuleDef } from "../types";
 
 export const combo: ModuleDef = {
@@ -9,7 +8,7 @@ export const combo: ModuleDef = {
   positions: true,
   list: {
     pageSize: 20,
-    order: "m.pos DESC, m.id DESC",
+    order: [{ pos: "desc" }, { id: "desc" }],
     filters: [{ kind: "search", name: "s", label: "Tìm theo tên combo", columns: ["title"] }],
     toggles: ["show", "status"],
     columns: [
@@ -25,10 +24,14 @@ export const combo: ModuleDef = {
     ],
   },
   options: {
-    products: () =>
-      distinctOptions(
-        "SELECT p.id value, n.title label FROM products p INNER JOIN nodes n ON n.id = p.node_id AND n.type = 'product' ORDER BY n.pos DESC, n.id DESC",
-      ),
+    products: async () =>
+      (
+        await db.products.findMany({
+          where: { node: { is: { type: "product" } } },
+          select: { id: true, node: { select: { title: true } } },
+          orderBy: [{ node: { pos: "desc" } }, { node: { id: "desc" } }],
+        })
+      ).map((p) => ({ value: String(p.id), label: String(p.node?.title ?? "").trim() })),
   },
   form: {
     fields: [
@@ -48,30 +51,30 @@ export const combo: ModuleDef = {
       main.price = String(main.price ?? 0);
       if (!ctx.isNew) return;
       const now = Math.floor(Date.now() / 1000);
-      const res = await exec("INSERT INTO nodes SET ?", [{ title: main.title.slice(0, 128), type: "combo", pos: 1, status: 1, created: now, modified: now }]);
-      main.node_id = res.insertId;
+      const node = await db.nodes.create({ data: { title: main.title.slice(0, 128), type: "combo", pos: 1, status: 1, created: now, modified: now } });
+      main.node_id = node.id;
       main.created = now;
       main.pos ??= 0;
     },
     afterSave: async (id, { main }) => {
-      const row = (await query<{ node_id: number | null }>("SELECT node_id FROM combos WHERE id = ?", [id]))[0];
+      const row = await db.combos.findUnique({ where: { id }, select: { node_id: true } });
       const now = Math.floor(Date.now() / 1000);
-      if (row?.node_id) await exec("UPDATE nodes SET title = ?, modified = ? WHERE id = ? AND type = 'combo'", [String(main.title).slice(0, 128), now, row.node_id]);
+      if (row?.node_id) await db.nodes.updateMany({ where: { id: row.node_id, type: "combo" }, data: { title: String(main.title).slice(0, 128), modified: now } });
       else {
-        const res = await exec("INSERT INTO nodes SET ?", [{ title: String(main.title).slice(0, 128), type: "combo", pos: 1, status: 1, created: now, modified: now }]);
-        await exec("UPDATE combos SET node_id = ? WHERE id = ?", [res.insertId, id]);
+        const node = await db.nodes.create({ data: { title: String(main.title).slice(0, 128), type: "combo", pos: 1, status: 1, created: now, modified: now } });
+        await db.combos.updateMany({ where: { id }, data: { node_id: node.id } });
       }
     },
     afterDelete: async (_ids, rows) => {
       const nodeIds = rows.map((r) => Number(r.node_id)).filter(Boolean);
-      if (nodeIds.length) await exec("DELETE FROM nodes WHERE id IN (?) AND type = 'combo'", [nodeIds]);
+      if (nodeIds.length) await db.nodes.deleteMany({ where: { id: { in: nodeIds }, type: "combo" } });
     },
     decorate: async (rows) => {
       const mainIds = [...new Set(rows.map((r) => Number(r.product_main)).filter(Boolean))];
       const names = mainIds.length
-        ? await query<{ id: number; title: string }>("SELECT p.id, n.title FROM products p INNER JOIN nodes n ON n.id = p.node_id WHERE p.id IN (?)", [mainIds])
+        ? await db.products.findMany({ where: { id: { in: mainIds }, node: { isNot: null } }, select: { id: true, node: { select: { title: true } } } })
         : [];
-      const map = new Map(names.map((n) => [n.id, String(n.title ?? "").trim()]));
+      const map = new Map(names.map((n) => [n.id, String(n.node?.title ?? "").trim()]));
       for (const r of rows) {
         r._main = map.get(Number(r.product_main)) ?? "";
         r._count = String(r.product_id ?? "").split(",").filter((x) => x.trim()).length;

@@ -14,7 +14,7 @@ export const team: ModuleDef = {
   statusToggle: true,
   list: {
     pageSize: 12,
-    order: "m.pos DESC, m.id DESC",
+    order: [{ pos: "desc" }, { id: "desc" }],
     filters: [{ kind: "search", name: "s", label: "Tìm theo tên", columns: ["fullname"] }],
     columns: [
       { name: "image", label: "Hình ảnh", kind: "image" },

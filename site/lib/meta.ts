@@ -16,7 +16,7 @@ export async function pageMeta(m: { title?: string; description?: string; keywor
     title: { absolute: title },
     description: description || undefined,
     keywords: clean(m.keywords) || undefined,
-    robots: { index: false, follow: false },
+    robots: process.env.SITE_INDEX === "1" ? undefined : { index: false, follow: false },
     alternates: { canonical: abs(m.path) },
     icons: fav ? { icon: [{ url: abs(fav), type: "image/png" }] } : undefined,
     openGraph: {

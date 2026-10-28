@@ -88,11 +88,13 @@ export function ListView({
   const [filters, setFilters] = useState<Record<string, string>>(() => Object.fromEntries(params.entries()));
   const [pending, start] = useTransition();
 
-  useEffect(() => {
+  const [shownRows, setShownRows] = useState(initialRows);
+  if (shownRows !== initialRows) {
+    setShownRows(initialRows);
     setRows(initialRows);
     setSelected([]);
     setPositions({});
-  }, [initialRows]);
+  }
 
   const go = (next: Record<string, string>) => {
     const q = new URLSearchParams();
@@ -308,7 +310,7 @@ export function ListView({
                     <TableCell>
                       <div className="flex justify-end gap-0.5">
                         {module.previewLink && siteUrl && row.slug && (
-                          <Button variant="ghost" size="icon-sm" title="Xem trên website" render={<a href={`${siteUrl}${row.slug}.html`} target="_blank" rel="noreferrer" />}>
+                          <Button variant="ghost" size="icon-sm" title="Xem trên website" nativeButton={false} render={<a href={`${siteUrl}${row.slug}.html`} target="_blank" rel="noreferrer" />}>
                             <ExternalLink />
                           </Button>
                         )}

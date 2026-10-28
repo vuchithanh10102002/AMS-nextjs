@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { Hero } from "@/site/components/blocks";
-import { Shell } from "@/site/components/shell";
+import { Hero } from "@/site/components/hero";
+import { Shell } from "@/site/components/layout/shell";
 import { site } from "@/site/lib/ctx";
 import { pageMeta } from "@/site/lib/meta";
 import { siteUrl } from "@/lib/site";

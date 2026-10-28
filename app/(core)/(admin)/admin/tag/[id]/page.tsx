@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { RecordForm } from "@/components/admin/record-form";
-import { first } from "@/lib/db";
+import { db } from "@/lib/db";
 import { loadRecord } from "@/lib/pages";
 import { ensureTagRows } from "@/lib/modules/defs/tag";
 import { siteUrl } from "@/lib/site";
@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "Sửa tag" };
 
 export default async function TagEditPage({ params }: PageProps<"/admin/tag/[id]">) {
   const { id } = await params;
-  if (!(await first("SELECT id FROM nodes WHERE id = ? AND type = 'tag'", [Number(id) || 0]))) notFound();
+  if (!(await db.nodes.findFirst({ where: { id: Number(id) || 0, type: "tag" }, select: { id: true } }))) notFound();
   await ensureTagRows();
   const data = await loadRecord("tag", id);
   const slug = (data.values as Record<string, unknown>).slug;

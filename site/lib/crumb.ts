@@ -1,7 +1,8 @@
 import "server-only";
 import { siteUrl } from "@/lib/site";
 import { site } from "./ctx";
-import { categoryById, type Cat } from "./data";
+import { categoryById, type Cat } from "./queries/category";
+import type { NewsRow, ProductRow } from "./queries/node";
 
 async function upTree(cat: Cat, ret: Cat[] = []): Promise<Cat[]> {
   if (!(Number(cat.parent_id) > 0)) return ret;
@@ -14,7 +15,7 @@ async function upTree(cat: Cat, ret: Cat[] = []): Promise<Cat[]> {
   return ret;
 }
 
-export async function crumbHtml(cur: Cat | null, single?: Record<string, unknown> | null) {
+export async function crumbHtml(cur: Cat | null, single?: ProductRow | NewsRow | null) {
   const s = await site();
   const base = siteUrl();
   const suf = s.lang === "vi" ? "" : `_${s.lang}`;
@@ -23,13 +24,13 @@ export async function crumbHtml(cur: Cat | null, single?: Record<string, unknown
   if (cur) {
     for (const v of await upTree(cur)) {
       const link = `${base}${v.node.slug}.html`;
-      const title = String(v.node[`title${suf}`] ?? "");
+      const title = String((suf ? v.node.title_en : v.node.title) ?? "");
       if (!links.includes(link) && title !== "") {
         items.push({ link, title });
         links.push(link);
       }
     }
-    const title = String(cur.node[`title${suf}`] ?? "");
+    const title = String((suf ? cur.node.title_en : cur.node.title) ?? "");
     if (title !== "") items.push({ link: `${base}${cur.node.slug}.html`, title });
   }
   let str = '<ol  itemscope itemtype="http://schema.org/BreadcrumbList">';

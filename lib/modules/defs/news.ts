@@ -1,4 +1,4 @@
-import { exec } from "@/lib/db";
+import { db } from "@/lib/db";
 import type { ModuleDef } from "../types";
 
 export const news: ModuleDef = {
@@ -10,10 +10,10 @@ export const news: ModuleDef = {
   statusToggle: true,
   copies: true,
   previewLink: true,
-  scope: (admin) => (admin.id === 1 ? null : { where: "m.admin_id = ?", params: [admin.id] }),
+  scope: (admin) => (admin.id === 1 ? null : { admin_id: admin.id }),
   list: {
     pageSize: 10,
-    order: "n.pos DESC, m.featured DESC, n.created DESC, n.id DESC",
+    order: [{ node: { pos: "desc" } }, { featured: "desc" }, { node: { created: "desc" } }, { node: { id: "desc" } }],
     filters: [
       { kind: "search", name: "s", label: "Tìm theo tiêu đề", columns: ["title"] },
       { kind: "category", name: "list_category", label: "Danh mục", ctype: "news" },
@@ -50,7 +50,7 @@ export const news: ModuleDef = {
       if (ctx.isNew) main.admin_id = ctx.admin.id;
     },
     afterDelete: async (ids) => {
-      await exec("DELETE FROM tags WHERE node_id IN (?)", [ids]);
+      await db.tags.deleteMany({ where: { node_id: { in: ids } } });
     },
   },
 };

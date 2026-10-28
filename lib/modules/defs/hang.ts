@@ -1,3 +1,4 @@
+import { db } from "@/lib/db";
 import { slugify } from "@/lib/slug";
 import type { ModuleDef } from "../types";
 
@@ -9,7 +10,7 @@ export const hang: ModuleDef = {
   statusToggle: true,
   list: {
     pageSize: 12,
-    order: "m.pos DESC, m.id DESC",
+    order: [{ pos: "desc" }, { id: "desc" }],
     filters: [{ kind: "search", name: "s", label: "Tìm theo tên", columns: ["title"] }],
     toggles: ["featured", "active_category"],
     columns: [
@@ -36,8 +37,7 @@ export const hang: ModuleDef = {
       }
     },
     afterDelete: async (ids) => {
-      const { exec } = await import("@/lib/db");
-      await exec("UPDATE products SET hang_id = NULL WHERE hang_id IN (?)", [ids]);
+      await db.products.updateMany({ where: { hang_id: { in: ids } }, data: { hang_id: null } });
     },
   },
 };
