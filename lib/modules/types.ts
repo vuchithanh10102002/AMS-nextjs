@@ -74,11 +74,24 @@ export type Column = {
 
 export type FilterDef =
   | { kind: "search"; name: string; label: string; columns: string[] }
-  | { kind: "select"; name: string; label: string; column: string; options?: Option[]; optionsKey?: string }
+  | {
+      kind: "select";
+      name: string;
+      label: string;
+      column: string;
+      options?: Option[];
+      optionsKey?: string;
+    }
   | { kind: "category"; name: string; label: string; ctype?: string | string[] }
   | { kind: "daterange"; name: string; label: string; column: string; unix?: boolean };
 
-export type Ctx = { admin: Admin; id: number | null; isNew: boolean; form: FormData; before: Row | null };
+export type Ctx = {
+  admin: Admin;
+  id: number | null;
+  isNew: boolean;
+  form: FormData;
+  before: Row | null;
+};
 
 export type ModuleDef = {
   key: string;

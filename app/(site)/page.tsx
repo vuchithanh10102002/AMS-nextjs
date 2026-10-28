@@ -14,7 +14,13 @@ import { HomeReviews } from "./_home/reviews";
 
 export async function generateMetadata(): Promise<Metadata> {
   const s = await site();
-  return pageMeta({ title: s.settings.title, description: s.settings.description, keywords: s.settings.keyword, path: "/", image: s.t("home_tab_1") });
+  return pageMeta({
+    title: s.settings.title,
+    description: s.settings.description,
+    keywords: s.settings.keyword,
+    path: "/",
+    image: s.t("home_tab_1"),
+  });
 }
 
 export default function Home() {
@@ -28,7 +34,12 @@ export default function Home() {
       <HomeBanner />
       <HomeReviews />
       <HomeNewsBlock cls="ams-index-news" hook="news_slider" title="home_text_15" slug="tin-tuc" />
-      <HomeNewsBlock cls="ams-index-event" hook="event_slider" title="home_text_17" slug="su-kien" />
+      <HomeNewsBlock
+        cls="ams-index-event"
+        hook="event_slider"
+        title="home_text_17"
+        slug="su-kien"
+      />
       <HomeFaq />
     </Shell>
   );

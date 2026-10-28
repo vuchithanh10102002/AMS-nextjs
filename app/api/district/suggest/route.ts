@@ -7,10 +7,19 @@ export async function GET(request: Request) {
   const search = sp.get("search")?.trim() ?? "";
   const page = Math.max(1, Number(sp.get("page")) || 1);
   const cityId = Number(sp.get("city_id")) || 0;
-  const where = { ...(search ? { title: { contains: search } } : {}), ...(cityId ? { city_id: cityId } : {}) };
+  const where = {
+    ...(search ? { title: { contains: search } } : {}),
+    ...(cityId ? { city_id: cityId } : {}),
+  };
   const [total, items] = await Promise.all([
     db.districts.count({ where }),
-    db.districts.findMany({ where, select: { id: true, title: true }, orderBy: [{ pos: "desc" }, { title: "asc" }], take: 15, skip: (page - 1) * 15 }),
+    db.districts.findMany({
+      where,
+      select: { id: true, title: true },
+      orderBy: [{ pos: "desc" }, { title: "asc" }],
+      take: 15,
+      skip: (page - 1) * 15,
+    }),
   ]);
   return Response.json({ items, total_count: total });
 }

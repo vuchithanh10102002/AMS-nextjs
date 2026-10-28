@@ -66,7 +66,11 @@ export default async function SlugPage({ params, searchParams }: PageProps<"/[..
   after(() => countView(nodeId));
   return (
     <Shell here={{ cur: r.cat }}>
-      {r.kind === "product" ? <ProductDetail data={r.data} cat={r.cat} /> : <NewsDetail data={r.data} cat={r.cat} />}
+      {r.kind === "product" ? (
+        <ProductDetail data={r.data} cat={r.cat} />
+      ) : (
+        <NewsDetail data={r.data} cat={r.cat} />
+      )}
     </Shell>
   );
 }

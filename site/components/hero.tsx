@@ -17,7 +17,16 @@ export async function Hero(p: {
   return (
     <>
       <section className={`ams-hero${p.cls ? " " + p.cls : ""}${p.desc ? " ams-hero-seo" : ""}`}>
-        {img ? <img src={src(img)} className="ams-hero-bg" alt={strip(p.title)} width="1920" height="533" data-eager="1" /> : null}
+        {img ? (
+          <img
+            src={src(img)}
+            className="ams-hero-bg"
+            alt={strip(p.title)}
+            width="1920"
+            height="533"
+            data-eager="1"
+          />
+        ) : null}
         <div className="wrap">
           <div className="ams-hero-box">
             <h1 className="ams-hero-title" dangerouslySetInnerHTML={{ __html: p.title }} />
@@ -41,7 +50,9 @@ export async function Hero(p: {
           {p.crumbs ? (
             <ul className="ams-crumb">
               {p.crumbs.map((c, k) => (
-                <li key={k}>{k < p.crumbs!.length - 1 ? <a href={c.link}>{c.title}</a> : c.title}</li>
+                <li key={k}>
+                  {k < p.crumbs!.length - 1 ? <a href={c.link}>{c.title}</a> : c.title}
+                </li>
               ))}
             </ul>
           ) : (

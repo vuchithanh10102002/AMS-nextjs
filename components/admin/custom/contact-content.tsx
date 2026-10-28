@@ -7,5 +7,9 @@ export function ContactContent({ value }: { value: unknown }) {
     .replace(/<[^>]+>/g, "")
     .replace(/&nbsp;/g, " ")
     .trim();
-  return <div className="min-h-24 whitespace-pre-wrap break-words rounded-lg border bg-muted/50 px-3 py-2 text-sm">{text || "—"}</div>;
+  return (
+    <div className="min-h-24 whitespace-pre-wrap break-words rounded-lg border bg-muted/50 px-3 py-2 text-sm">
+      {text || "—"}
+    </div>
+  );
 }

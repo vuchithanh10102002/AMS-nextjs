@@ -6,7 +6,13 @@ import { copyRecord, deleteRecords, saveRecord, savePositions, toggleField } fro
 import { getModule } from "@/lib/modules/registry";
 import { getSettings } from "@/lib/site";
 
-export type SaveState = { ok?: boolean; error?: string; message?: string; redirect?: string; at?: number };
+export type SaveState = {
+  ok?: boolean;
+  error?: string;
+  message?: string;
+  redirect?: string;
+  at?: number;
+};
 
 function mod(key: string) {
   const def = getModule(key);
@@ -18,7 +24,12 @@ function fail(e: unknown): SaveState {
   return { error: e instanceof Error ? e.message : "Có lỗi xảy ra", at: Date.now() };
 }
 
-export async function saveAction(key: string, id: number | null, _: SaveState, form: FormData): Promise<SaveState> {
+export async function saveAction(
+  key: string,
+  id: number | null,
+  _: SaveState,
+  form: FormData,
+): Promise<SaveState> {
   try {
     const def = mod(key);
     const admin = await authorize(def.perm ?? def.key, id ? "edit" : "add");
@@ -29,7 +40,12 @@ export async function saveAction(key: string, id: number | null, _: SaveState, f
     const next = id ? settings.continueEdit || "edit" : settings.continueAdd || "edit";
     const base = `/admin/${key}`;
     const redirect = next === "list" ? base : next === "add" ? `${base}/add` : `${base}/${newId}`;
-    return { ok: true, message: id ? "Đã sửa" : "Đã thêm", redirect: id && next === "edit" ? undefined : redirect, at: Date.now() };
+    return {
+      ok: true,
+      message: id ? "Đã sửa" : "Đã thêm",
+      redirect: id && next === "edit" ? undefined : redirect,
+      at: Date.now(),
+    };
   } catch (e) {
     return fail(e);
   }

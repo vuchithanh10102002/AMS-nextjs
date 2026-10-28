@@ -6,8 +6,9 @@ import { ensureTagRows } from "@/lib/modules/defs/tag";
 export const metadata: Metadata = { title: "Tag" };
 
 export default async function TagListPage({ searchParams }: PageProps<"/admin/tag">) {
+  const sp = await searchParams;
   await ensureTagRows();
-  const data = await loadList("tag", await searchParams);
+  const data = await loadList("tag", sp);
   return (
     <ListView
       module={data.module}

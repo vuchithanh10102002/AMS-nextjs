@@ -10,7 +10,19 @@ if (!process.argv[2] || target === core || !fs.existsSync(path.join(target, "pac
   process.exit(1);
 }
 
-const SKIP = new Set(["node_modules", ".next", ".env.local", "next-env.d.ts", "tsconfig.tsbuildinfo", "package-lock.json", "package.json", "site", "app/(site)", "public/theme", "docs"]);
+const SKIP = new Set([
+  "node_modules",
+  ".next",
+  ".env.local",
+  "next-env.d.ts",
+  "tsconfig.tsbuildinfo",
+  "package-lock.json",
+  "package.json",
+  "site",
+  "app/(site)",
+  "public/theme",
+  "docs",
+]);
 
 const changed = [];
 const added = [];
@@ -41,4 +53,8 @@ const missing = Object.entries({ ...pkg(core).dependencies, ...pkg(core).devDepe
 console.log(`${dry ? "[thử] " : ""}cập nhật ${changed.length}, thêm mới ${added.length}`);
 for (const f of changed) console.log("  ~ " + f);
 for (const f of added) console.log("  + " + f);
-if (missing.length) console.log("Thiếu thư viện core trong package.json dự án: " + missing.map(([k, v]) => `${k}@${v}`).join(" "));
+if (missing.length)
+  console.log(
+    "Thiếu thư viện core trong package.json dự án: " +
+      missing.map(([k, v]) => `${k}@${v}`).join(" "),
+  );

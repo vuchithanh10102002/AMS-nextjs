@@ -1,7 +1,13 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { categoryByNode, categoryOfNode, type Cat } from "./queries/category";
-import { newsDetail, nodeBySlug, productDetail, type NewsRow, type ProductRow } from "./queries/node";
+import {
+  newsDetail,
+  nodeBySlug,
+  productDetail,
+  type NewsRow,
+  type ProductRow,
+} from "./queries/node";
 
 export type Resolved =
   | { kind: "category"; cur: Cat; page: number; base: string }

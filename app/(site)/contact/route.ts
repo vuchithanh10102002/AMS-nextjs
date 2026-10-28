@@ -11,14 +11,14 @@ export async function POST(request: Request) {
   if (form && [...form.keys()].length) {
     await db.contacts.create({
       data: {
-      title: clean(form.get("title")).slice(0, 255),
-      fullname: clean(form.get("fullname")).slice(0, 64),
-      email: clean(form.get("email")).slice(0, 64),
-      address: clean(form.get("address")).slice(0, 255),
-      phone: clean(form.get("phone")).slice(0, 64),
-      content: clean(form.get("content")),
-      status: 0,
-      created: String(Math.floor(Date.now() / 1000)),
+        title: clean(form.get("title")).slice(0, 255),
+        fullname: clean(form.get("fullname")).slice(0, 64),
+        email: clean(form.get("email")).slice(0, 64),
+        address: clean(form.get("address")).slice(0, 255),
+        phone: clean(form.get("phone")).slice(0, 64),
+        content: clean(form.get("content")),
+        status: 0,
+        created: String(Math.floor(Date.now() / 1000)),
       },
     });
     res.res = "done";

@@ -8,14 +8,26 @@ export const district: ModuleDef = {
   table: "districts",
   positions: true,
   options: {
-    cities: async () => (await db.cities.findMany({ select: { id: true, title: true }, orderBy: [{ pos: "desc" }, { title: "asc" }] })).map((c) => ({ value: String(c.id), label: String(c.title ?? "").trim() })),
+    cities: async () =>
+      (
+        await db.cities.findMany({
+          select: { id: true, title: true },
+          orderBy: [{ pos: "desc" }, { title: "asc" }],
+        })
+      ).map((c) => ({ value: String(c.id), label: String(c.title ?? "").trim() })),
   },
   list: {
     pageSize: 10,
     order: [{ pos: "desc" }, { id: "desc" }],
     filters: [
       { kind: "search", name: "s", label: "Tìm theo tên, điện thoại", columns: ["title", "phone"] },
-      { kind: "select", name: "city_id", label: "Tỉnh/Thành phố", column: "city_id", optionsKey: "cities" },
+      {
+        kind: "select",
+        name: "city_id",
+        label: "Tỉnh/Thành phố",
+        column: "city_id",
+        optionsKey: "cities",
+      },
     ],
     columns: [
       { name: "title", label: "Tên Quận huyện", link: true },
@@ -27,7 +39,13 @@ export const district: ModuleDef = {
   form: {
     fields: [
       { name: "title", label: "Tên Quận huyện", type: "text", required: true, maxLength: 100 },
-      { name: "city_id", label: "Tỉnh/Thành phố", type: "select", required: true, optionsKey: "cities" },
+      {
+        name: "city_id",
+        label: "Tỉnh/Thành phố",
+        type: "select",
+        required: true,
+        optionsKey: "cities",
+      },
       { name: "lat", label: "Vĩ độ", type: "text", half: true },
       { name: "lng", label: "Kinh độ", type: "text", half: true },
       { name: "phone", label: "Điện thoại", type: "text" },
@@ -42,7 +60,12 @@ export const district: ModuleDef = {
     },
     decorate: async (rows) => {
       const ids = [...new Set(rows.map((r) => Number(r.city_id)).filter(Boolean))];
-      const cities = ids.length ? await db.cities.findMany({ where: { id: { in: ids } }, select: { id: true, title: true } }) : [];
+      const cities = ids.length
+        ? await db.cities.findMany({
+            where: { id: { in: ids } },
+            select: { id: true, title: true },
+          })
+        : [];
       const byId = new Map(cities.map((c) => [c.id, c.title]));
       for (const r of rows) r._city = byId.get(Number(r.city_id)) ?? "";
     },

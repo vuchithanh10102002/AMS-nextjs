@@ -7,7 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Combobox,
   ComboboxChip,
@@ -39,21 +45,37 @@ export function toArray(v: unknown): string[] {
       return (JSON.parse(s) as unknown[]).map(String);
     } catch {}
   }
-  return s.split(",").map((x) => x.trim()).filter(Boolean);
+  return s
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
 }
 
 function unixToDate(v: unknown, withTime = false) {
   if (v == null || v === "") return "";
   const n = Number(v);
-  const d = Number.isFinite(n) && String(v).length >= 9 ? new Date(n * 1000) : new Date(String(v).replace(" ", "T"));
+  const d =
+    Number.isFinite(n) && String(v).length >= 9
+      ? new Date(n * 1000)
+      : new Date(String(v).replace(" ", "T"));
   if (Number.isNaN(d.getTime())) return "";
   const pad = (x: number) => String(x).padStart(2, "0");
   const date = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   return withTime ? `${date}T${pad(d.getHours())}:${pad(d.getMinutes())}` : date;
 }
 
-export function MoneyInput({ name, defaultValue, placeholder }: { name: string; defaultValue?: unknown; placeholder?: string }) {
-  const [v, setV] = useState(defaultValue == null || defaultValue === "" ? "" : String(defaultValue).replace(/\D/g, ""));
+export function MoneyInput({
+  name,
+  defaultValue,
+  placeholder,
+}: {
+  name: string;
+  defaultValue?: unknown;
+  placeholder?: string;
+}) {
+  const [v, setV] = useState(
+    defaultValue == null || defaultValue === "" ? "" : String(defaultValue).replace(/\D/g, ""),
+  );
   return (
     <>
       <input type="hidden" name={name} value={v} />
@@ -108,10 +130,23 @@ export function SelectInput({
   );
 }
 
-export function MultiSelect({ name, options, defaultValue, placeholder = "Chọn..." }: { name: string; options: Option[]; defaultValue?: unknown; placeholder?: string }) {
+export function MultiSelect({
+  name,
+  options,
+  defaultValue,
+  placeholder = "Chọn...",
+}: {
+  name: string;
+  options: Option[];
+  defaultValue?: unknown;
+  placeholder?: string;
+}) {
   const anchor = useComboboxAnchor();
   const [values, setValues] = useState<string[]>(toArray(defaultValue));
-  const selected = useMemo(() => options.filter((o) => values.includes(o.value)), [options, values]);
+  const selected = useMemo(
+    () => options.filter((o) => values.includes(o.value)),
+    [options, values],
+  );
   return (
     <>
       {values.map((v) => (
@@ -151,13 +186,26 @@ export function MultiSelect({ name, options, defaultValue, placeholder = "Chọn
   );
 }
 
-export function ImageInput({ name, defaultValue, root = "images" }: { name: string; defaultValue?: unknown; root?: "images" | "files" }) {
+export function ImageInput({
+  name,
+  defaultValue,
+  root = "images",
+}: {
+  name: string;
+  defaultValue?: unknown;
+  root?: "images" | "files";
+}) {
   const [v, setV] = useState(defaultValue ? String(defaultValue) : "");
   const [open, setOpen] = useState(false);
   return (
     <div className="flex flex-col gap-2">
       <div className="flex gap-2">
-        <Input name={name} value={v} onChange={(e) => setV(e.target.value)} placeholder="Đường dẫn hoặc URL" />
+        <Input
+          name={name}
+          value={v}
+          onChange={(e) => setV(e.target.value)}
+          placeholder="Đường dẫn hoặc URL"
+        />
         <Button type="button" variant="outline" onClick={() => setOpen(true)}>
           {root === "images" ? <ImagePlus /> : <Paperclip />} Chọn
         </Button>
@@ -168,9 +216,18 @@ export function ImageInput({ name, defaultValue, root = "images" }: { name: stri
         )}
       </div>
       {v && isImage(v) && (
-        <img src={previewUrl(v)} alt="" className="h-28 w-fit max-w-full rounded-md border object-contain bg-muted" />
+        <img
+          src={previewUrl(v)}
+          alt=""
+          className="h-28 w-fit max-w-full rounded-md border object-contain bg-muted"
+        />
       )}
-      <MediaPicker open={open} root={root} onOpenChange={setOpen} onSelect={(p) => setV(normalizeMediaPath(p[0] ?? ""))} />
+      <MediaPicker
+        open={open}
+        root={root}
+        onOpenChange={setOpen}
+        onSelect={(p) => setV(normalizeMediaPath(p[0] ?? ""))}
+      />
     </div>
   );
 }
@@ -232,7 +289,15 @@ export function GalleryInput({ name, defaultValue }: { name: string; defaultValu
   );
 }
 
-export function SlugInput({ name, defaultValue, source = "title" }: { name: string; defaultValue?: unknown; source?: string }) {
+export function SlugInput({
+  name,
+  defaultValue,
+  source = "title",
+}: {
+  name: string;
+  defaultValue?: unknown;
+  source?: string;
+}) {
   const ref = useRef<HTMLInputElement>(null);
   const [v, setV] = useState(defaultValue ? String(defaultValue) : "");
   return (
@@ -262,17 +327,47 @@ export function SwitchInput({ name, defaultValue }: { name: string; defaultValue
   );
 }
 
-export function FieldInput({ field, value, custom }: { field: ClientField; value: unknown; custom?: Record<string, React.ComponentType<any>> }) {
+export function FieldInput({
+  field,
+  value,
+  custom,
+}: {
+  field: ClientField;
+  value: unknown;
+  custom?: Record<string, React.ComponentType<any>>;
+}) {
   const v = value ?? field.default ?? "";
   switch (field.type) {
     case "textarea":
-      return <Textarea name={field.name} defaultValue={String(v)} rows={field.rows ?? 4} maxLength={field.maxLength} placeholder={field.placeholder} />;
+      return (
+        <Textarea
+          name={field.name}
+          defaultValue={String(v)}
+          rows={field.rows ?? 4}
+          maxLength={field.maxLength}
+          placeholder={field.placeholder}
+        />
+      );
     case "number":
-      return <Input type="number" name={field.name} defaultValue={v === "" ? "" : String(v)} placeholder={field.placeholder} />;
+      return (
+        <Input
+          type="number"
+          name={field.name}
+          defaultValue={v === "" ? "" : String(v)}
+          placeholder={field.placeholder}
+        />
+      );
     case "money":
       return <MoneyInput name={field.name} defaultValue={v} placeholder={field.placeholder} />;
     case "select":
-      return <SelectInput name={field.name} options={field.options ?? []} defaultValue={v} allowEmpty={!field.required} />;
+      return (
+        <SelectInput
+          name={field.name}
+          options={field.options ?? []}
+          defaultValue={v}
+          allowEmpty={!field.required}
+        />
+      );
     case "multiselect":
     case "categories":
       return <MultiSelect name={field.name} options={field.options ?? []} defaultValue={v} />;
@@ -287,26 +382,64 @@ export function FieldInput({ field, value, custom }: { field: ClientField; value
     case "editor":
       return <Editor name={field.name} defaultValue={String(v)} height={field.height} />;
     case "date":
-      return <Input type="date" name={field.name} defaultValue={field.storage === "unix" || /^\d+$/.test(String(v)) ? unixToDate(v) : String(v).slice(0, 10)} />;
+      return (
+        <Input
+          type="date"
+          name={field.name}
+          defaultValue={
+            field.storage === "unix" || /^\d+$/.test(String(v))
+              ? unixToDate(v)
+              : String(v).slice(0, 10)
+          }
+        />
+      );
     case "datetime":
       return <Input type="datetime-local" name={field.name} defaultValue={unixToDate(v, true)} />;
     case "color":
       return (
         <div className="flex items-center gap-2">
-          <Input type="color" name={field.name} defaultValue={String(v) || "#000000"} className="h-9 w-16 p-1" />
+          <Input
+            type="color"
+            name={field.name}
+            defaultValue={String(v) || "#000000"}
+            className="h-9 w-16 p-1"
+          />
         </div>
       );
     case "slug":
       return <SlugInput name={field.name} defaultValue={v} />;
     case "password":
-      return <Input type="password" name={field.name} autoComplete="new-password" placeholder={field.placeholder ?? "Để trống nếu không đổi"} />;
+      return (
+        <Input
+          type="password"
+          name={field.name}
+          autoComplete="new-password"
+          placeholder={field.placeholder ?? "Để trống nếu không đổi"}
+        />
+      );
     case "readonly":
-      return <div className="min-h-9 rounded-lg border bg-muted/50 px-3 py-2 text-sm">{String(v) || "—"}</div>;
+      return (
+        <div className="min-h-9 rounded-lg border bg-muted/50 px-3 py-2 text-sm">
+          {String(v) || "—"}
+        </div>
+      );
     case "custom": {
       const C = custom?.[field.component ?? ""];
-      return C ? <C field={field} value={value} {...field.props} /> : <p className="text-sm text-destructive">Thiếu component {field.component}</p>;
+      return C ? (
+        <C field={field} value={value} {...field.props} />
+      ) : (
+        <p className="text-sm text-destructive">Thiếu component {field.component}</p>
+      );
     }
     default:
-      return <Input name={field.name} defaultValue={String(v)} maxLength={field.maxLength} placeholder={field.placeholder} required={field.required} />;
+      return (
+        <Input
+          name={field.name}
+          defaultValue={String(v)}
+          maxLength={field.maxLength}
+          placeholder={field.placeholder}
+          required={field.required}
+        />
+      );
   }
 }

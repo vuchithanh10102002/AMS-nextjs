@@ -19,7 +19,9 @@ export async function crumbHtml(cur: Cat | null, single?: ProductRow | NewsRow |
   const s = await site();
   const base = siteUrl();
   const suf = s.lang === "vi" ? "" : `_${s.lang}`;
-  const items: { link: string; title: string }[] = [{ link: base, title: s.t("home") || (s.lang === "vi" ? "Trang chủ" : "Home") }];
+  const items: { link: string; title: string }[] = [
+    { link: base, title: s.t("home") || (s.lang === "vi" ? "Trang chủ" : "Home") },
+  ];
   const links: string[] = [];
   if (cur) {
     for (const v of await upTree(cur)) {

@@ -21,12 +21,25 @@ async function run(act: "add" | "delete", fn: () => Promise<Result>): Promise<Re
 }
 
 async function orphanNode(nodeId: number) {
-  const n = await db.nodes.findFirst({ where: { id: nodeId, type: "product", products: { none: {} } }, select: { id: true } });
+  const n = await db.nodes.findFirst({
+    where: { id: nodeId, type: "product", products: { none: {} } },
+    select: { id: true },
+  });
   if (!n) throw new Error("Bản ghi không còn ở trạng thái mồ côi");
 }
 
 async function orphanProduct(productId: number) {
-  const p = await db.products.findFirst({ where: { id: productId, OR: [{ node_id: null }, { node: { is: null } }, { node: { is: { NOT: { type: "product" } } } }] }, select: { id: true } });
+  const p = await db.products.findFirst({
+    where: {
+      id: productId,
+      OR: [
+        { node_id: null },
+        { node: { is: null } },
+        { node: { is: { NOT: { type: "product" } } } },
+      ],
+    },
+    select: { id: true },
+  });
   if (!p) throw new Error("Bản ghi không còn ở trạng thái mồ côi");
 }
 
@@ -53,9 +66,24 @@ export async function adoptOrphanProduct(productId: number) {
     await orphanProduct(productId);
     const title = `Sản phẩm khôi phục #${productId}`;
     const now = Math.floor(Date.now() / 1000);
-    const node = await db.nodes.create({ data: { title, slug: await uniqueSlug(title), type: "product", pos: 1, status: 0, robots: 1, created: now, modified: now } });
+    const node = await db.nodes.create({
+      data: {
+        title,
+        slug: await uniqueSlug(title),
+        type: "product",
+        pos: 1,
+        status: 0,
+        robots: 1,
+        created: now,
+        modified: now,
+      },
+    });
     await db.products.updateMany({ where: { id: productId }, data: { node_id: node.id } });
-    return { ok: true, message: "Đã tạo node cho sản phẩm (đang ẩn)", redirect: `/admin/product/${node.id}` };
+    return {
+      ok: true,
+      message: "Đã tạo node cho sản phẩm (đang ẩn)",
+      redirect: `/admin/product/${node.id}`,
+    };
   });
 }
 

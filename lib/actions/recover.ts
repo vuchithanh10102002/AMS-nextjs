@@ -10,11 +10,15 @@ export type RecoverState = { error?: string; done?: string };
 const TTL = 60 * 60 * 1000;
 
 function sign(payload: string) {
-  return createHmac("sha256", process.env.SESSION_SECRET ?? "").update("recover." + payload).digest("base64url");
+  return createHmac("sha256", process.env.SESSION_SECRET ?? "")
+    .update("recover." + payload)
+    .digest("base64url");
 }
 
 function makeToken(id: number, password: string) {
-  const payload = Buffer.from(JSON.stringify({ id, exp: Date.now() + TTL, p: password.slice(0, 12) })).toString("base64url");
+  const payload = Buffer.from(
+    JSON.stringify({ id, exp: Date.now() + TTL, p: password.slice(0, 12) }),
+  ).toString("base64url");
   return `${payload}.${sign(payload)}`;
 }
 
@@ -27,7 +31,10 @@ async function readToken(token: string) {
   try {
     const data = JSON.parse(Buffer.from(payload, "base64url").toString());
     if (typeof data.id !== "number" || data.exp < Date.now()) return null;
-    const admin = await db.admins.findFirst({ where: { id: data.id, status: 1 }, select: { id: true, password: true } });
+    const admin = await db.admins.findFirst({
+      where: { id: data.id, status: 1 },
+      select: { id: true, password: true },
+    });
     if (!admin || (admin.password ?? "").slice(0, 12) !== data.p) return null;
     return admin;
   } catch {
@@ -42,8 +49,14 @@ export async function checkResetToken(token: string) {
 export async function requestReset(_: RecoverState, formData: FormData): Promise<RecoverState> {
   const email = String(formData.get("email") ?? "").trim();
   if (!email) return { error: "Bạn cần nhập email" };
-  const done = { done: "Nếu email có trong hệ thống, đường dẫn đặt lại mật khẩu đã được gửi tới hộp thư (hiệu lực 1 giờ)." };
-  const admin = await db.admins.findFirst({ where: { email, status: 1 }, orderBy: { id: "asc" }, select: { id: true, password: true, username: true } });
+  const done = {
+    done: "Nếu email có trong hệ thống, đường dẫn đặt lại mật khẩu đã được gửi tới hộp thư (hiệu lực 1 giờ).",
+  };
+  const admin = await db.admins.findFirst({
+    where: { email, status: 1 },
+    orderBy: { id: "asc" },
+    select: { id: true, password: true, username: true },
+  });
   if (!admin) return done;
   const h = await headers();
   const origin = `${h.get("x-forwarded-proto") ?? "http"}://${h.get("host")}`;
@@ -68,6 +81,9 @@ export async function resetPassword(_: RecoverState, formData: FormData): Promis
   if (password !== confirm) return { error: "Mật khẩu nhập lại không khớp" };
   const admin = await readToken(token);
   if (!admin) return { error: "Đường dẫn không hợp lệ hoặc đã hết hạn" };
-  await db.admins.updateMany({ where: { id: admin.id }, data: { password: createHash("md5").update(password).digest("hex") } });
+  await db.admins.updateMany({
+    where: { id: admin.id },
+    data: { password: createHash("md5").update(password).digest("hex") },
+  });
   return { done: "Đã đặt mật khẩu mới. Bạn có thể đăng nhập." };
 }

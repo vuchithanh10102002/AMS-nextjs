@@ -36,7 +36,9 @@ export const team: ModuleDef = {
   hooks: {
     beforeSave: ({ main }, ctx) => {
       if (main.team_position !== undefined) {
-        const vals = String(main.team_position).split(",").filter((v) => bans.some((b) => b.value === v));
+        const vals = String(main.team_position)
+          .split(",")
+          .filter((v) => bans.some((b) => b.value === v));
         if (!vals.length) throw new Error("Vui lòng chọn Ban");
         main.team_position = vals.join(",");
       }

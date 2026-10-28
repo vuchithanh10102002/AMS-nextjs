@@ -23,7 +23,7 @@ const eslintConfig = defineConfig([
     },
   },
   {
-    files: ["scripts/**/*.js"],
+    files: ["scripts/**/*.js", "ecosystem.config.js"],
     rules: {
       "@typescript-eslint/no-require-imports": "off",
     },
@@ -32,6 +32,12 @@ const eslintConfig = defineConfig([
     files: ["lib/db.ts", "lib/crud.ts", "components/admin/**"],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
+  {
+    files: ["components/admin/**", "app/(core)/**"],
+    rules: {
+      "@next/next/no-img-element": "off",
     },
   },
   {

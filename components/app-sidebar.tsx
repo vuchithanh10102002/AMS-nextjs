@@ -41,7 +41,11 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="px-3 py-2 text-sm font-medium">
-        <Link href="/admin" className="flex items-center h-12 w-full gap-2 select-none" onClick={close}>
+        <Link
+          href="/admin"
+          className="flex items-center h-12 w-full gap-2 select-none"
+          onClick={close}
+        >
           <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center aspect-square text-background font-bold">
             {siteName.charAt(0).toUpperCase()}
           </div>
@@ -74,7 +78,7 @@ export function AppSidebar({
             <SidebarGroupContent>
               <SidebarMenu>
                 {group.items.map((item) => {
-                  const badge = item.badge ? badges[item.badge] ?? 0 : 0;
+                  const badge = item.badge ? (badges[item.badge] ?? 0) : 0;
                   if (!item.add)
                     return (
                       <SidebarMenuItem key={item.url}>
@@ -90,10 +94,16 @@ export function AppSidebar({
                       </SidebarMenuItem>
                     );
                   return (
-                    <Collapsible key={item.url} defaultOpen={isActive(item.url)} className="group/collapsible">
+                    <Collapsible
+                      key={item.url}
+                      defaultOpen={isActive(item.url)}
+                      className="group/collapsible"
+                    >
                       <SidebarMenuItem>
                         <CollapsibleTrigger
-                          render={<SidebarMenuButton isActive={isActive(item.url)} tooltip={item.title} />}
+                          render={
+                            <SidebarMenuButton isActive={isActive(item.url)} tooltip={item.title} />
+                          }
                         >
                           <DynamicIcon name={item.icon as IconName} />
                           <span>{item.title}</span>

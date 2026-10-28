@@ -27,7 +27,33 @@ import { category } from "./defs/category";
 import { combo } from "./defs/combo";
 import { tag } from "./defs/tag";
 
-const modules: ModuleDef[] = [hang, news, banner, video, faq, team, rate, city, district, mien, account, cart, customer, coupon, contact, subcriber, comment, product, size, filter, flashsale, color, category, combo, tag]
+const modules: ModuleDef[] = [
+  hang,
+  news,
+  banner,
+  video,
+  faq,
+  team,
+  rate,
+  city,
+  district,
+  mien,
+  account,
+  cart,
+  customer,
+  coupon,
+  contact,
+  subcriber,
+  comment,
+  product,
+  size,
+  filter,
+  flashsale,
+  color,
+  category,
+  combo,
+  tag,
+]
   .filter((m) => !offModules.includes(m.perm ?? m.key))
   .map(siteModule);
 

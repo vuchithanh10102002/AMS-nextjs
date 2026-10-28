@@ -32,15 +32,41 @@ export async function About({ cur }: { cur: Cat }) {
               {k < 3 && (
                 <section className="ams-quote" data-bg={bg}>
                   <div className="ams-quote-in wrap">
-                    <div className="ams-quote-title" dangerouslySetInnerHTML={{ __html: s.ta(`general_text_${n}`, "text") }} />
-                    <p className="ams-quote-text" dangerouslySetInnerHTML={{ __html: s.ta(`general_text_${n + 1}`, "textarea") }} />
+                    <div
+                      className="ams-quote-title"
+                      dangerouslySetInnerHTML={{ __html: s.ta(`general_text_${n}`, "text") }}
+                    />
+                    <p
+                      className="ams-quote-text"
+                      dangerouslySetInnerHTML={{
+                        __html: s.ta(`general_text_${n + 1}`, "textarea"),
+                      }}
+                    />
                     <div className="ams-user">
                       <span className="ams-avatar">
-                        {logo ? <img src={src(logo)} alt={strip(t(`general_text_${n + 2}`))} width="56" height="56" loading="lazy" /> : null}
+                        {logo ? (
+                          <img
+                            src={src(logo)}
+                            alt={strip(t(`general_text_${n + 2}`))}
+                            width="56"
+                            height="56"
+                            loading="lazy"
+                          />
+                        ) : null}
                       </span>
                       <span className="ams-user-info">
-                        <span className="ams-user-name" dangerouslySetInnerHTML={{ __html: s.ta(`general_text_${n + 2}`, "text") }} />
-                        <span className="ams-user-role" dangerouslySetInnerHTML={{ __html: s.ta(`general_text_${n + 3}`, "text") }} />
+                        <span
+                          className="ams-user-name"
+                          dangerouslySetInnerHTML={{
+                            __html: s.ta(`general_text_${n + 2}`, "text"),
+                          }}
+                        />
+                        <span
+                          className="ams-user-role"
+                          dangerouslySetInnerHTML={{
+                            __html: s.ta(`general_text_${n + 3}`, "text"),
+                          }}
+                        />
                       </span>
                     </div>
                   </div>
@@ -48,7 +74,10 @@ export async function About({ cur }: { cur: Cat }) {
               )}
               <section className="ams-gt-text">
                 <div className="wrap">
-                  <div className="ams-content" dangerouslySetInnerHTML={{ __html: tr(sub, "content") }} />
+                  <div
+                    className="ams-content"
+                    dangerouslySetInnerHTML={{ __html: tr(sub, "content") }}
+                  />
                   <Adm m="category" v={sub.node.id} />
                 </div>
               </section>
@@ -61,7 +90,13 @@ export async function About({ cur }: { cur: Cat }) {
               {[5, 6, 7, 8].map((i) => (
                 <div key={i} className="ams-gt-gallery-item">
                   <div className={`wrap-img img-100 ${i < 7 ? "ams-gt-sq" : "ams-gt-wide"}`}>
-                    {t(`home_tab_${i}`) ? <img src={src(t(`home_tab_${i}`))} alt={strip(tr(cur.node, "title"))} loading="lazy" /> : null}
+                    {t(`home_tab_${i}`) ? (
+                      <img
+                        src={src(t(`home_tab_${i}`))}
+                        alt={strip(tr(cur.node, "title"))}
+                        loading="lazy"
+                      />
+                    ) : null}
                   </div>
                   <Adm m="lang" v={`home_tab_${i}`} mode="image" />
                 </div>

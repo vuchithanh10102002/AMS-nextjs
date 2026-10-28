@@ -50,7 +50,8 @@ export async function POST(request: Request) {
     }
     if (action === "delete") {
       const target = resolveInUploads(String(form.get("path") ?? ""));
-      if (!target.rel || target.rel === "images" || target.rel === "files") return json({ error: "Không thể xoá thư mục gốc" }, 400);
+      if (!target.rel || target.rel === "images" || target.rel === "files")
+        return json({ error: "Không thể xoá thư mục gốc" }, 400);
       await rm(target.abs, { recursive: true, force: true });
       return json({ ok: true });
     }
@@ -58,11 +59,20 @@ export async function POST(request: Request) {
     const saved: string[] = [];
     for (const file of form.getAll("file")) {
       if (!(file instanceof File)) continue;
-      if (!ALLOWED_EXT.test(file.name)) return json({ error: `Định dạng không được phép: ${file.name}` }, 400);
+      if (!ALLOWED_EXT.test(file.name))
+        return json({ error: `Định dạng không được phép: ${file.name}` }, 400);
       let name = safeFileName(file.name);
       const ext = path.extname(name);
       const base = name.slice(0, name.length - ext.length);
-      for (let i = 2; await stat(path.join(abs, name)).then(() => true, () => false); i++) name = `${base}-${i}${ext}`;
+      for (
+        let i = 2;
+        await stat(path.join(abs, name)).then(
+          () => true,
+          () => false,
+        );
+        i++
+      )
+        name = `${base}-${i}${ext}`;
       await writeFile(path.join(abs, name), Buffer.from(await file.arrayBuffer()));
       saved.push(UPLOAD_PREFIX + (rel ? rel + "/" : "") + name);
     }

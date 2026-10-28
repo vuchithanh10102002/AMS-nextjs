@@ -11,7 +11,10 @@ export async function HomeReviews() {
     <section className="ams-index-review">
       <div className="wrap clearfix">
         <div className="ams-index-review-left">
-          <h2 className="ams-title wow animate__fadeInUp" dangerouslySetInnerHTML={{ __html: s.ta("home_text_14", "text") }} />
+          <h2
+            className="ams-title wow animate__fadeInUp"
+            dangerouslySetInnerHTML={{ __html: s.ta("home_text_14", "text") }}
+          />
           {rates.length > 0 && (
             <div className="ams-index-review-card wow animate__fadeInLeft">
               <div className="owl-carousel review_slider">
@@ -20,8 +23,14 @@ export async function HomeReviews() {
                   const last = name.trim().split(" ").pop() ?? "";
                   return (
                     <div key={v.id} className="ams-index-review-item">
-                      <div className="ams-index-review-tag" dangerouslySetInnerHTML={{ __html: tr(v, "title") + s.adm("rate", v.id) }} />
-                      <p className="ams-index-review-quote" dangerouslySetInnerHTML={{ __html: tr(v, "description") }} />
+                      <div
+                        className="ams-index-review-tag"
+                        dangerouslySetInnerHTML={{ __html: tr(v, "title") + s.adm("rate", v.id) }}
+                      />
+                      <p
+                        className="ams-index-review-quote"
+                        dangerouslySetInnerHTML={{ __html: tr(v, "description") }}
+                      />
                       <div className="ams-index-review-author">
                         <span className="ams-index-review-avatar">{Array.from(last)[0] ?? ""}</span>
                         <span className="ams-index-review-name">{name}</span>
@@ -32,11 +41,23 @@ export async function HomeReviews() {
                 })}
               </div>
               <div className="ams-index-review-nav">
-                <button type="button" className="ams-arrow-btn btn_review_prev" aria-label={t("general_text_31")}>
-                  <svg width="17" height="14"><use href="#i-arrow-l"></use></svg>
+                <button
+                  type="button"
+                  className="ams-arrow-btn btn_review_prev"
+                  aria-label={t("general_text_31")}
+                >
+                  <svg width="17" height="14">
+                    <use href="#i-arrow-l"></use>
+                  </svg>
                 </button>
-                <button type="button" className="ams-arrow-btn ams-arrow-on btn_review_next" aria-label={t("general_text_32")}>
-                  <svg width="17" height="14"><use href="#i-arrow"></use></svg>
+                <button
+                  type="button"
+                  className="ams-arrow-btn ams-arrow-on btn_review_next"
+                  aria-label={t("general_text_32")}
+                >
+                  <svg width="17" height="14">
+                    <use href="#i-arrow"></use>
+                  </svg>
                 </button>
               </div>
             </div>

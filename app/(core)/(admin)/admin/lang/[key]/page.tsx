@@ -19,17 +19,24 @@ function guessMode(v: string): LangMode {
   return "text";
 }
 
-export default async function LangEditPage({ params, searchParams }: PageProps<"/admin/lang/[key]">) {
+export default async function LangEditPage({
+  params,
+  searchParams,
+}: PageProps<"/admin/lang/[key]">) {
   const [{ key: raw }, sp] = await Promise.all([params, searchParams]);
   const admin = await requireAdmin();
   if (!can(admin, "lang", "edit")) redirect("/admin?denied=1");
   const key = decodeURIComponent(raw);
-  const row = (await db.langs.findUnique({ where: { key }, select: { key: true, vi: true, en: true } })) as LangRow | null;
+  const row = (await db.langs.findUnique({
+    where: { key },
+    select: { key: true, vi: true, en: true },
+  })) as LangRow | null;
   if (!row) notFound();
   const lang = LANGS.find((l) => l.value === sp.lang)?.value ?? "vi";
   const value = String(row[lang] ?? "");
   const fixed = (declared as Record<string, string>)[key];
-  const mode = LANG_MODES.find((m) => m.value === fixed)?.value ?? modeFromQuery(sp) ?? guessMode(value);
+  const mode =
+    LANG_MODES.find((m) => m.value === fixed)?.value ?? modeFromQuery(sp) ?? guessMode(value);
   const sats = (await db.langs.findMany({
     where: { key: { in: [`${key}_link`, `${key}_title`, `${key}_description`, `${key}-mobile`] } },
     select: { key: true, vi: true, en: true },

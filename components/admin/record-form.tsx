@@ -32,23 +32,32 @@ export function RecordForm({
   children?: React.ReactNode;
 }) {
   const router = useLoadingRouter();
-  const [state, action, pending] = useActionState<SaveState, FormData>(saveAction.bind(null, module.key, id), {});
+  const [state, action, pending] = useActionState<SaveState, FormData>(
+    saveAction.bind(null, module.key, id),
+    {},
+  );
 
   useEffect(() => {
     if (!state.at) return;
-    if (state.error) toast.add({ type: "error", title: "Không lưu được", description: state.error });
+    if (state.error)
+      toast.add({ type: "error", title: "Không lưu được", description: state.error });
     else if (state.ok) {
       toast.add({ type: "success", title: state.message ?? "Đã lưu" });
       if (state.redirect) router.push(state.redirect);
       else router.refresh();
     }
-  }, [state.at]);
+  }, [state, router]);
 
-  const visible = module.fields.filter((f) => !(f.only === "add" && id) && !(f.only === "edit" && !id));
+  const visible = module.fields.filter(
+    (f) => !(f.only === "add" && id) && !(f.only === "edit" && !id),
+  );
   const tabs = [MAIN_TAB, ...module.tabs.filter((t) => t !== MAIN_TAB)];
   for (const f of visible) if (f.tab && !tabs.includes(f.tab)) tabs.push(f.tab);
-  const groups = tabs.map((t) => ({ tab: t, fields: visible.filter((f) => (f.tab ?? MAIN_TAB) === t) })).filter((g) => g.fields.length);
-  const heading = title ?? (id ? `Sửa ${module.title.toLowerCase()}` : `Thêm ${module.title.toLowerCase()}`);
+  const groups = tabs
+    .map((t) => ({ tab: t, fields: visible.filter((f) => (f.tab ?? MAIN_TAB) === t) }))
+    .filter((g) => g.fields.length);
+  const heading =
+    title ?? (id ? `Sửa ${module.title.toLowerCase()}` : `Thêm ${module.title.toLowerCase()}`);
 
   const renderFields = (fields: ClientField[]) => (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -67,14 +76,28 @@ export function RecordForm({
 
   return (
     <form action={action} className="flex flex-col gap-4 p-2 md:p-4">
-      {id && <SetBreadcrumb segment={String(id)} label={String(values.title ?? values.name ?? values.code ?? `#${id}`)} />}
+      {id && (
+        <SetBreadcrumb
+          segment={String(id)}
+          label={String(values.title ?? values.name ?? values.code ?? `#${id}`)}
+        />
+      )}
       <div className="flex flex-wrap items-center gap-2">
-        <Button type="button" variant="outline" className="border-none" onClick={() => router.push(`/admin/${module.key}`)}>
+        <Button
+          type="button"
+          variant="outline"
+          className="border-none"
+          onClick={() => router.push(`/admin/${module.key}`)}
+        >
           <ChevronLeft /> Danh sách
         </Button>
         <h1 className="text-lg font-semibold">{heading}</h1>
         {preview && (
-          <Link href={preview} target="_blank" className="flex items-center gap-1 text-sm text-primary hover:underline">
+          <Link
+            href={preview}
+            target="_blank"
+            className="flex items-center gap-1 text-sm text-primary hover:underline"
+          >
             <ExternalLink className="size-3.5" /> Xem trên website
           </Link>
         )}

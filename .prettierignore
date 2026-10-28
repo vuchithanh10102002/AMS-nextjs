@@ -1,0 +1,7 @@
+public/
+database/
+prisma/generated/
+.next/
+node_modules/
+package-lock.json
+*.md

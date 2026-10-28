@@ -7,12 +7,20 @@ import type { ClientField } from "@/lib/modules/types";
 function parse(value: unknown, count: number) {
   try {
     const v = JSON.parse(String(value ?? "")) as { value?: unknown[] };
-    if (Array.isArray(v?.value)) return Array.from({ length: count }, (_, i) => String(v.value?.[i] ?? ""));
+    if (Array.isArray(v?.value))
+      return Array.from({ length: count }, (_, i) => String(v.value?.[i] ?? ""));
   } catch {}
   return Array.from({ length: count }, () => "");
 }
 
-export function ProductRating({ value, labels }: { field: ClientField; value?: unknown; labels: string[] }) {
+export function ProductRating({
+  value,
+  labels,
+}: {
+  field: ClientField;
+  value?: unknown;
+  labels: string[];
+}) {
   const [vals, setVals] = useState(() => parse(value, labels.length));
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
@@ -28,7 +36,10 @@ export function ProductRating({ value, labels }: { field: ClientField; value?: u
               name="extra_value"
               value={vals[i]}
               onChange={(e) => {
-                const n = e.target.value === "" ? "" : String(Math.min(100, Math.max(0, Number(e.target.value))));
+                const n =
+                  e.target.value === ""
+                    ? ""
+                    : String(Math.min(100, Math.max(0, Number(e.target.value))));
                 setVals((s) => s.map((x, j) => (j === i ? n : x)));
               }}
             />

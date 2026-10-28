@@ -22,17 +22,29 @@ export async function saveProfile(_: ProfileState, form: FormData): Promise<Prof
     const confirm = String(form.get("confirm_password") ?? "");
     if (!fullname) throw new Error("Vui lòng nhập Họ tên");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Email không hợp lệ");
-    const data: Record<string, string> = { fullname: fullname.slice(0, 34), email: email.slice(0, 64), phone, image };
+    const data: Record<string, string> = {
+      fullname: fullname.slice(0, 34),
+      email: email.slice(0, 64),
+      phone,
+      image,
+    };
     if (next) {
       if (next.length < 6) throw new Error("Mật khẩu mới tối thiểu 6 ký tự");
       if (next !== confirm) throw new Error("Nhập lại mật khẩu mới không khớp");
-      const row = await db.admins.findUnique({ where: { id: admin.id }, select: { password: true } });
+      const row = await db.admins.findUnique({
+        where: { id: admin.id },
+        select: { password: true },
+      });
       if (!row || row.password !== md5(current)) throw new Error("Mật khẩu hiện tại không đúng");
       data.password = md5(next);
     }
     await db.admins.updateMany({ where: { id: admin.id }, data });
     revalidatePath("/admin", "layout");
-    return { ok: true, message: next ? "Đã cập nhật thông tin và mật khẩu" : "Cập nhật thành công", at: Date.now() };
+    return {
+      ok: true,
+      message: next ? "Đã cập nhật thông tin và mật khẩu" : "Cập nhật thành công",
+      at: Date.now(),
+    };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "Có lỗi xảy ra", at: Date.now() };
   }

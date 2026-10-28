@@ -16,7 +16,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <SidebarProvider>
-      <AppSidebar menu={menuFor((p) => can(admin, p, "list"))} siteName={settings.site_name || settings.title || "Website"} badges={badges} />
+      <AppSidebar
+        menu={menuFor((p) => can(admin, p, "list"))}
+        siteName={settings.site_name || settings.title || "Website"}
+        badges={badges}
+      />
       <SidebarInset className="min-w-0">
         <BreadcrumbProvider>
           <main className="flex-1 min-w-0 p-0 md:p-2 bg-sidebar shadow-md">

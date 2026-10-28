@@ -31,15 +31,14 @@ export function DashboardBreadcrumb() {
   const { start } = useRouteLoader();
 
   const segments = pathname.split("/").filter(Boolean); // e.g. ["dashboard", "profile", "user_123"]
-  const getLabel = (segment: string) =>
-    overrides[segment] ?? breadcrumbLabels[segment] ?? segment;
+  const getLabel = (segment: string) => overrides[segment] ?? breadcrumbLabels[segment] ?? segment;
 
   const getHref = (i: number) => "/" + segments.slice(0, i + 1).join("/");
 
   const lastSegment = segments[segments.length - 1];
   const middleSegments = segments.slice(0, -1);
 
-return (
+  return (
     <Breadcrumb>
       <BreadcrumbList className="lg:gap-y-1">
         {/* Desktop: full trail, hidden on mobile */}
@@ -72,7 +71,7 @@ return (
                         key={getHref(i)}
                         onClick={() => {
                           start();
-                          router.push(getHref(i))
+                          router.push(getHref(i));
                         }}
                       >
                         {getLabel(segment)}

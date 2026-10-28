@@ -10,7 +10,9 @@
     "postinstall": "node scripts/copy-tinymce.js && prisma generate",
     "lang-modes": "node scripts/lang-modes.js .",
     "db:pull": "prisma db pull && node scripts/prisma-fix.js && prisma format && prisma generate",
-    "db:generate": "prisma generate"
+    "db:generate": "prisma generate",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -48,6 +50,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
+    "prettier": "^3.9.10",
     "prisma": "7.10.1",
     "tailwindcss": "^4",
     "typescript": "^5"

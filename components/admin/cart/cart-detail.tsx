@@ -4,7 +4,15 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Check, ChevronLeft, Printer, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,20 +41,51 @@ export type OrderLine = {
   quantity: number;
   nodeId: number | null;
   nodeType: string | null;
-  combo: { title: string; products: { title: string; image: string | null; price: number }[] } | null;
+  combo: {
+    title: string;
+    products: { title: string; image: string | null; price: number }[];
+  } | null;
 };
 
 type Bill = Record<string, any>;
-type Customer = { id: number; fullname: string | null; username: string | null; phone: string | null; email: string | null; level: string | null };
+type Customer = {
+  id: number;
+  fullname: string | null;
+  username: string | null;
+  phone: string | null;
+  email: string | null;
+  level: string | null;
+};
 
 const money = (v: unknown) => Number(v ?? 0).toLocaleString("vi-VN") + " đ";
-const dateTime = (v: unknown) => (Number(v) ? new Date(Number(v) * 1000).toLocaleString("vi-VN") : "—");
+const dateTime = (v: unknown) =>
+  Number(v) ? new Date(Number(v) * 1000).toLocaleString("vi-VN") : "—";
 
 function Thumb({ src }: { src: string | null }) {
-  return src ? <img src={previewUrl(src)} alt="" className="size-16 shrink-0 rounded border object-cover bg-muted" /> : <div className="size-16 shrink-0 rounded border bg-muted" />;
+  return src ? (
+    <img
+      src={previewUrl(src)}
+      alt=""
+      className="size-16 shrink-0 rounded border object-cover bg-muted"
+    />
+  ) : (
+    <div className="size-16 shrink-0 rounded border bg-muted" />
+  );
 }
 
-export function CartDetail({ bill, lines, customer, canEdit, canDelete }: { bill: Bill; lines: OrderLine[]; customer: Customer | null; canEdit: boolean; canDelete: boolean }) {
+export function CartDetail({
+  bill,
+  lines,
+  customer,
+  canEdit,
+  canDelete,
+}: {
+  bill: Bill;
+  lines: OrderLine[];
+  customer: Customer | null;
+  canEdit: boolean;
+  canDelete: boolean;
+}) {
   const router = useLoadingRouter();
   const [status, setStatus] = useState(Number(bill.status) || 0);
   const [confirm, setConfirm] = useState(false);
@@ -104,7 +143,11 @@ export function CartDetail({ bill, lines, customer, canEdit, canDelete }: { bill
     <div className="flex flex-col gap-4 p-2 md:p-4 print:p-0">
       <SetBreadcrumb segment={String(bill.id)} label={`Đơn #${bill.id}`} />
       <div className="flex flex-wrap items-center gap-2 print:hidden">
-        <Button variant="outline" className="border-none" onClick={() => router.push("/admin/cart")}>
+        <Button
+          variant="outline"
+          className="border-none"
+          onClick={() => router.push("/admin/cart")}
+        >
           <ChevronLeft /> Danh sách
         </Button>
         <h1 className="text-lg font-semibold">Đơn hàng #{bill.id}</h1>
@@ -134,10 +177,17 @@ export function CartDetail({ bill, lines, customer, canEdit, canDelete }: { bill
                   onClick={() => changeStatus(n)}
                   className={cn(
                     "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm transition-colors enabled:hover:border-primary",
-                    done ? "border-primary bg-primary/10 font-medium text-primary" : "text-muted-foreground",
+                    done
+                      ? "border-primary bg-primary/10 font-medium text-primary"
+                      : "text-muted-foreground",
                   )}
                 >
-                  <span className={cn("flex size-6 shrink-0 items-center justify-center rounded-full border text-xs", done && "border-primary bg-primary text-primary-foreground")}>
+                  <span
+                    className={cn(
+                      "flex size-6 shrink-0 items-center justify-center rounded-full border text-xs",
+                      done && "border-primary bg-primary text-primary-foreground",
+                    )}
+                  >
                     {done ? <Check className="size-3.5" /> : n + 1}
                   </span>
                   {s.label}
@@ -147,7 +197,9 @@ export function CartDetail({ bill, lines, customer, canEdit, canDelete }: { bill
           })}
         </ol>
       </div>
-      <p className="hidden text-sm print:block">Trạng thái: {orderStatus[status]?.label ?? status}</p>
+      <p className="hidden text-sm print:block">
+        Trạng thái: {orderStatus[status]?.label ?? status}
+      </p>
 
       <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
         <div className="overflow-x-auto">
@@ -178,7 +230,10 @@ export function CartDetail({ bill, lines, customer, canEdit, canDelete }: { bill
                   </TableCell>
                   <TableCell className="whitespace-normal">
                     {l.nodeType === "product" ? (
-                      <Link href={`/admin/product/${l.nodeId}`} className="font-medium hover:text-primary hover:underline">
+                      <Link
+                        href={`/admin/product/${l.nodeId}`}
+                        className="font-medium hover:text-primary hover:underline"
+                      >
                         {l.title}
                       </Link>
                     ) : (
@@ -191,7 +246,13 @@ export function CartDetail({ bill, lines, customer, canEdit, canDelete }: { bill
                           <div key={j} className="flex items-center gap-2">
                             {j > 0 && <span className="text-muted-foreground">+</span>}
                             <div className="flex items-center gap-2 rounded border p-1 pr-2 text-xs">
-                              {p.image && <img src={previewUrl(p.image)} alt="" className="size-10 rounded object-cover" />}
+                              {p.image && (
+                                <img
+                                  src={previewUrl(p.image)}
+                                  alt=""
+                                  className="size-10 rounded object-cover"
+                                />
+                              )}
                               <div>
                                 <div className="font-medium">{p.title}</div>
                                 <div className="text-muted-foreground">{money(p.price)}</div>
@@ -201,7 +262,9 @@ export function CartDetail({ bill, lines, customer, canEdit, canDelete }: { bill
                         ))}
                       </div>
                     )}
-                    {!l.nodeType && l.nodeId ? <div className="text-xs text-destructive">Sản phẩm đã bị xoá</div> : null}
+                    {!l.nodeType && l.nodeId ? (
+                      <div className="text-xs text-destructive">Sản phẩm đã bị xoá</div>
+                    ) : null}
                   </TableCell>
                   <TableCell className="text-right">{money(l.price)}</TableCell>
                   <TableCell className="text-right">{l.quantity}</TableCell>
@@ -214,7 +277,9 @@ export function CartDetail({ bill, lines, customer, canEdit, canDelete }: { bill
                 <TableCell colSpan={5} className="text-right">
                   Giá gốc
                 </TableCell>
-                <TableCell className="text-right">{money(Number(bill.cart_sum) || lineTotal)}</TableCell>
+                <TableCell className="text-right">
+                  {money(Number(bill.cart_sum) || lineTotal)}
+                </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell colSpan={5} className="text-right">
@@ -226,7 +291,9 @@ export function CartDetail({ bill, lines, customer, canEdit, canDelete }: { bill
                 <TableCell colSpan={5} className="text-right font-semibold">
                   Tổng thanh toán
                 </TableCell>
-                <TableCell className="text-right font-semibold text-primary">{money(bill.paid_cart)}</TableCell>
+                <TableCell className="text-right font-semibold text-primary">
+                  {money(bill.paid_cart)}
+                </TableCell>
               </TableRow>
             </TableFooter>
           </Table>
@@ -249,7 +316,9 @@ export function CartDetail({ bill, lines, customer, canEdit, canDelete }: { bill
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Xoá đơn hàng #{bill.id}?</AlertDialogTitle>
-            <AlertDialogDescription>Đơn và các dòng hàng của đơn sẽ bị xoá. Thao tác này không hoàn tác được.</AlertDialogDescription>
+            <AlertDialogDescription>
+              Đơn và các dòng hàng của đơn sẽ bị xoá. Thao tác này không hoàn tác được.
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Huỷ</AlertDialogCancel>

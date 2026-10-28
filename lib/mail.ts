@@ -15,5 +15,10 @@ export async function sendMail(to: string, subject: string, html: string) {
     requireTLS: mode === "tls",
     auth: { user: s.smtp_email, pass: s.smtp_pass },
   });
-  await transport.sendMail({ from: `"${s.site_name || s.title || "Website"}" <${s.smtp_email}>`, to, subject, html });
+  await transport.sendMail({
+    from: `"${s.site_name || s.title || "Website"}" <${s.smtp_email}>`,
+    to,
+    subject,
+    html,
+  });
 }

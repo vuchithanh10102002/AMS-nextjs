@@ -13,7 +13,9 @@ export async function PageDetail({ cur }: { cur: Cat }) {
         <div className="wrap">
           <div
             className="ams-content"
-            dangerouslySetInnerHTML={{ __html: `<h2 class="ams-pg-title">${s.tr(cur.node, "title")}${s.adm("category", cur.node.id)}</h2>${s.tr(cur, "content")}` }}
+            dangerouslySetInnerHTML={{
+              __html: `<h2 class="ams-pg-title">${s.tr(cur.node, "title")}${s.adm("category", cur.node.id)}</h2>${s.tr(cur, "content")}`,
+            }}
           />
         </div>
       </section>

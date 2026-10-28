@@ -19,7 +19,8 @@ export function src(path?: string | null) {
 
 export function queryString(q: Query) {
   const u = new URLSearchParams();
-  for (const [k, v] of Object.entries(q)) for (const x of Array.isArray(v) ? v : [v ?? ""]) u.append(k, x);
+  for (const [k, v] of Object.entries(q))
+    for (const x of Array.isArray(v) ? v : [v ?? ""]) u.append(k, x);
   return u.toString();
 }
 

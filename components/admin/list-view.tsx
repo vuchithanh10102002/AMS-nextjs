@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Copy, ExternalLink, Filter, Pencil, Plus, Save, Search, Trash2, X } from "lucide-react";
@@ -9,7 +9,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Switch } from "@/components/ui/switch";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,7 +52,10 @@ export function formatCell(col: Column, v: any) {
       return new Date(String(v).replace(" ", "T")).toLocaleDateString("vi-VN");
     case "datetime": {
       const n = Number(v);
-      const d = /^\d+$/.test(String(v)) && n > 1e9 ? new Date(n * 1000) : new Date(String(v).replace(" ", "T"));
+      const d =
+        /^\d+$/.test(String(v)) && n > 1e9
+          ? new Date(n * 1000)
+          : new Date(String(v).replace(" ", "T"));
       return Number.isNaN(d.getTime()) ? String(v) : d.toLocaleString("vi-VN");
     }
     case "badge":
@@ -53,7 +63,13 @@ export function formatCell(col: Column, v: any) {
     case "categories":
       return Array.isArray(v) && v.length ? v.join(", ") : "—";
     case "html":
-      return String(v).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160) || "—";
+      return (
+        String(v)
+          .replace(/<[^>]+>/g, " ")
+          .replace(/\s+/g, " ")
+          .trim()
+          .slice(0, 160) || "—"
+      );
     default:
       return String(v);
   }
@@ -85,7 +101,9 @@ export function ListView({
   const [selected, setSelected] = useState<number[]>([]);
   const [positions, setPositions] = useState<Record<string, number>>({});
   const [confirm, setConfirm] = useState<number[] | null>(null);
-  const [filters, setFilters] = useState<Record<string, string>>(() => Object.fromEntries(params.entries()));
+  const [filters, setFilters] = useState<Record<string, string>>(() =>
+    Object.fromEntries(params.entries()),
+  );
   const [pending, start] = useTransition();
 
   const [shownRows, setShownRows] = useState(initialRows);
@@ -201,9 +219,23 @@ export function ListView({
               return (
                 <div key={f.name} className="flex w-full flex-wrap items-center gap-1 sm:w-auto">
                   <span className="text-sm text-muted-foreground">{f.label}</span>
-                  <Input type="date" className="w-36 flex-1 sm:w-40 sm:flex-none" value={filters[`${f.name}_from`] ?? ""} onChange={(e) => setFilters((s) => ({ ...s, [`${f.name}_from`]: e.target.value }))} />
+                  <Input
+                    type="date"
+                    className="w-36 flex-1 sm:w-40 sm:flex-none"
+                    value={filters[`${f.name}_from`] ?? ""}
+                    onChange={(e) =>
+                      setFilters((s) => ({ ...s, [`${f.name}_from`]: e.target.value }))
+                    }
+                  />
                   <span>–</span>
-                  <Input type="date" className="w-36 flex-1 sm:w-40 sm:flex-none" value={filters[`${f.name}_to`] ?? ""} onChange={(e) => setFilters((s) => ({ ...s, [`${f.name}_to`]: e.target.value }))} />
+                  <Input
+                    type="date"
+                    className="w-36 flex-1 sm:w-40 sm:flex-none"
+                    value={filters[`${f.name}_to`] ?? ""}
+                    onChange={(e) =>
+                      setFilters((s) => ({ ...s, [`${f.name}_to`]: e.target.value }))
+                    }
+                  />
                 </div>
               );
             return (
@@ -236,7 +268,10 @@ export function ListView({
               <TableRow className="bg-primary/10 hover:bg-primary/20">
                 {module.deletes && module.can.delete && (
                   <TableHead className="w-8">
-                    <Checkbox checked={allChecked} onCheckedChange={(c) => setSelected(c ? rows.map((r) => r.id) : [])} />
+                    <Checkbox
+                      checked={allChecked}
+                      onCheckedChange={(c) => setSelected(c ? rows.map((r) => r.id) : [])}
+                    />
                   </TableHead>
                 )}
                 <TableHead className="w-10">STT</TableHead>
@@ -251,7 +286,10 @@ export function ListView({
             <TableBody>
               {rows.length === 0 && (
                 <TableRow className="hover:bg-transparent">
-                  <TableCell colSpan={module.columns.length + 3} className="h-20 text-center text-sm text-muted-foreground">
+                  <TableCell
+                    colSpan={module.columns.length + 3}
+                    className="h-20 text-center text-sm text-muted-foreground"
+                  >
                     Không có dữ liệu
                   </TableCell>
                 </TableRow>
@@ -259,28 +297,47 @@ export function ListView({
               {rows.map((row, i) => {
                 const editHref = `/admin/${module.key}/${row.id}`;
                 return (
-                  <TableRow key={row.id} data-state={selected.includes(row.id) ? "selected" : undefined}>
+                  <TableRow
+                    key={row.id}
+                    data-state={selected.includes(row.id) ? "selected" : undefined}
+                  >
                     {module.deletes && module.can.delete && (
                       <TableCell>
                         <Checkbox
                           checked={selected.includes(row.id)}
-                          onCheckedChange={(c) => setSelected((s) => (c ? [...s, row.id] : s.filter((x) => x !== row.id)))}
+                          onCheckedChange={(c) =>
+                            setSelected((s) => (c ? [...s, row.id] : s.filter((x) => x !== row.id)))
+                          }
                         />
                       </TableCell>
                     )}
-                    <TableCell className="text-muted-foreground">{(page - 1) * pageSize + i + 1}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {(page - 1) * pageSize + i + 1}
+                    </TableCell>
                     {module.columns.map((c) => {
                       const v = row[c.name];
                       if (c.kind === "image")
                         return (
                           <TableCell key={c.name}>
-                            {v ? <img src={previewUrl(String(v).split(",")[0])} alt="" className="h-12 w-16 rounded border object-cover bg-muted" /> : "—"}
+                            {v ? (
+                              <img
+                                src={previewUrl(String(v).split(",")[0])}
+                                alt=""
+                                className="h-12 w-16 rounded border object-cover bg-muted"
+                              />
+                            ) : (
+                              "—"
+                            )}
                           </TableCell>
                         );
                       if (c.kind === "toggle")
                         return (
                           <TableCell key={c.name}>
-                            <Switch checked={Number(v) === 1} disabled={!canToggle} onCheckedChange={() => toggle(row, c.name)} />
+                            <Switch
+                              checked={Number(v) === 1}
+                              disabled={!canToggle}
+                              onCheckedChange={() => toggle(row, c.name)}
+                            />
                           </TableCell>
                         );
                       if (c.kind === "pos")
@@ -291,12 +348,17 @@ export function ListView({
                               className="h-8 w-16"
                               disabled={!module.can.edit}
                               value={positions[row.id] ?? v ?? 1}
-                              onChange={(e) => setPositions((p) => ({ ...p, [row.id]: Number(e.target.value) }))}
+                              onChange={(e) =>
+                                setPositions((p) => ({ ...p, [row.id]: Number(e.target.value) }))
+                              }
                             />
                           </TableCell>
                         );
                       return (
-                        <TableCell key={c.name} className={cn("max-w-80 whitespace-normal", c.link && "font-medium")}>
+                        <TableCell
+                          key={c.name}
+                          className={cn("max-w-80 whitespace-normal", c.link && "font-medium")}
+                        >
                           {c.link && module.edits ? (
                             <Link href={editHref} className="hover:text-primary hover:underline">
                               {formatCell(c, v)}
@@ -310,22 +372,50 @@ export function ListView({
                     <TableCell>
                       <div className="flex justify-end gap-0.5">
                         {module.previewLink && siteUrl && row.slug && (
-                          <Button variant="ghost" size="icon-sm" title="Xem trên website" nativeButton={false} render={<a href={`${siteUrl}${row.slug}.html`} target="_blank" rel="noreferrer" />}>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            title="Xem trên website"
+                            nativeButton={false}
+                            render={
+                              <a
+                                href={`${siteUrl}${row.slug}.html`}
+                                target="_blank"
+                                rel="noreferrer"
+                              />
+                            }
+                          >
                             <ExternalLink />
                           </Button>
                         )}
                         {module.copies && module.can.add && (
-                          <Button variant="ghost" size="icon-sm" title="Nhân bản" onClick={() => copy(row.id)}>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            title="Nhân bản"
+                            onClick={() => copy(row.id)}
+                          >
                             <Copy />
                           </Button>
                         )}
                         {module.edits && (
-                          <Button variant="ghost" size="icon-sm" title={module.can.edit ? "Sửa" : "Xem"} onClick={() => router.push(editHref)}>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            title={module.can.edit ? "Sửa" : "Xem"}
+                            onClick={() => router.push(editHref)}
+                          >
                             <Pencil />
                           </Button>
                         )}
                         {module.deletes && module.can.delete && (
-                          <Button variant="ghost" size="icon-sm" title="Xoá" className="text-destructive" onClick={() => setConfirm([row.id])}>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            title="Xoá"
+                            className="text-destructive"
+                            onClick={() => setConfirm([row.id])}
+                          >
                             <Trash2 />
                           </Button>
                         )}
@@ -339,17 +429,29 @@ export function ListView({
         </div>
       </div>
 
-      {pages > 1 && <Pager page={page} pages={pages} onGo={(p) => go({ ...Object.fromEntries(params.entries()), page: String(p) })} />}
+      {pages > 1 && (
+        <Pager
+          page={page}
+          pages={pages}
+          onGo={(p) => go({ ...Object.fromEntries(params.entries()), page: String(p) })}
+        />
+      )}
 
       <AlertDialog open={!!confirm} onOpenChange={(o) => !o && setConfirm(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Bạn chắc chắn muốn xoá?</AlertDialogTitle>
-            <AlertDialogDescription>Sẽ xoá {confirm?.length} mục. Thao tác này không hoàn tác được.</AlertDialogDescription>
+            <AlertDialogDescription>
+              Sẽ xoá {confirm?.length} mục. Thao tác này không hoàn tác được.
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Huỷ</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" disabled={pending} onClick={() => confirm && doDelete(confirm)}>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={pending}
+              onClick={() => confirm && doDelete(confirm)}
+            >
               Xoá
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -359,7 +461,15 @@ export function ListView({
   );
 }
 
-export function Pager({ page, pages, onGo }: { page: number; pages: number; onGo: (p: number) => void }) {
+export function Pager({
+  page,
+  pages,
+  onGo,
+}: {
+  page: number;
+  pages: number;
+  onGo: (p: number) => void;
+}) {
   const nums: (number | "…")[] = [];
   for (let p = 1; p <= pages; p++) {
     if (p === 1 || p === pages || Math.abs(p - page) <= 2) nums.push(p);
@@ -376,7 +486,12 @@ export function Pager({ page, pages, onGo }: { page: number; pages: number; onGo
             …
           </span>
         ) : (
-          <Button key={i} variant={n === page ? "default" : "outline"} size="sm" onClick={() => onGo(n)}>
+          <Button
+            key={i}
+            variant={n === page ? "default" : "outline"}
+            size="sm"
+            onClick={() => onGo(n)}
+          >
             {n}
           </Button>
         ),

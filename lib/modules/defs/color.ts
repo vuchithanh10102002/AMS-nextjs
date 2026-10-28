@@ -36,8 +36,14 @@ export const color: ModuleDef = {
     },
     afterDelete: async (ids) => {
       for (const id of ids)
-        for (const p of await db.products.findMany({ where: { colors: { contains: `,${id},` } }, select: { id: true, colors: true } }))
-          await db.products.updateMany({ where: { id: p.id }, data: { colors: String(p.colors).split(`,${id},`).join(",") } });
+        for (const p of await db.products.findMany({
+          where: { colors: { contains: `,${id},` } },
+          select: { id: true, colors: true },
+        }))
+          await db.products.updateMany({
+            where: { id: p.id },
+            data: { colors: String(p.colors).split(`,${id},`).join(",") },
+          });
     },
   },
 };

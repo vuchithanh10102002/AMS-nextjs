@@ -8,7 +8,11 @@ function readItems(form: FormData): Item[] {
   const titles = form.getAll("item_title").map(String);
   const contents = form.getAll("item_content").map(String);
   return titles
-    .map((t, i) => ({ id: /^\d+$/.test(ids[i] ?? "") ? Number(ids[i]) : null, title: t.trim(), content: (contents[i] ?? "").trim() }))
+    .map((t, i) => ({
+      id: /^\d+$/.test(ids[i] ?? "") ? Number(ids[i]) : null,
+      title: t.trim(),
+      content: (contents[i] ?? "").trim(),
+    }))
     .filter((it) => it.title);
 }
 
@@ -36,14 +40,25 @@ export const filter: ModuleDef = {
   },
   hooks: {
     load: async (row) => {
-      row.items = await db.filter_items.findMany({ where: { filter_id: row.id }, select: { id: true, title: true, content: true }, orderBy: [{ pos: "asc" }, { id: "asc" }] });
+      row.items = await db.filter_items.findMany({
+        where: { filter_id: row.id },
+        select: { id: true, title: true, content: true },
+        orderBy: [{ pos: "asc" }, { id: "asc" }],
+      });
       return row;
     },
     decorate: async (rows) => {
       const ids = rows.map((r) => Number(r.id));
       if (!ids.length) return;
-      const items = await db.filter_items.findMany({ where: { filter_id: { in: ids } }, select: { filter_id: true, title: true }, orderBy: [{ pos: "asc" }, { id: "asc" }] });
-      const links = await db.filter_linkeds.findMany({ where: { item: { is: { filter_id: { in: ids } } } }, select: { node_id: true, item: { select: { filter_id: true } } } });
+      const items = await db.filter_items.findMany({
+        where: { filter_id: { in: ids } },
+        select: { filter_id: true, title: true },
+        orderBy: [{ pos: "asc" }, { id: "asc" }],
+      });
+      const links = await db.filter_linkeds.findMany({
+        where: { item: { is: { filter_id: { in: ids } } } },
+        select: { node_id: true, item: { select: { filter_id: true } } },
+      });
       const counts = new Map<number, Set<number>>();
       for (const l of links) {
         const fid = Number(l.item?.filter_id);
@@ -52,7 +67,10 @@ export const filter: ModuleDef = {
         counts.get(fid)!.add(l.node_id);
       }
       for (const r of rows) {
-        r._items = items.filter((i) => i.filter_id === r.id).map((i) => i.title).join(", ");
+        r._items = items
+          .filter((i) => i.filter_id === r.id)
+          .map((i) => i.title)
+          .join(", ");
         r._products = counts.get(r.id)?.size ?? 0;
       }
     },
@@ -62,7 +80,11 @@ export const filter: ModuleDef = {
     },
     afterSave: async (id, _, ctx) => {
       const items = readItems(ctx.form);
-      const existing = new Set((await db.filter_items.findMany({ where: { filter_id: id }, select: { id: true } })).map((r) => r.id));
+      const existing = new Set(
+        (await db.filter_items.findMany({ where: { filter_id: id }, select: { id: true } })).map(
+          (r) => r.id,
+        ),
+      );
       const keep: number[] = [];
       for (const [i, it] of items.entries()) {
         const data = { title: it.title, content: it.content, pos: i + 1 };
@@ -81,14 +103,24 @@ export const filter: ModuleDef = {
       }
     },
     afterDelete: async (ids) => {
-      const itemIds = (await db.filter_items.findMany({ where: { filter_id: { in: ids } }, select: { id: true } })).map((i) => i.id);
-      if (itemIds.length) await db.filter_linkeds.deleteMany({ where: { filter_item_id: { in: itemIds } } });
+      const itemIds = (
+        await db.filter_items.findMany({ where: { filter_id: { in: ids } }, select: { id: true } })
+      ).map((i) => i.id);
+      if (itemIds.length)
+        await db.filter_linkeds.deleteMany({ where: { filter_item_id: { in: itemIds } } });
       await db.filter_items.deleteMany({ where: { filter_id: { in: ids } } });
-      const cats = await db.categories.findMany({ where: { AND: [{ filter_id_list: { not: null } }, { filter_id_list: { not: "" } }] }, select: { id: true, filter_id_list: true } });
+      const cats = await db.categories.findMany({
+        where: { AND: [{ filter_id_list: { not: null } }, { filter_id_list: { not: "" } }] },
+        select: { id: true, filter_id_list: true },
+      });
       for (const c of cats) {
         const list = String(c.filter_id_list).split(",");
         const next = list.filter((x) => !ids.includes(Number(x)));
-        if (next.length !== list.length) await db.categories.updateMany({ where: { id: c.id }, data: { filter_id_list: next.join(",") } });
+        if (next.length !== list.length)
+          await db.categories.updateMany({
+            where: { id: c.id },
+            data: { filter_id_list: next.join(",") },
+          });
       }
     },
   },

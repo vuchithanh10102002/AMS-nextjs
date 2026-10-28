@@ -9,7 +9,10 @@ export function isSuper(admin: Admin) {
 }
 
 export function roles(admin: Admin) {
-  return (admin.role ?? "").split(",").map((r) => r.trim()).filter(Boolean);
+  return (admin.role ?? "")
+    .split(",")
+    .map((r) => r.trim())
+    .filter(Boolean);
 }
 
 export function can(admin: Admin, perm: string, act: Act) {

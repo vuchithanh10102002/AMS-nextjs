@@ -8,7 +8,10 @@ export async function titleExists(title: string, excludeNodeId?: number | null, 
   await requireAdmin();
   const t = title.trim();
   if (t.length < 4) return false;
-  const row = await db.nodes.findFirst({ where: { title: t, id: { not: excludeNodeId ?? 0 }, ...(type ? { type } : {}) }, select: { id: true } });
+  const row = await db.nodes.findFirst({
+    where: { title: t, id: { not: excludeNodeId ?? 0 }, ...(type ? { type } : {}) },
+    select: { id: true },
+  });
   return !!row;
 }
 

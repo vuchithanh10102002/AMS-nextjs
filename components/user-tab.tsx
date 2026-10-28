@@ -14,7 +14,17 @@ import {
 import { useLoadingRouter } from "@/hooks/use-loading-router";
 import { logout } from "@/lib/actions/auth";
 
-export function UserTab({ name, email, image, siteUrl }: { name: string; email: string; image?: string; siteUrl: string }) {
+export function UserTab({
+  name,
+  email,
+  image,
+  siteUrl,
+}: {
+  name: string;
+  email: string;
+  image?: string;
+  siteUrl: string;
+}) {
   const router = useLoadingRouter();
   const avatar = (
     <Avatar>

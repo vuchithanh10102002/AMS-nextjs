@@ -23,8 +23,12 @@ export async function ProductItem({ v, tag = "h2" }: { v: ProductRow; tag?: "h2"
       </Tag>
       <p className="ams-sp-desc" dangerouslySetInnerHTML={{ __html: use }} />
       <div className="ams-sp-btns">
-        <a href={href} className="ams-sp-btn">{s.t("general_text_61")}</a>
-        <button type="button" className="ams-sp-quote btn_quote" data-product={strip(name)}>{s.t("general_text_44")}</button>
+        <a href={href} className="ams-sp-btn">
+          {s.t("general_text_61")}
+        </a>
+        <button type="button" className="ams-sp-quote btn_quote" data-product={strip(name)}>
+          {s.t("general_text_44")}
+        </button>
       </div>
     </div>
   );

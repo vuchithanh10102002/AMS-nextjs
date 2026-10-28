@@ -10,9 +10,22 @@ export const metadata: Metadata = { title: "Sửa tag" };
 
 export default async function TagEditPage({ params }: PageProps<"/admin/tag/[id]">) {
   const { id } = await params;
-  if (!(await db.nodes.findFirst({ where: { id: Number(id) || 0, type: "tag" }, select: { id: true } }))) notFound();
+  if (
+    !(await db.nodes.findFirst({
+      where: { id: Number(id) || 0, type: "tag" },
+      select: { id: true },
+    }))
+  )
+    notFound();
   await ensureTagRows();
   const data = await loadRecord("tag", id);
   const slug = (data.values as Record<string, unknown>).slug;
-  return <RecordForm module={data.module} id={data.id} values={data.values} preview={slug ? `${siteUrl()}tags/${slug}.html` : undefined} />;
+  return (
+    <RecordForm
+      module={data.module}
+      id={data.id}
+      values={data.values}
+      preview={slug ? `${siteUrl()}tags/${slug}.html` : undefined}
+    />
+  );
 }

@@ -64,58 +64,199 @@ export const category: ModuleDef = {
     fields: [
       { name: "title", label: "Tên mục lục", type: "text", required: true, maxLength: 128 },
       { name: "slug", label: "Slug", type: "slug", only: "edit", required: true },
-      { name: "parent_id", label: "Mục lục cha", type: "select", optionsKey: "parents", placeholder: "--- Mục lục gốc ---", half: true },
-      { name: "ctype", label: "Kiểu mục lục", type: "select", required: true, options: categoryTypes, half: true },
-      { name: "status", label: "Trạng thái", type: "select", required: true, default: 1, options: yesNo("Hoàn thiện", "Tạm lưu"), half: true },
-      { name: "link", label: "Nhập link", type: "text", target: "main", placeholder: "https://...", props: { show: ["link", "document"] } },
-      { name: "template_news", label: "Mẫu giao diện", type: "select", options: newsTemplates, placeholder: "Mặc định", props: { show: ["news"] } },
-      { name: "template_page", label: "Mẫu giao diện", type: "select", options: pageTemplates, placeholder: "Mặc định", props: { show: ["page", "document"] } },
-      { name: "page_title", label: "Tiêu đề Page", type: "text", props: { show: ["page", "document"] } },
-      { name: "content", label: "Nội dung Page", type: "editor", height: 400, props: { show: ["page", "document"] } },
-      { name: "description", label: "Mô tả", type: "editor", height: 300, props: { hide: ["page", "link"] } },
+      {
+        name: "parent_id",
+        label: "Mục lục cha",
+        type: "select",
+        optionsKey: "parents",
+        placeholder: "--- Mục lục gốc ---",
+        half: true,
+      },
+      {
+        name: "ctype",
+        label: "Kiểu mục lục",
+        type: "select",
+        required: true,
+        options: categoryTypes,
+        half: true,
+      },
+      {
+        name: "status",
+        label: "Trạng thái",
+        type: "select",
+        required: true,
+        default: 1,
+        options: yesNo("Hoàn thiện", "Tạm lưu"),
+        half: true,
+      },
+      {
+        name: "link",
+        label: "Nhập link",
+        type: "text",
+        target: "main",
+        placeholder: "https://...",
+        props: { show: ["link", "document"] },
+      },
+      {
+        name: "template_news",
+        label: "Mẫu giao diện",
+        type: "select",
+        options: newsTemplates,
+        placeholder: "Mặc định",
+        props: { show: ["news"] },
+      },
+      {
+        name: "template_page",
+        label: "Mẫu giao diện",
+        type: "select",
+        options: pageTemplates,
+        placeholder: "Mặc định",
+        props: { show: ["page", "document"] },
+      },
+      {
+        name: "page_title",
+        label: "Tiêu đề Page",
+        type: "text",
+        props: { show: ["page", "document"] },
+      },
+      {
+        name: "content",
+        label: "Nội dung Page",
+        type: "editor",
+        height: 400,
+        props: { show: ["page", "document"] },
+      },
+      {
+        name: "description",
+        label: "Mô tả",
+        type: "editor",
+        height: 300,
+        props: { hide: ["page", "link"] },
+      },
       { name: "image", label: "Ảnh", type: "image" },
-      { name: "menu", label: "Hiển thị thanh menu", type: "switch", default: 1, tab: "Hiển thị", half: true },
-      { name: "featured", label: "Nổi bật", type: "switch", default: 0, tab: "Hiển thị", half: true },
-      { name: "home_menu", label: "Menu trang chủ", type: "switch", default: 0, tab: "Hiển thị", half: true },
-      { name: "sidebar", label: "Sidebar", type: "switch", default: 0, tab: "Hiển thị", half: true },
-      { name: "footer_1", label: "Chân trang cột 1", type: "switch", default: 0, tab: "Hiển thị", half: true },
-      { name: "footer_2", label: "Chân trang cột 2", type: "switch", default: 0, tab: "Hiển thị", half: true },
-      { name: "footer_3", label: "Chân trang cột 3", type: "switch", default: 0, tab: "Hiển thị", half: true },
-      { name: "footer_4", label: "Chân trang cột 4", type: "switch", default: 0, tab: "Hiển thị", half: true },
+      {
+        name: "menu",
+        label: "Hiển thị thanh menu",
+        type: "switch",
+        default: 1,
+        tab: "Hiển thị",
+        half: true,
+      },
+      {
+        name: "featured",
+        label: "Nổi bật",
+        type: "switch",
+        default: 0,
+        tab: "Hiển thị",
+        half: true,
+      },
+      {
+        name: "home_menu",
+        label: "Menu trang chủ",
+        type: "switch",
+        default: 0,
+        tab: "Hiển thị",
+        half: true,
+      },
+      {
+        name: "sidebar",
+        label: "Sidebar",
+        type: "switch",
+        default: 0,
+        tab: "Hiển thị",
+        half: true,
+      },
+      {
+        name: "footer_1",
+        label: "Chân trang cột 1",
+        type: "switch",
+        default: 0,
+        tab: "Hiển thị",
+        half: true,
+      },
+      {
+        name: "footer_2",
+        label: "Chân trang cột 2",
+        type: "switch",
+        default: 0,
+        tab: "Hiển thị",
+        half: true,
+      },
+      {
+        name: "footer_3",
+        label: "Chân trang cột 3",
+        type: "switch",
+        default: 0,
+        tab: "Hiển thị",
+        half: true,
+      },
+      {
+        name: "footer_4",
+        label: "Chân trang cột 4",
+        type: "switch",
+        default: 0,
+        tab: "Hiển thị",
+        half: true,
+      },
       { name: "seo_title", label: "SEO Title", type: "text", tab: "SEO" },
       { name: "seo_keyword", label: "SEO Keywords", type: "textarea", rows: 2, tab: "SEO" },
-      { name: "seo_description", label: "SEO Description", type: "textarea", rows: 4, maxLength: 300, tab: "SEO" },
-      { name: "robots", label: "Robots", type: "select", default: 1, options: yesNo("Index", "Noindex"), tab: "SEO", half: true },
+      {
+        name: "seo_description",
+        label: "SEO Description",
+        type: "textarea",
+        rows: 4,
+        maxLength: 300,
+        tab: "SEO",
+      },
+      {
+        name: "robots",
+        label: "Robots",
+        type: "select",
+        default: 1,
+        options: yesNo("Index", "Noindex"),
+        tab: "SEO",
+        half: true,
+      },
     ],
   },
   hooks: {
     load: async (row) => ({
       ...row,
-      link: (await db.categories.findUnique({ where: { id: row._mid }, select: { link: true } }))?.link ?? "",
+      link:
+        (await db.categories.findUnique({ where: { id: row._mid }, select: { link: true } }))
+          ?.link ?? "",
       parent_id: row.parent_id && row.parent_id !== row._mid ? row.parent_id : "",
-      template_news: row.ctype === "news" ? row.template ?? "" : "",
-      template_page: row.ctype !== "news" ? row.template ?? "" : "",
+      template_news: row.ctype === "news" ? (row.template ?? "") : "",
+      template_page: row.ctype !== "news" ? (row.template ?? "") : "",
     }),
     beforeSave: async ({ node, main }, ctx) => {
       const ctype = String(main.ctype ?? ctx.before?.ctype ?? "news");
-      if (!categoryTypes.some((t) => t.value === ctype)) throw new Error("Kiểu mục lục không hợp lệ");
+      if (!categoryTypes.some((t) => t.value === ctype))
+        throw new Error("Kiểu mục lục không hợp lệ");
       if ("title" in node) {
         node.title = String(node.title).trim();
         main.title = String(node.title).slice(0, 64);
         if (ctx.isNew) main.word_count = String(node.title).split(/\s+/).filter(Boolean).length;
       }
-      main.template = ctype === "news" ? ctx.form.get("template_news") ?? "" : ctype === "product" ? ctx.before?.template ?? "" : ctx.form.get("template_page") ?? "";
+      main.template =
+        ctype === "news"
+          ? (ctx.form.get("template_news") ?? "")
+          : ctype === "product"
+            ? (ctx.before?.template ?? "")
+            : (ctx.form.get("template_page") ?? "");
       if ("parent_id" in main) {
         const parent = Number(main.parent_id) || null;
         if (parent && ctx.before) {
           const blocked = await descendantIds(Number(ctx.before._mid));
-          if (blocked.includes(parent)) throw new Error("Không thể chọn chính mục này hoặc mục con của nó làm mục cha");
+          if (blocked.includes(parent))
+            throw new Error("Không thể chọn chính mục này hoặc mục con của nó làm mục cha");
         }
         main.parent_id = parent;
       }
       if ("robots" in node) main.robots = node.robots;
       if ("title_en" in node) main.title_en = node.title_en;
-      if (typeof main.seo_keyword === "string") main.seo_keyword = main.seo_keyword.replace(/\s+/g, " ").trim();
+      if (typeof main.seo_keyword === "string")
+        main.seo_keyword = main.seo_keyword.replace(/\s+/g, " ").trim();
     },
     afterSave: async () => {
       await rebuildNestedSet();
@@ -126,7 +267,10 @@ export const category: ModuleDef = {
       for (const id of roots) for (const d of await descendantIds(id)) all.add(d);
       const catIds = [...all];
       if (catIds.length) {
-        const nodes = await db.categories.findMany({ where: { id: { in: catIds } }, select: { node_id: true } });
+        const nodes = await db.categories.findMany({
+          where: { id: { in: catIds } },
+          select: { node_id: true },
+        });
         const nodeIds = nodes.map((n) => n.node_id).filter((id): id is number => !!id);
         await db.category_linkeds.deleteMany({ where: { category_id: { in: catIds } } });
         await db.categories.deleteMany({ where: { id: { in: catIds } } });
@@ -155,16 +299,26 @@ export async function categoryTreeRows(params: ListParams) {
       footer_1: true,
       footer_2: true,
       home_menu: true,
-      node: { select: { id: true, title: true, slug: true, pos: true, status: true, robots: true } },
+      node: {
+        select: { id: true, title: true, slug: true, pos: true, status: true, robots: true },
+      },
       _count: { select: { category_linkeds: true } },
     },
     orderBy: [{ node: { pos: "desc" } }, { id: "desc" }],
   });
-  const rows: Row[] = cats.map(({ id, node, _count, ...c }) => ({ ...node, _mid: id, ...c, _linked: _count.category_linkeds }));
+  const rows: Row[] = cats.map(({ id, node, _count, ...c }) => ({
+    ...node,
+    _mid: id,
+    ...c,
+    _linked: _count.category_linkeds,
+  }));
   const ids = new Set(rows.map((r) => Number(r._mid)));
   const children = new Map<number | null, Row[]>();
   for (const r of rows) {
-    const p = r.parent_id && r.parent_id !== r._mid && ids.has(Number(r.parent_id)) ? Number(r.parent_id) : null;
+    const p =
+      r.parent_id && r.parent_id !== r._mid && ids.has(Number(r.parent_id))
+        ? Number(r.parent_id)
+        : null;
     if (!children.has(p)) children.set(p, []);
     children.get(p)!.push(r);
   }
@@ -186,12 +340,28 @@ export async function categoryTreeRows(params: ListParams) {
   const scope = cid ? new Set(await descendantIds(cid)) : null;
   const s = params.s?.trim().toLowerCase();
   const t = params.t?.trim();
-  const base = cid ? ordered.find((r) => r._mid === cid)?._depth ?? 0 : 0;
+  const base = cid ? (ordered.find((r) => r._mid === cid)?._depth ?? 0) : 0;
   return ordered
-    .filter((r) => (!scope || scope.has(r._mid)) && (!t || r.ctype === t) && (!s || String(r.title ?? "").toLowerCase().includes(s)))
+    .filter(
+      (r) =>
+        (!scope || scope.has(r._mid)) &&
+        (!t || r.ctype === t) &&
+        (!s ||
+          String(r.title ?? "")
+            .toLowerCase()
+            .includes(s)),
+    )
     .map((r) => {
       const depth = Math.max(0, r._depth - base);
-      const extra = [r._children ? `${r._children} mục con` : "", r._linked ? `${r._linked} liên kết` : ""].filter(Boolean).join(", ");
-      return { ...r, _tree_title: `${depth ? "│  ".repeat(depth - 1) + "└─ " : ""}${String(r.title ?? "").trim()}${extra ? ` (${extra})` : ""}` };
+      const extra = [
+        r._children ? `${r._children} mục con` : "",
+        r._linked ? `${r._linked} liên kết` : "",
+      ]
+        .filter(Boolean)
+        .join(", ");
+      return {
+        ...r,
+        _tree_title: `${depth ? "│  ".repeat(depth - 1) + "└─ " : ""}${String(r.title ?? "").trim()}${extra ? ` (${extra})` : ""}`,
+      };
     });
 }

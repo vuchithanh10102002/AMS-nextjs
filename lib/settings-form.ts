@@ -39,7 +39,12 @@ const EXTRA: { title: string; items: Omit<SettingItem, "value" | "maxlength">[] 
         ],
       },
       { name: "smtp_email", label: "Tài khoản gửi (email)", type: "text" },
-      { name: "smtp_pass", label: "Mật khẩu SMTP", type: "password", help: "Để trống nếu không đổi" },
+      {
+        name: "smtp_pass",
+        label: "Mật khẩu SMTP",
+        type: "password",
+        help: "Để trống nếu không đổi",
+      },
     ],
   },
   {
@@ -76,7 +81,14 @@ const EXTRA: { title: string; items: Omit<SettingItem, "value" | "maxlength">[] 
   },
 ];
 
-type Row = { name: string; label: string | null; value: string | null; type: string | null; status: number; maxlength: number | null };
+type Row = {
+  name: string;
+  label: string | null;
+  value: string | null;
+  type: string | null;
+  status: number;
+  maxlength: number | null;
+};
 
 function itemType(t: string | null): SettingItem["type"] {
   if (t === "textarea") return "textarea";
@@ -98,7 +110,9 @@ export async function loadSettingForm() {
       .filter((r) => r.status === 1 && r.name !== "theme_setting" && !extraNames.has(r.name))
       .map((r) => ({
         name: r.name,
-        label: String(r.label || r.name).replace(/<br\s*\/?>/gi, " ").replace(/<[^>]+>/g, ""),
+        label: String(r.label || r.name)
+          .replace(/<br\s*\/?>/gi, " ")
+          .replace(/<[^>]+>/g, ""),
         type: itemType(r.type),
         value: r.value ?? "",
         maxlength: Number(r.maxlength) || 0,
@@ -106,13 +120,22 @@ export async function loadSettingForm() {
   };
   const extra: SettingGroup[] = EXTRA.map((g) => ({
     title: g.title,
-    items: g.items.map((i) => ({ ...i, value: i.type === "password" ? "" : byName.get(i.name)?.value ?? "", maxlength: 0 })),
+    items: g.items.map((i) => ({
+      ...i,
+      value: i.type === "password" ? "" : (byName.get(i.name)?.value ?? ""),
+      maxlength: 0,
+    })),
   }));
   let theme: Record<string, Record<string, string>> = {};
   try {
     theme = JSON.parse(byName.get("theme_setting")?.value || "{}");
   } catch {}
-  return { groups: [general, ...extra], theme, hasTheme: byName.has("theme_setting"), hasPass: !!byName.get("smtp_pass")?.value };
+  return {
+    groups: [general, ...extra],
+    theme,
+    hasTheme: byName.has("theme_setting"),
+    hasPass: !!byName.get("smtp_pass")?.value,
+  };
 }
 
 export async function allowedSettingNames() {

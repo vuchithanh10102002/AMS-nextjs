@@ -9,9 +9,27 @@ import { useLoadingRouter } from "@/hooks/use-loading-router";
 import { ImageInput } from "@/components/admin/fields";
 import { saveProfile, type ProfileState } from "@/lib/actions/account";
 
-type Profile = { username: string; fullname: string; email: string; phone: string; image: string; role: string; isSuper: boolean };
+type Profile = {
+  username: string;
+  fullname: string;
+  email: string;
+  phone: string;
+  image: string;
+  role: string;
+  isSuper: boolean;
+};
 
-function Row({ label, required, children, help }: { label: string; required?: boolean; children: React.ReactNode; help?: string }) {
+function Row({
+  label,
+  required,
+  children,
+  help,
+}: {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+  help?: string;
+}) {
   return (
     <div className="flex flex-col gap-1.5">
       <label className="text-sm font-medium">
@@ -31,7 +49,8 @@ export function ProfileForm({ profile }: { profile: Profile }) {
 
   useEffect(() => {
     if (!state.at) return;
-    if (state.error) toast.add({ type: "error", title: "Không lưu được", description: state.error });
+    if (state.error)
+      toast.add({ type: "error", title: "Không lưu được", description: state.error });
     else {
       toast.add({ type: "success", title: state.message ?? "Đã lưu" });
       for (const n of ["current_password", "new_password", "confirm_password"]) {
@@ -40,7 +59,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
       }
       router.refresh();
     }
-  }, [state.at]);
+  }, [state, router]);
 
   const perms = profile.role.split(",").filter(Boolean);
 
@@ -56,7 +75,9 @@ export function ProfileForm({ profile }: { profile: Profile }) {
         <div className="flex flex-col gap-4 rounded-lg border bg-card p-4 shadow-sm">
           <h2 className="font-medium">Hồ sơ</h2>
           <Row label="Tên đăng nhập">
-            <div className="min-h-9 rounded-lg border bg-muted/50 px-3 py-2 text-sm">{profile.username}</div>
+            <div className="min-h-9 rounded-lg border bg-muted/50 px-3 py-2 text-sm">
+              {profile.username}
+            </div>
           </Row>
           <Row label="Họ tên" required>
             <Input name="fullname" defaultValue={profile.fullname} maxLength={34} required />
@@ -84,7 +105,11 @@ export function ProfileForm({ profile }: { profile: Profile }) {
           </Row>
           <h2 className="pt-2 font-medium">Quyền</h2>
           <p className="text-sm text-muted-foreground">
-            {profile.isSuper ? "Quản trị cao nhất: toàn quyền." : perms.length ? `${perms.length} quyền được cấp.` : "Chưa được cấp quyền nào."}
+            {profile.isSuper
+              ? "Quản trị cao nhất: toàn quyền."
+              : perms.length
+                ? `${perms.length} quyền được cấp.`
+                : "Chưa được cấp quyền nào."}
           </p>
         </div>
       </div>

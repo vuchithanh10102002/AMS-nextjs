@@ -16,7 +16,8 @@ export function resolveInUploads(rel: string) {
   return { abs, rel: path.relative(root, abs).split(path.sep).join("/") };
 }
 
-export const ALLOWED_EXT = /\.(jpe?g|png|gif|webp|svg|bmp|avif|ico|pdf|docx?|xlsx?|pptx?|txt|csv|zip|rar|mp4|webm|mp3)$/i;
+export const ALLOWED_EXT =
+  /\.(jpe?g|png|gif|webp|svg|bmp|avif|ico|pdf|docx?|xlsx?|pptx?|txt|csv|zip|rar|mp4|webm|mp3)$/i;
 
 export function safeFileName(name: string) {
   const ext = path.extname(name).toLowerCase();

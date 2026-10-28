@@ -2,9 +2,13 @@ import { cacheLife, cacheTag } from "next/cache";
 import { db } from "@/lib/db";
 import { siteUrl } from "@/lib/site";
 
-const FREQ: Record<string, [string, string]> = { category: ["weekly", "0.6"], news: ["monthly", "0.2"] };
+const FREQ: Record<string, [string, string]> = {
+  category: ["weekly", "0.6"],
+  news: ["monthly", "0.2"],
+};
 
-const stamp = (t: unknown) => new Date((Number(t) + 7 * 3600) * 1000).toISOString().slice(0, 16) + "Z";
+const stamp = (t: unknown) =>
+  new Date((Number(t) + 7 * 3600) * 1000).toISOString().slice(0, 16) + "Z";
 
 async function sitemap() {
   "use cache";
@@ -25,5 +29,7 @@ async function sitemap() {
 }
 
 export async function GET() {
-  return new Response(await sitemap(), { headers: { "Content-Type": "application/xml; charset=UTF-8" } });
+  return new Response(await sitemap(), {
+    headers: { "Content-Type": "application/xml; charset=UTF-8" },
+  });
 }

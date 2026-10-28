@@ -20,13 +20,18 @@ export async function Header({ here }: { here: Here }) {
   const th = await categoryByTemplate("thuong-hieu");
   const hangs = await getHangs();
   const grand = new Map<number, Cat[]>();
-  for (const [i, v] of roots.entries()) if (subs[i].length && v.ctype === "product") for (const c of subs[i]) grand.set(c.id, await childrenOf(c));
+  for (const [i, v] of roots.entries())
+    if (subs[i].length && v.ctype === "product")
+      for (const c of subs[i]) grand.set(c.id, await childrenOf(c));
 
   return (
     <>
       <div className="ams-topbar">
         <div className="wrap clearfix">
-          <p className="ams-topbar-slogan" dangerouslySetInnerHTML={{ __html: s.ta("slogan", "text") }} />
+          <p
+            className="ams-topbar-slogan"
+            dangerouslySetInnerHTML={{ __html: s.ta("slogan", "text") }}
+          />
           <ul className="ams-topbar-links">
             {[1, 2, 3].map((i) => (
               <li key={i}>
@@ -42,37 +47,69 @@ export async function Header({ here }: { here: Here }) {
         <header className="ams-header">
           <div className="ams-header-main">
             <div className="wrap clearfix">
-              <button type="button" className="ams-btn-menu btn_menu" aria-label={t("general_text_24")}>
-                <svg width="24" height="24"><use href="#i-menu"></use></svg>
+              <button
+                type="button"
+                className="ams-btn-menu btn_menu"
+                aria-label={t("general_text_24")}
+              >
+                <svg width="24" height="24">
+                  <use href="#i-menu"></use>
+                </svg>
               </button>
               <a href="/" className="ams-logo">
-                <img src={src(t("logo_header"))} alt={s.settings.title} width="272" height="44" data-eager="1" />
+                <img
+                  src={src(t("logo_header"))}
+                  alt={s.settings.title}
+                  width="272"
+                  height="44"
+                  data-eager="1"
+                />
               </a>
               <Adm m="lang" v="logo_header" mode="image" />
               <form className="ams-search form_search" action="/search" method="get" noValidate>
-                <input type="text" name="s" defaultValue={here.search ?? ""} placeholder={t("search_key")} autoComplete="off" />
+                <input
+                  type="text"
+                  name="s"
+                  defaultValue={here.search ?? ""}
+                  placeholder={t("search_key")}
+                  autoComplete="off"
+                />
                 <button type="submit" aria-label={t("general_text_25")}>
-                  <svg width="21" height="21"><use href="#i-search"></use></svg>
+                  <svg width="21" height="21">
+                    <use href="#i-search"></use>
+                  </svg>
                 </button>
               </form>
               <Adm m="lang" v="search_key" mode="text" />
-              <button type="button" className="ams-btn-quote btn_quote">{t("header_text_4")}</button>
+              <button type="button" className="ams-btn-quote btn_quote">
+                {t("header_text_4")}
+              </button>
               <Adm m="lang" v="header_text_4" mode="text" />
               <div className="ams-lang lang_box">
                 <button type="button" className="ams-lang-toggle lang_toggle">
-                  <svg className="ams-flag" width="20" height="13"><use href={`#i-flag-${en ? "en" : "vn"}`}></use></svg>
+                  <svg className="ams-flag" width="20" height="13">
+                    <use href={`#i-flag-${en ? "en" : "vn"}`}></use>
+                  </svg>
                   <span className="ams-lang-name">{en ? "EN" : "VN"}</span>
-                  <svg className="ams-lang-down" width="8" height="5"><use href="#i-chev"></use></svg>
+                  <svg className="ams-lang-down" width="8" height="5">
+                    <use href="#i-chev"></use>
+                  </svg>
                 </button>
                 <ul className="ams-lang-menu">
                   <li className={en ? undefined : "active"}>
                     <a href="?lang=vi" className="lang_item" data-lang="VN" hrefLang="vi">
-                      <svg className="ams-flag" width="20" height="13"><use href="#i-flag-vn"></use></svg>Tiếng Việt
+                      <svg className="ams-flag" width="20" height="13">
+                        <use href="#i-flag-vn"></use>
+                      </svg>
+                      Tiếng Việt
                     </a>
                   </li>
                   <li className={en ? "active" : undefined}>
                     <a href="?lang=en" className="lang_item" data-lang="EN" hrefLang="en">
-                      <svg className="ams-flag" width="20" height="13"><use href="#i-flag-en"></use></svg>English
+                      <svg className="ams-flag" width="20" height="13">
+                        <use href="#i-flag-en"></use>
+                      </svg>
+                      English
                     </a>
                   </li>
                 </ul>
@@ -88,15 +125,24 @@ export async function Header({ here }: { here: Here }) {
                 </li>
                 {roots.map((v, i) => {
                   const sub = subs[i];
-                  const on = cur && (cur.lft ?? 0) >= (v.lft ?? 0) && (cur.rght ?? 0) <= (v.rght ?? 0);
+                  const on =
+                    cur && (cur.lft ?? 0) >= (v.lft ?? 0) && (cur.rght ?? 0) <= (v.rght ?? 0);
                   const mega = sub.length > 0 && v.ctype === "product";
-                  const cls = [on ? "active" : "", sub.length ? "ams-has-sub" : "", mega ? "ams-has-mega" : ""].filter(Boolean).join(" ");
+                  const cls = [
+                    on ? "active" : "",
+                    sub.length ? "ams-has-sub" : "",
+                    mega ? "ams-has-mega" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ");
                   return (
                     <li key={v.id} className={cls}>
                       <a href={catLink(v)}>
                         {tr(v.node, "title")}
                         {sub.length > 0 && (
-                          <svg className="ams-nav-down" width="8" height="5"><use href="#i-chev"></use></svg>
+                          <svg className="ams-nav-down" width="8" height="5">
+                            <use href="#i-chev"></use>
+                          </svg>
                         )}
                       </a>
                       <Adm m="category" v={v.node.id} />
@@ -104,11 +150,16 @@ export async function Header({ here }: { here: Here }) {
                         <div className="ams-nav-mega">
                           {sub.map((c) => (
                             <div key={c.id} className="ams-nav-mega-col">
-                              <a href={catLink(c)} className="ams-nav-mega-head">{tr(c.node, "title")}</a>
+                              <a href={catLink(c)} className="ams-nav-mega-head">
+                                {tr(c.node, "title")}
+                              </a>
                               <Adm m="category" v={c.node.id} />
                               <ul className="ams-nav-mega-list">
                                 {(grand.get(c.id) ?? []).map((g) => (
-                                  <li key={g.id} className={cur && cur.id == g.id ? "active" : undefined}>
+                                  <li
+                                    key={g.id}
+                                    className={cur && cur.id == g.id ? "active" : undefined}
+                                  >
                                     <a href={catLink(g)}>{tr(g.node, "title")}</a>
                                     <Adm m="category" v={g.node.id} />
                                   </li>
@@ -118,7 +169,9 @@ export async function Header({ here }: { here: Here }) {
                           ))}
                           {hangs.length > 0 && (
                             <div className="ams-nav-mega-col ams-nav-mega-brand">
-                              <a href={th ? catLink(th) : catLink(v)} className="ams-nav-mega-head">{t("general_text_58")}</a>
+                              <a href={th ? catLink(th) : catLink(v)} className="ams-nav-mega-head">
+                                {t("general_text_58")}
+                              </a>
                               <Adm m="lang" v="general_text_58" mode="text" />
                               <ul className="ams-nav-mega-list">
                                 {hangs.map((h) => (

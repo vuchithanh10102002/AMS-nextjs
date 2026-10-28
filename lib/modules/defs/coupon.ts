@@ -11,7 +11,16 @@ export const coupon: ModuleDef = {
     order: [{ id: "desc" }],
     filters: [
       { kind: "search", name: "s", label: "Tìm theo tên hoặc mã", columns: ["title", "code"] },
-      { kind: "select", name: "status", label: "Trạng thái", column: "status", options: [{ value: "1", label: "Đang bật" }, { value: "0", label: "Đang tắt" }] },
+      {
+        kind: "select",
+        name: "status",
+        label: "Trạng thái",
+        column: "status",
+        options: [
+          { value: "1", label: "Đang bật" },
+          { value: "0", label: "Đang tắt" },
+        ],
+      },
     ],
     columns: [
       { name: "title", label: "Tên coupon", link: true },
@@ -28,10 +37,37 @@ export const coupon: ModuleDef = {
       { name: "title", label: "Tên coupon", type: "text", required: true },
       { name: "code", label: "Mã coupon", type: "text", required: true, half: true },
       { name: "status", label: "Kích hoạt", type: "switch", default: 1, half: true },
-      { name: "percent", label: "Giảm theo phần trăm", type: "number", placeholder: "Ví dụ: 5", half: true, help: "0 – 100" },
-      { name: "price", label: "Giảm theo số tiền", type: "money", half: true, help: "Dùng khi không giảm theo %" },
-      { name: "for_sum", label: "Áp dụng cho đơn giá trị từ", type: "money", required: true, placeholder: "Ví dụ: 500000", half: true },
-      { name: "expired", label: "Hạn sử dụng", type: "date", storage: "unix", required: true, half: true },
+      {
+        name: "percent",
+        label: "Giảm theo phần trăm",
+        type: "number",
+        placeholder: "Ví dụ: 5",
+        half: true,
+        help: "0 – 100",
+      },
+      {
+        name: "price",
+        label: "Giảm theo số tiền",
+        type: "money",
+        half: true,
+        help: "Dùng khi không giảm theo %",
+      },
+      {
+        name: "for_sum",
+        label: "Áp dụng cho đơn giá trị từ",
+        type: "money",
+        required: true,
+        placeholder: "Ví dụ: 500000",
+        half: true,
+      },
+      {
+        name: "expired",
+        label: "Hạn sử dụng",
+        type: "date",
+        storage: "unix",
+        required: true,
+        half: true,
+      },
       { name: "description", label: "Mô tả", type: "textarea", rows: 3 },
     ],
   },
@@ -39,10 +75,17 @@ export const coupon: ModuleDef = {
     beforeSave: async ({ main }, ctx) => {
       main.code = String(main.code ?? "").trim();
       const percent = Number(main.percent ?? 0);
-      if (!Number.isInteger(percent) || percent < 0 || percent > 100) throw new Error("Giảm theo phần trăm phải từ 0 đến 100");
+      if (!Number.isInteger(percent) || percent < 0 || percent > 100)
+        throw new Error("Giảm theo phần trăm phải từ 0 đến 100");
       main.percent = percent;
       if (Number(main.price ?? 0) < 0) throw new Error("Số tiền giảm không hợp lệ");
-      if (await db.coupons.findFirst({ where: { code: main.code, id: { not: ctx.id ?? 0 } }, select: { id: true } })) throw new Error("Mã coupon đã tồn tại");
+      if (
+        await db.coupons.findFirst({
+          where: { code: main.code, id: { not: ctx.id ?? 0 } },
+          select: { id: true },
+        })
+      )
+        throw new Error("Mã coupon đã tồn tại");
       if (ctx.isNew) main.created = Math.floor(Date.now() / 1000);
     },
   },

@@ -11,9 +11,26 @@ export const cart: ModuleDef = {
     pageSize: 20,
     order: [{ id: "desc" }],
     filters: [
-      { kind: "search", name: "s", label: "Tên, SĐT, email, địa chỉ người đặt", columns: ["nguoi_nhan", "dienthoai_nhan", "email_nhan", "diachi_nhan"] },
-      { kind: "select", name: "status", label: "Trạng thái", column: "status", options: orderStatus },
-      { kind: "select", name: "uid", label: "Khách hàng", column: "customer_id", optionsKey: "customers" },
+      {
+        kind: "search",
+        name: "s",
+        label: "Tên, SĐT, email, địa chỉ người đặt",
+        columns: ["nguoi_nhan", "dienthoai_nhan", "email_nhan", "diachi_nhan"],
+      },
+      {
+        kind: "select",
+        name: "status",
+        label: "Trạng thái",
+        column: "status",
+        options: orderStatus,
+      },
+      {
+        kind: "select",
+        name: "uid",
+        label: "Khách hàng",
+        column: "customer_id",
+        optionsKey: "customers",
+      },
       { kind: "daterange", name: "created", label: "Ngày đặt", column: "created", unix: true },
     ],
     columns: [
@@ -30,7 +47,12 @@ export const cart: ModuleDef = {
   },
   options: {
     customers: async () =>
-      (await db.customers.findMany({ select: { id: true, fullname: true, username: true, phone: true }, orderBy: { id: "desc" } })).map((c) => ({
+      (
+        await db.customers.findMany({
+          select: { id: true, fullname: true, username: true, phone: true },
+          orderBy: { id: "desc" },
+        })
+      ).map((c) => ({
         value: String(c.id),
         label: `${c.fullname || (c.username ?? `#${c.id}`)} – ${c.phone ?? ""}`.trim(),
       })),

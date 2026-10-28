@@ -8,7 +8,10 @@ const baseTypes: Record<string, string> = {
 
 export const callback_banner_types: Record<string, string> = { chung_chi: "Chứng chỉ" };
 
-export const bannerTypes: Option[] = Object.entries({ ...baseTypes, ...callback_banner_types }).flatMap(([value, label]) => [
+export const bannerTypes: Option[] = Object.entries({
+  ...baseTypes,
+  ...callback_banner_types,
+}).flatMap(([value, label]) => [
   { value, label },
   { value: `${value}_m`, label: `${label} Mobile` },
 ]);
@@ -45,7 +48,8 @@ export const banner: ModuleDef = {
   },
   hooks: {
     beforeSave: ({ main }, ctx) => {
-      if (main.type !== undefined && !bannerTypes.some((o) => o.value === main.type)) throw new Error("Loại banner không hợp lệ");
+      if (main.type !== undefined && !bannerTypes.some((o) => o.value === main.type))
+        throw new Error("Loại banner không hợp lệ");
       if (ctx.isNew) {
         main.link ||= "#";
         main.category_id = 0;

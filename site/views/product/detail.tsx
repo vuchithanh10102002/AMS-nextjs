@@ -23,7 +23,10 @@ export async function ProductDetail({ data, cat }: { data: ProductRow; cat: Cat 
     <>
       <div className="ams-bar">
         <div className="wrap">
-          <div className="ams-crumb" dangerouslySetInnerHTML={{ __html: await crumbHtml(cat, data) }} />
+          <div
+            className="ams-crumb"
+            dangerouslySetInnerHTML={{ __html: await crumbHtml(cat, data) }}
+          />
         </div>
       </div>
 
@@ -34,18 +37,29 @@ export async function ProductDetail({ data, cat }: { data: ProductRow; cat: Cat 
               <div className="owl-carousel pd_main_slider">
                 {imgs.map((im, k) => (
                   <a key={k} href={base + im} className="ams-pd-slide btn_pd_zoom">
-                    {k === 0 ? <img src={src(im)} alt={name} data-eager="1" /> : <img src={src(im)} alt={name} loading="lazy" />}
+                    {k === 0 ? (
+                      <img src={src(im)} alt={name} data-eager="1" />
+                    ) : (
+                      <img src={src(im)} alt={name} loading="lazy" />
+                    )}
                   </a>
                 ))}
               </div>
               <span className="ams-pd-zoom-ico">
-                <svg width="18" height="18"><use href="#i-search"></use></svg>
+                <svg width="18" height="18">
+                  <use href="#i-search"></use>
+                </svg>
               </span>
             </div>
             {imgs.length > 1 && (
               <div className="owl-carousel pd_thumb_slider">
                 {imgs.map((im, k) => (
-                  <button key={k} type="button" className={`ams-pd-thumb btn_pd_thumb${k === 0 ? " active" : ""}`} data-src={base + im}>
+                  <button
+                    key={k}
+                    type="button"
+                    className={`ams-pd-thumb btn_pd_thumb${k === 0 ? " active" : ""}`}
+                    data-src={base + im}
+                  >
                     <img src={src(im)} alt={name} loading="lazy" />
                   </button>
                 ))}
@@ -53,12 +67,20 @@ export async function ProductDetail({ data, cat }: { data: ProductRow; cat: Cat 
             )}
           </div>
           <div className="ams-pd-info">
-            <h1 className="ams-pd-title" dangerouslySetInnerHTML={{ __html: name + s.adm("product", data.node_id) }} />
-            <div className="ams-pd-short" dangerouslySetInnerHTML={{ __html: tr(data, "description") }} />
+            <h1
+              className="ams-pd-title"
+              dangerouslySetInnerHTML={{ __html: name + s.adm("product", data.node_id) }}
+            />
+            <div
+              className="ams-pd-short"
+              dangerouslySetInnerHTML={{ __html: tr(data, "description") }}
+            />
             <div className="ams-pd-btns">
               <button type="button" className="ams-pd-box btn_quote" data-product={strip(name)}>
                 <span>{t("general_text_51")}</span>
-                <svg width="17" height="14"><use href="#i-arrow"></use></svg>
+                <svg width="17" height="14">
+                  <use href="#i-arrow"></use>
+                </svg>
               </button>
             </div>
             <div
@@ -74,30 +96,54 @@ export async function ProductDetail({ data, cat }: { data: ProductRow; cat: Cat 
       <section className="ams-pd-tabs">
         <div className="wrap">
           <div className="ams-pd-tab-nav clearfix">
-            <button type="button" className="ams-pd-tab btn_pd_tab active" data-tab="0">{t("product_text_2")}</button>
+            <button type="button" className="ams-pd-tab btn_pd_tab active" data-tab="0">
+              {t("product_text_2")}
+            </button>
             {attrs !== "" && (
-              <button type="button" className="ams-pd-tab btn_pd_tab" data-tab="1">{t("product_text_3")}</button>
+              <button type="button" className="ams-pd-tab btn_pd_tab" data-tab="1">
+                {t("product_text_3")}
+              </button>
             )}
-            <button type="button" className="ams-pd-tab btn_pd_tab" data-tab={attrs !== "" ? 2 : 1}>{t("product_text_4")}</button>
+            <button type="button" className="ams-pd-tab btn_pd_tab" data-tab={attrs !== "" ? 2 : 1}>
+              {t("product_text_4")}
+            </button>
           </div>
           <div className="ams-pd-panes">
             <div className="ams-pd-pane active">
-              <h2 className="ams-pd-pane-title" dangerouslySetInnerHTML={{ __html: s.ta("product_text_2", "text") }} />
-              <div className="ams-content" dangerouslySetInnerHTML={{ __html: tr(data, "content") }} />
+              <h2
+                className="ams-pd-pane-title"
+                dangerouslySetInnerHTML={{ __html: s.ta("product_text_2", "text") }}
+              />
+              <div
+                className="ams-content"
+                dangerouslySetInnerHTML={{ __html: tr(data, "content") }}
+              />
             </div>
             {attrs !== "" && (
               <div className="ams-pd-pane">
-                <h2 className="ams-pd-pane-title" dangerouslySetInnerHTML={{ __html: s.ta("product_text_3", "text") }} />
+                <h2
+                  className="ams-pd-pane-title"
+                  dangerouslySetInnerHTML={{ __html: s.ta("product_text_3", "text") }}
+                />
                 <div className="ams-pd-attrs-box" dangerouslySetInnerHTML={{ __html: attrs }} />
               </div>
             )}
             <div className="ams-pd-pane">
-              <h2 className="ams-pd-pane-title" dangerouslySetInnerHTML={{ __html: s.ta("product_text_4", "text") }} />
+              <h2
+                className="ams-pd-pane-title"
+                dangerouslySetInnerHTML={{ __html: s.ta("product_text_4", "text") }}
+              />
               <ul className="ams-pd-docs">
                 {[5, 6].map((i) => (
                   <li key={i}>
-                    <button type="button" className="btn_quote" data-product={strip(`${t(`product_text_${i}`)} – ${name}`)}>
-                      <svg width="17" height="14"><use href="#i-mail"></use></svg>
+                    <button
+                      type="button"
+                      className="btn_quote"
+                      data-product={strip(`${t(`product_text_${i}`)} – ${name}`)}
+                    >
+                      <svg width="17" height="14">
+                        <use href="#i-mail"></use>
+                      </svg>
                       {t(`product_text_${i}`)}
                     </button>
                     <Adm m="lang" v={`product_text_${i}`} mode="text" />
@@ -112,7 +158,10 @@ export async function ProductDetail({ data, cat }: { data: ProductRow; cat: Cat 
       {related.length > 0 && (
         <section className="ams-pd-related">
           <div className="wrap">
-            <h2 className="ams-title" dangerouslySetInnerHTML={{ __html: s.ta("product_text_10", "text") }} />
+            <h2
+              className="ams-title"
+              dangerouslySetInnerHTML={{ __html: s.ta("product_text_10", "text") }}
+            />
             <div className="owl-carousel pd_rel_slider ams-dot-slider">
               {related.map((v) => (
                 <ProductItem key={v.node_id} v={v} tag="h3" />
@@ -123,15 +172,35 @@ export async function ProductDetail({ data, cat }: { data: ProductRow; cat: Cat 
       )}
 
       <div className="ams-lightbox pd_lightbox">
-        <button type="button" className="ams-lb-close btn_lb_close" aria-label={t("general_text_28")}>
-          <svg width="20" height="20"><use href="#i-x"></use></svg>
+        <button
+          type="button"
+          className="ams-lb-close btn_lb_close"
+          aria-label={t("general_text_28")}
+        >
+          <svg width="20" height="20">
+            <use href="#i-x"></use>
+          </svg>
         </button>
-        <button type="button" className="ams-lb-nav ams-lb-prev btn_lb_prev" aria-label={t("product_text_8")}>
-          <svg width="17" height="14"><use href="#i-arrow-l"></use></svg>
+        <button
+          type="button"
+          className="ams-lb-nav ams-lb-prev btn_lb_prev"
+          aria-label={t("product_text_8")}
+        >
+          <svg width="17" height="14">
+            <use href="#i-arrow-l"></use>
+          </svg>
         </button>
-        {imgs.length ? <img src={src(imgs[0])} className="ams-lb-img" alt={name} loading="lazy" /> : null}
-        <button type="button" className="ams-lb-nav ams-lb-next btn_lb_next" aria-label={t("product_text_9")}>
-          <svg width="17" height="14"><use href="#i-arrow"></use></svg>
+        {imgs.length ? (
+          <img src={src(imgs[0])} className="ams-lb-img" alt={name} loading="lazy" />
+        ) : null}
+        <button
+          type="button"
+          className="ams-lb-nav ams-lb-next btn_lb_next"
+          aria-label={t("product_text_9")}
+        >
+          <svg width="17" height="14">
+            <use href="#i-arrow"></use>
+          </svg>
         </button>
       </div>
 

@@ -5,13 +5,38 @@ import schemaFields from "@/prisma/fields.json";
 
 export type Row = Record<string, any>;
 
-export type Plain<T> = T extends Date ? string : T extends bigint ? number : T extends (infer U)[] ? Plain<U>[] : T extends object ? { [K in keyof T]: Plain<T[K]> } : T;
+export type Plain<T> = T extends Date
+  ? string
+  : T extends bigint
+    ? number
+    : T extends (infer U)[]
+      ? Plain<U>[]
+      : T extends object
+        ? { [K in keyof T]: Plain<T[K]> }
+        : T;
 
 const FIELDS = schemaFields as Record<string, Record<string, string>>;
-const SCALARS = new Set(["Int", "Float", "BigInt", "String", "DateTime", "Decimal", "Json", "Bytes"]);
+const SCALARS = new Set([
+  "Int",
+  "Float",
+  "BigInt",
+  "String",
+  "DateTime",
+  "Decimal",
+  "Json",
+  "Bytes",
+]);
 const OPS = new Set(["equals", "not", "lt", "lte", "gt", "gte", "in", "notIn"]);
 const REL_OPS = new Set(["some", "every", "none", "is", "isNot"]);
-const WRITE_OPS = new Set(["create", "update", "updateMany", "upsert", "createMany", "createManyAndReturn", "updateManyAndReturn"]);
+const WRITE_OPS = new Set([
+  "create",
+  "update",
+  "updateMany",
+  "upsert",
+  "createMany",
+  "createManyAndReturn",
+  "updateManyAndReturn",
+]);
 
 function fieldType(model: string, name: string) {
   return FIELDS[model]?.[name]?.replace(/(\[\]|\?)$/, "");
@@ -52,10 +77,12 @@ function castValue(type: string, v: unknown, forWhere = false): unknown {
 }
 
 function castFilter(type: string, v: unknown): unknown {
-  if (v == null || typeof v !== "object" || v instanceof Date || isFieldRef(v)) return castValue(type, v, true);
+  if (v == null || typeof v !== "object" || v instanceof Date || isFieldRef(v))
+    return castValue(type, v, true);
   return Object.fromEntries(
     Object.entries(v).map(([op, x]) => {
-      if (op === "in" || op === "notIn") return [op, Array.isArray(x) ? x.map((y) => castValue(type, y, true)) : x];
+      if (op === "in" || op === "notIn")
+        return [op, Array.isArray(x) ? x.map((y) => castValue(type, y, true)) : x];
       if (op === "not") return [op, castFilter(type, x)];
       return [op, OPS.has(op) ? castValue(type, x, true) : x];
     }),
@@ -74,7 +101,9 @@ function castWhere(model: string, where: unknown): unknown {
     if (!type) out[k] = v;
     else if (SCALARS.has(type)) out[k] = castFilter(type, v);
     else if (v && typeof v === "object" && Object.keys(v).some((op) => REL_OPS.has(op)))
-      out[k] = Object.fromEntries(Object.entries(v).map(([op, w]) => [op, REL_OPS.has(op) ? castWhere(type, w) : w]));
+      out[k] = Object.fromEntries(
+        Object.entries(v).map(([op, w]) => [op, REL_OPS.has(op) ? castWhere(type, w) : w]),
+      );
     else out[k] = castWhere(type, v);
   }
   return out;
@@ -151,5 +180,9 @@ export function table(name: string): any {
 }
 
 export function columns(name: string): Set<string> {
-  return new Set(Object.entries(FIELDS[name] ?? {}).filter(([, t]) => SCALARS.has(t.replace(/\?$/, ""))).map(([k]) => k));
+  return new Set(
+    Object.entries(FIELDS[name] ?? {})
+      .filter(([, t]) => SCALARS.has(t.replace(/\?$/, "")))
+      .map(([k]) => k),
+  );
 }

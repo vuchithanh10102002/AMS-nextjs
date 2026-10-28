@@ -16,7 +16,19 @@ export async function allCategories(): Promise<Cat[]> {
   cacheTag("site");
   const rows = await db.categories.findMany({
     where: { node: { isNot: null } },
-    include: { node: { select: { id: true, title: true, title_en: true, slug: true, pos: true, status: true, created: true } } },
+    include: {
+      node: {
+        select: {
+          id: true,
+          title: true,
+          title_en: true,
+          slug: true,
+          pos: true,
+          status: true,
+          created: true,
+        },
+      },
+    },
     orderBy: nodeOrder(),
   });
   return rows as Cat[];
@@ -51,7 +63,9 @@ export async function categoryBySlug(slug: string) {
 }
 
 export async function treeIds(cat: Cat) {
-  return (await allCategories()).filter((c) => (c.lft ?? 0) >= (cat.lft ?? 0) && (c.rght ?? 0) <= (cat.rght ?? 0)).map((c) => c.id);
+  return (await allCategories())
+    .filter((c) => (c.lft ?? 0) >= (cat.lft ?? 0) && (c.rght ?? 0) <= (cat.rght ?? 0))
+    .map((c) => c.id);
 }
 
 export async function treeIdsOf(id: number) {
@@ -72,6 +86,10 @@ export async function categoryOfNode(nodeId: number) {
   "use cache";
   cacheLife("site");
   cacheTag("site");
-  const r = await db.category_linkeds.findFirst({ where: { node_id: nodeId }, orderBy: { id: "asc" }, select: { category_id: true } });
+  const r = await db.category_linkeds.findFirst({
+    where: { node_id: nodeId },
+    orderBy: { id: "asc" },
+    select: { category_id: true },
+  });
   return r ? categoryById(Number(r.category_id)) : null;
 }

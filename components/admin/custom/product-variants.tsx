@@ -6,7 +6,13 @@ import { Button } from "@/components/ui/button";
 import { MoneyInput, SelectInput } from "@/components/admin/fields";
 import type { ClientField } from "@/lib/modules/types";
 
-type Variant = { size_id?: number | string | null; price?: number | null; price_vip?: number | null; price_gold?: number | null; price_member?: number | null };
+type Variant = {
+  size_id?: number | string | null;
+  price?: number | null;
+  price_vip?: number | null;
+  price_gold?: number | null;
+  price_member?: number | null;
+};
 type Row = Variant & { key: number };
 
 let seq = 0;
@@ -19,8 +25,12 @@ const PRICES = [
 ] as const;
 
 export function ProductVariants({ field, value }: { field: ClientField; value?: unknown }) {
-  const [rows, setRows] = useState<Row[]>(() => (Array.isArray(value) ? (value as Variant[]) : []).map((v) => ({ ...v, key: seq++ })));
-  const [sizes, setSizes] = useState<Record<number, string>>(() => Object.fromEntries(rows.map((r) => [r.key, r.size_id ? String(r.size_id) : ""])));
+  const [rows, setRows] = useState<Row[]>(() =>
+    (Array.isArray(value) ? (value as Variant[]) : []).map((v) => ({ ...v, key: seq++ })),
+  );
+  const [sizes, setSizes] = useState<Record<number, string>>(() =>
+    Object.fromEntries(rows.map((r) => [r.key, r.size_id ? String(r.size_id) : ""])),
+  );
   const options = field.options ?? [];
   const dup = (key: number) => {
     const s = sizes[key];
@@ -32,7 +42,10 @@ export function ProductVariants({ field, value }: { field: ClientField; value?: 
       <input type="hidden" name="_variants" value="1" />
       {rows.length === 0 && <p className="text-sm text-muted-foreground">Chưa có dòng giá nào.</p>}
       {rows.map((r) => (
-        <div key={r.key} className="grid grid-cols-2 items-end gap-2 rounded-md border p-2 md:grid-cols-[1.2fr_repeat(4,1fr)_auto]">
+        <div
+          key={r.key}
+          className="grid grid-cols-2 items-end gap-2 rounded-md border p-2 md:grid-cols-[1.2fr_repeat(4,1fr)_auto]"
+        >
           <div className="col-span-2 flex flex-col gap-1 md:col-span-1">
             <span className="text-xs text-muted-foreground">Dung tích</span>
             <SelectInput
@@ -42,7 +55,11 @@ export function ProductVariants({ field, value }: { field: ClientField; value?: 
               placeholder="--- Chọn dung tích ---"
               onChange={(v) => setSizes((s) => ({ ...s, [r.key]: v }))}
             />
-            {dup(r.key) && <span className="text-xs text-destructive">Trùng dung tích, chỉ dòng sau được lưu</span>}
+            {dup(r.key) && (
+              <span className="text-xs text-destructive">
+                Trùng dung tích, chỉ dòng sau được lưu
+              </span>
+            )}
           </div>
           {PRICES.map(([name, key, label]) => (
             <div key={name} className="flex flex-col gap-1">
@@ -50,12 +67,23 @@ export function ProductVariants({ field, value }: { field: ClientField; value?: 
               <MoneyInput name={name} defaultValue={r[key]} />
             </div>
           ))}
-          <Button type="button" variant="ghost" size="icon-sm" className="text-destructive" onClick={() => setRows((s) => s.filter((x) => x.key !== r.key))}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            className="text-destructive"
+            onClick={() => setRows((s) => s.filter((x) => x.key !== r.key))}
+          >
             <Trash2 />
           </Button>
         </div>
       ))}
-      <Button type="button" variant="outline" className="w-fit" onClick={() => setRows((s) => [...s, { key: seq++ }])}>
+      <Button
+        type="button"
+        variant="outline"
+        className="w-fit"
+        onClick={() => setRows((s) => [...s, { key: seq++ }])}
+      >
         <Plus /> Thêm dòng giá
       </Button>
     </div>

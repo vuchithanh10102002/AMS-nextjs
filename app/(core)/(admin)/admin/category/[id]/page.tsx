@@ -9,6 +9,13 @@ export default async function CategoryEditPage({ params }: PageProps<"/admin/cat
   const { id } = await params;
   const data = await loadRecord("category", id);
   const v = data.values as Record<string, unknown>;
-  const preview = v.ctype === "link" ? (v.link ? String(v.link) : undefined) : v.slug ? `${siteUrl()}${v.slug}.html` : undefined;
+  const preview =
+    v.ctype === "link"
+      ? v.link
+        ? String(v.link)
+        : undefined
+      : v.slug
+        ? `${siteUrl()}${v.slug}.html`
+        : undefined;
   return <CategoryForm module={data.module} id={data.id} values={v} preview={preview} />;
 }

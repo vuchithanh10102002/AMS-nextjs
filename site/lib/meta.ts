@@ -3,9 +3,19 @@ import type { Metadata } from "next";
 import { siteUrl } from "@/lib/site";
 import { site } from "./ctx";
 
-const clean = (s: unknown) => String(s ?? "").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+const clean = (s: unknown) =>
+  String(s ?? "")
+    .replace(/<[^>]*>/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 
-export async function pageMeta(m: { title?: string; description?: string; keywords?: string; path: string; image?: string | null }): Promise<Metadata> {
+export async function pageMeta(m: {
+  title?: string;
+  description?: string;
+  keywords?: string;
+  path: string;
+  image?: string | null;
+}): Promise<Metadata> {
   const s = await site();
   const base = siteUrl();
   const abs = (p: string) => (/^https?:\/\//.test(p) ? p : base + p.replace(/^\/+/, ""));

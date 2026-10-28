@@ -4,7 +4,14 @@ import { redirect } from "next/navigation";
 import { Pencil, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { db } from "@/lib/db";
 import { can } from "@/lib/perm";
 import { requireAdmin } from "@/lib/session";
@@ -14,7 +21,10 @@ export const metadata: Metadata = { title: "Khoá giao diện" };
 const PAGE_SIZE = 50;
 
 function plain(v: string | null) {
-  const s = String(v ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  const s = String(v ?? "")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   return s.length > 140 ? s.slice(0, 140) + "…" : s || "—";
 }
 
@@ -23,22 +33,30 @@ export default async function LangListPage({ searchParams }: PageProps<"/admin/l
   const one = (k: string) => (Array.isArray(sp[k]) ? sp[k][0] : sp[k]) ?? "";
   if (one("key")) {
     const rest = new URLSearchParams();
-    for (const [k, v] of Object.entries(sp)) if (k !== "key" && typeof v === "string") rest.set(k, v);
+    for (const [k, v] of Object.entries(sp))
+      if (k !== "key" && typeof v === "string") rest.set(k, v);
     redirect(`/admin/lang/${encodeURIComponent(one("key"))}${rest.size ? `?${rest}` : ""}`);
   }
   const admin = await requireAdmin();
   if (!can(admin, "lang", "list")) redirect("/admin?denied=1");
   const s = one("s").trim();
   const page = Math.max(1, Number(one("page")) || 1);
-  const where = s ? { OR: [{ key: { contains: s } }, { vi: { contains: s } }, { en: { contains: s } }] } : {};
+  const where = s
+    ? { OR: [{ key: { contains: s } }, { vi: { contains: s } }, { en: { contains: s } }] }
+    : {};
   const [n, rows] = await Promise.all([
     db.langs.count({ where }),
-    db.langs.findMany({ where, select: { id: true, key: true, vi: true, en: true }, orderBy: { id: "desc" }, take: PAGE_SIZE, skip: (page - 1) * PAGE_SIZE }) as Promise<
-      { id: number; key: string; vi: string | null; en: string | null }[]
-    >,
+    db.langs.findMany({
+      where,
+      select: { id: true, key: true, vi: true, en: true },
+      orderBy: { id: "desc" },
+      take: PAGE_SIZE,
+      skip: (page - 1) * PAGE_SIZE,
+    }) as Promise<{ id: number; key: string; vi: string | null; en: string | null }[]>,
   ]);
   const pages = Math.max(1, Math.ceil(n / PAGE_SIZE));
-  const href = (p: number) => `/admin/lang?${new URLSearchParams({ ...(s ? { s } : {}), page: String(p) })}`;
+  const href = (p: number) =>
+    `/admin/lang?${new URLSearchParams({ ...(s ? { s } : {}), page: String(p) })}`;
 
   return (
     <div className="flex flex-col gap-4 p-2 md:p-4">
@@ -71,18 +89,30 @@ export default async function LangListPage({ searchParams }: PageProps<"/admin/l
           <TableBody>
             {rows.map((r, i) => (
               <TableRow key={r.id}>
-                <TableCell className="text-muted-foreground">{(page - 1) * PAGE_SIZE + i + 1}</TableCell>
+                <TableCell className="text-muted-foreground">
+                  {(page - 1) * PAGE_SIZE + i + 1}
+                </TableCell>
                 <TableCell className="font-mono text-xs">
-                  <Link href={`/admin/lang/${encodeURIComponent(r.key)}`} className="text-primary hover:underline">
+                  <Link
+                    href={`/admin/lang/${encodeURIComponent(r.key)}`}
+                    className="text-primary hover:underline"
+                  >
                     {r.key}
                   </Link>
                 </TableCell>
                 <TableCell className="max-w-md whitespace-normal">{plain(r.vi)}</TableCell>
-                <TableCell className="max-w-xs whitespace-normal text-muted-foreground">{plain(r.en)}</TableCell>
+                <TableCell className="max-w-xs whitespace-normal text-muted-foreground">
+                  {plain(r.en)}
+                </TableCell>
                 <TableCell>
-                  <Button variant="ghost" size="icon" nativeButton={false} render={<Link href={`/admin/lang/${encodeURIComponent(r.key)}`} />}>
-                      <Pencil />
-                    </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    nativeButton={false}
+                    render={<Link href={`/admin/lang/${encodeURIComponent(r.key)}`} />}
+                  >
+                    <Pencil />
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -99,17 +129,27 @@ export default async function LangListPage({ searchParams }: PageProps<"/admin/l
       {pages > 1 && (
         <div className="flex items-center justify-end gap-2 text-sm">
           {page > 1 && (
-            <Button variant="outline" size="sm" nativeButton={false} render={<Link href={href(page - 1)} />}>
-                Trước
-              </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              nativeButton={false}
+              render={<Link href={href(page - 1)} />}
+            >
+              Trước
+            </Button>
           )}
           <span>
             Trang {page}/{pages}
           </span>
           {page < pages && (
-            <Button variant="outline" size="sm" nativeButton={false} render={<Link href={href(page + 1)} />}>
-                Sau
-              </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              nativeButton={false}
+              render={<Link href={href(page + 1)} />}
+            >
+              Sau
+            </Button>
           )}
         </div>
       )}

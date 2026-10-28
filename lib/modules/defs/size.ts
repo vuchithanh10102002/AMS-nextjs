@@ -34,8 +34,14 @@ export const size: ModuleDef = {
     },
     afterDelete: async (ids) => {
       for (const id of ids)
-        for (const p of await db.products.findMany({ where: { sizes: { contains: `,${id},` } }, select: { id: true, sizes: true } }))
-          await db.products.updateMany({ where: { id: p.id }, data: { sizes: String(p.sizes).split(`,${id},`).join(",") } });
+        for (const p of await db.products.findMany({
+          where: { sizes: { contains: `,${id},` } },
+          select: { id: true, sizes: true },
+        }))
+          await db.products.updateMany({
+            where: { id: p.id },
+            data: { sizes: String(p.sizes).split(`,${id},`).join(",") },
+          });
       await db.images.deleteMany({ where: { size_id: { in: ids } } });
     },
   },

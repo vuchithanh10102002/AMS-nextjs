@@ -28,7 +28,9 @@ export async function NewsItem({ v, tag = "h2" }: { v: NewsRow; tag?: "h2" | "h3
       </Tag>
       <a href={href} className="ams-news-more">
         {s.t("home_text_18")}
-        <svg width="10" height="10"><use href="#i-arrow-sm"></use></svg>
+        <svg width="10" height="10">
+          <use href="#i-arrow-sm"></use>
+        </svg>
       </a>
     </div>
   );

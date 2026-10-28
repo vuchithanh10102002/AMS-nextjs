@@ -20,8 +20,14 @@ export function NewsTags({ field, value }: { field: ClientField; value: unknown 
   const shown = text.trim() ? hints : [];
 
   const add = (raw: string) => {
-    const parts = raw.split(",").map((t) => t.trim()).filter(Boolean);
-    setTags((s) => [...s, ...parts.filter((p) => !s.some((x) => x.toLowerCase() === p.toLowerCase()))]);
+    const parts = raw
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+    setTags((s) => [
+      ...s,
+      ...parts.filter((p) => !s.some((x) => x.toLowerCase() === p.toLowerCase())),
+    ]);
     setText("");
     setHints([]);
   };
@@ -45,12 +51,15 @@ export function NewsTags({ field, value }: { field: ClientField; value: unknown 
           className="min-w-32 flex-1 bg-transparent text-sm outline-none"
           value={text}
           placeholder={tags.length ? "" : "Gõ tag rồi nhấn Enter hoặc dấu phẩy"}
-          onChange={(e) => (e.target.value.endsWith(",") ? add(e.target.value) : setText(e.target.value))}
+          onChange={(e) =>
+            e.target.value.endsWith(",") ? add(e.target.value) : setText(e.target.value)
+          }
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
               if (text.trim()) add(text);
-            } else if (e.key === "Backspace" && !text && tags.length) setTags((s) => s.slice(0, -1));
+            } else if (e.key === "Backspace" && !text && tags.length)
+              setTags((s) => s.slice(0, -1));
           }}
           onBlur={() => setTimeout(() => setHints([]), 150)}
         />
@@ -60,7 +69,12 @@ export function NewsTags({ field, value }: { field: ClientField; value: unknown 
           {shown
             .filter((h) => !tags.includes(h))
             .map((h) => (
-              <button key={h} type="button" className="block w-full rounded px-2 py-1 text-left text-sm hover:bg-muted" onMouseDown={() => add(h)}>
+              <button
+                key={h}
+                type="button"
+                className="block w-full rounded px-2 py-1 text-left text-sm hover:bg-muted"
+                onMouseDown={() => add(h)}
+              >
                 {h}
               </button>
             ))}

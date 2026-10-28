@@ -1,6 +1,12 @@
 import { menuTitles, offModules } from "@/site/admin";
 
-export type MenuItem = { title: string; url: string; icon: string; badge?: "orders" | "contacts"; add?: boolean };
+export type MenuItem = {
+  title: string;
+  url: string;
+  icon: string;
+  badge?: "orders" | "contacts";
+  add?: boolean;
+};
 export type MenuGroup = { title: string; items: MenuItem[] };
 
 const coreMenu: MenuGroup[] = [
@@ -62,7 +68,9 @@ const coreMenu: MenuGroup[] = [
 export const menu: MenuGroup[] = coreMenu
   .map((g) => ({
     ...g,
-    items: g.items.filter((i) => !offModules.includes(key(i))).map((i) => ({ ...i, title: menuTitles[key(i)] ?? i.title })),
+    items: g.items
+      .filter((i) => !offModules.includes(key(i)))
+      .map((i) => ({ ...i, title: menuTitles[key(i)] ?? i.title })),
   }))
   .filter((g) => g.items.length);
 

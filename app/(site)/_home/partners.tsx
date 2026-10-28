@@ -8,8 +8,14 @@ export async function HomePartners() {
   return (
     <section className="ams-index-partner">
       <div className="wrap">
-        <h2 className="ams-title wow animate__fadeInUp" dangerouslySetInnerHTML={{ __html: s.ta("home_text_9", "text") }} />
-        <p className="ams-index-partner-desc wow animate__fadeInUp" dangerouslySetInnerHTML={{ __html: s.ta("home_text_10", "textarea") }} />
+        <h2
+          className="ams-title wow animate__fadeInUp"
+          dangerouslySetInnerHTML={{ __html: s.ta("home_text_9", "text") }}
+        />
+        <p
+          className="ams-index-partner-desc wow animate__fadeInUp"
+          dangerouslySetInnerHTML={{ __html: s.ta("home_text_10", "textarea") }}
+        />
         {partners.length > 0 && (
           <div className="ams-index-partner-list wow animate__fadeInUp" data-wow-delay="0.1s">
             <div className="owl-carousel partner_slider ams-dot-slider">

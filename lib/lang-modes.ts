@@ -24,11 +24,14 @@ export function isImageMode(m: LangMode) {
 }
 
 export function hasLink(m: LangMode) {
-  return m === "image_link" || m === "image_link_text" || m === "text_link" || m === "textarea_link";
+  return (
+    m === "image_link" || m === "image_link_text" || m === "text_link" || m === "textarea_link"
+  );
 }
 
 export function modeFromQuery(sp: Record<string, string | string[] | undefined>): LangMode | null {
-  if (typeof sp.mode === "string" && LANG_MODES.some((m) => m.value === sp.mode)) return sp.mode as LangMode;
+  if (typeof sp.mode === "string" && LANG_MODES.some((m) => m.value === sp.mode))
+    return sp.mode as LangMode;
   let found: LangMode | null = null;
   for (const m of LANG_MODES) if (m.value !== "text" && sp[m.value] !== undefined) found = m.value;
   return found;

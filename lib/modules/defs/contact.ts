@@ -15,8 +15,19 @@ export const contact: ModuleDef = {
     pageSize: 12,
     order: [{ status: "asc" }, { id: "desc" }],
     filters: [
-      { kind: "search", name: "s", label: "Tìm theo tên, email, SĐT, nội dung", columns: ["fullname", "email", "phone", "title", "content"] },
-      { kind: "select", name: "status", label: "Trạng thái", column: "status", options: contactStatus },
+      {
+        kind: "search",
+        name: "s",
+        label: "Tìm theo tên, email, SĐT, nội dung",
+        columns: ["fullname", "email", "phone", "title", "content"],
+      },
+      {
+        kind: "select",
+        name: "status",
+        label: "Trạng thái",
+        column: "status",
+        options: contactStatus,
+      },
     ],
     columns: [
       { name: "title", label: "Tiêu đề", link: true },
@@ -44,7 +55,9 @@ export const contact: ModuleDef = {
     load: (row) => {
       const n = Number(row.created);
       const d = /^\d+$/.test(String(row.created ?? "")) && n > 1e9 ? new Date(n * 1000) : null;
-      row._created = d ? d.toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" }) : String(row.created ?? "");
+      row._created = d
+        ? d.toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })
+        : String(row.created ?? "");
       return row;
     },
   },

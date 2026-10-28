@@ -13,10 +13,17 @@ export async function login(_: LoginState, formData: FormData): Promise<LoginSta
   if (!username || !password) return { error: "Bạn cần nhập đầy đủ Username và Password" };
 
   const md5 = createHash("md5").update(password).digest("hex");
-  const admin = await db.admins.findFirst({ where: { username, password: md5 }, orderBy: { id: "desc" }, select: { id: true } });
+  const admin = await db.admins.findFirst({
+    where: { username, password: md5 },
+    orderBy: { id: "desc" },
+    select: { id: true },
+  });
   if (!admin) return { error: "Username hoặc Password không đúng" };
 
-  await db.admins.updateMany({ where: { id: admin.id }, data: { last_logged: Math.floor(Date.now() / 1000) } });
+  await db.admins.updateMany({
+    where: { id: admin.id },
+    data: { last_logged: Math.floor(Date.now() / 1000) },
+  });
   await setSession(admin.id);
   redirect("/admin");
 }

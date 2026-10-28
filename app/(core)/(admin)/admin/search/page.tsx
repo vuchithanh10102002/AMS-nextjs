@@ -3,7 +3,14 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { categoryNamesByNode } from "@/lib/categories";
 import { db } from "@/lib/db";
 import { can } from "@/lib/perm";
@@ -12,7 +19,12 @@ import { mediaUrl } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Tìm kiếm" };
 
-const TYPES: Record<string, string> = { product: "Sản phẩm", news: "Bài viết", category: "Mục lục", tag: "Tag" };
+const TYPES: Record<string, string> = {
+  product: "Sản phẩm",
+  news: "Bài viết",
+  category: "Mục lục",
+  tag: "Tag",
+};
 const LIMIT = 20;
 
 type Hit = { id: number; title: string; type: string; status: number; image: string | null };
@@ -47,21 +59,34 @@ export default async function SearchPage({ searchParams }: PageProps<"/admin/sea
     ]);
     rows = hits.map(({ products, news, ...h }) => ({
       ...(h as Omit<Hit, "image">),
-      image: (h.type === "product" ? products[0]?.image : h.type === "news" ? news[0]?.image : null) ?? null,
+      image:
+        (h.type === "product" ? products[0]?.image : h.type === "news" ? news[0]?.image : null) ??
+        null,
     }));
     total = n;
   }
-  const cats = await categoryNamesByNode(rows.filter((r) => r.type !== "category").map((r) => r.id));
+  const cats = await categoryNamesByNode(
+    rows.filter((r) => r.type !== "category").map((r) => r.id),
+  );
   const pages = Math.ceil(total / LIMIT);
   const href = (p: number) => `/admin/search?s=${encodeURIComponent(s)}&page=${p}`;
 
   return (
     <div className="p-4 space-y-4">
       <form className="flex gap-2 max-w-xl">
-        <Input name="s" defaultValue={s} placeholder="Tìm sản phẩm, bài viết, mục lục, tag..." autoFocus />
+        <Input
+          name="s"
+          defaultValue={s}
+          placeholder="Tìm sản phẩm, bài viết, mục lục, tag..."
+          autoFocus
+        />
         <Button type="submit">Tìm</Button>
       </form>
-      {s && <p className="text-sm text-muted-foreground">{total} kết quả cho “{s}”</p>}
+      {s && (
+        <p className="text-sm text-muted-foreground">
+          {total} kết quả cho “{s}”
+        </p>
+      )}
       {rows.length > 0 && (
         <Table>
           <TableHeader>
@@ -78,17 +103,31 @@ export default async function SearchPage({ searchParams }: PageProps<"/admin/sea
             {rows.map((r) => (
               <TableRow key={r.id}>
                 <TableCell>
-                  {r.image && <img src={mediaUrl(r.image)} alt="" className="h-12 w-16 rounded object-cover" loading="lazy" />}
+                  {r.image && (
+                    <img
+                      src={mediaUrl(r.image)}
+                      alt=""
+                      className="h-12 w-16 rounded object-cover"
+                      loading="lazy"
+                    />
+                  )}
                 </TableCell>
                 <TableCell className="max-w-96 whitespace-normal font-medium">
-                  <Link href={`/admin/${r.type}/${r.id}`} className="hover:text-primary hover:underline">
+                  <Link
+                    href={`/admin/${r.type}/${r.id}`}
+                    className="hover:text-primary hover:underline"
+                  >
                     {r.title}
                   </Link>
                 </TableCell>
                 <TableCell>{TYPES[r.type]}</TableCell>
-                <TableCell className="max-w-64 whitespace-normal">{(cats.get(r.id) ?? []).join(", ")}</TableCell>
+                <TableCell className="max-w-64 whitespace-normal">
+                  {(cats.get(r.id) ?? []).join(", ")}
+                </TableCell>
                 <TableCell>
-                  <Badge variant={r.status === 1 ? "default" : "secondary"}>{r.status === 1 ? "Hiện" : "Ẩn"}</Badge>
+                  <Badge variant={r.status === 1 ? "default" : "secondary"}>
+                    {r.status === 1 ? "Hiện" : "Ẩn"}
+                  </Badge>
                 </TableCell>
                 <TableCell>{r.id}</TableCell>
               </TableRow>
@@ -101,7 +140,13 @@ export default async function SearchPage({ searchParams }: PageProps<"/admin/sea
           {Array.from({ length: pages }, (_, i) => i + 1)
             .filter((p) => p === 1 || p === pages || Math.abs(p - page) <= 2)
             .map((p) => (
-              <Button key={p} size="sm" variant={p === page ? "default" : "outline"} nativeButton={false} render={<Link href={href(p)} />}>
+              <Button
+                key={p}
+                size="sm"
+                variant={p === page ? "default" : "outline"}
+                nativeButton={false}
+                render={<Link href={href(p)} />}
+              >
                 {p}
               </Button>
             ))}

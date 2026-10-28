@@ -44,8 +44,20 @@ document.getElementsByTagName("body")[0].addEventListener("${s.mobile ? "touchst
     <html lang={s.lang === "en" ? "en" : "vi"}>
       <head>
         <meta name="format-detection" content="telephone=no" />
-        <link rel="preload" href="/theme/default/fonts/PlusJakartaSans-vietnamese.woff2" as="font" type="font/woff2" crossOrigin="" />
-        <link rel="preload" href="/theme/default/fonts/PlusJakartaSans-latin.woff2" as="font" type="font/woff2" crossOrigin="" />
+        <link
+          rel="preload"
+          href="/theme/default/fonts/PlusJakartaSans-vietnamese.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin=""
+        />
+        <link
+          rel="preload"
+          href="/theme/default/fonts/PlusJakartaSans-latin.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin=""
+        />
         {CSS.map((c) => (
           <link key={c} rel="stylesheet" href={`/theme/default/${c}?v=${V}`} />
         ))}
@@ -65,7 +77,18 @@ document.getElementsByTagName("body")[0].addEventListener("${s.mobile ? "touchst
       >
         {admin && (
           <a href={`?active_editor=${s.editor ? 0 : 1}`} className="hidden-xs">
-            <span className="btn btn-primary" style={{ position: "fixed", top: 31, right: 5, zIndex: 999998, background: "#cc002b", color: "#fff", padding: "4px 10px" }}>
+            <span
+              className="btn btn-primary"
+              style={{
+                position: "fixed",
+                top: 31,
+                right: 5,
+                zIndex: 999998,
+                background: "#cc002b",
+                color: "#fff",
+                padding: "4px 10px",
+              }}
+            >
               {s.editor ? "Tắt chế độ sửa" : "Bật chế độ sửa"}
             </span>
           </a>

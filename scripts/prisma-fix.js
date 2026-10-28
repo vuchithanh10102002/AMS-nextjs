@@ -27,7 +27,10 @@ const RELATIONS = [
 let src = fs.readFileSync(file, "utf8").replace(/\r\n/g, "\n");
 
 src = src
-  .replace(/^(\s+\w+\s+)Boolean(\??)(\s+@default\()(true|false)\)/gm, (_, a, q, b, v) => `${a}Int${q}${b}${v === "true" ? 1 : 0}) @db.TinyInt`)
+  .replace(
+    /^(\s+\w+\s+)Boolean(\??)(\s+@default\()(true|false)\)/gm,
+    (_, a, q, b, v) => `${a}Int${q}${b}${v === "true" ? 1 : 0}) @db.TinyInt`,
+  )
   .replace(/^(\s+\w+\s+)Boolean(\??)(?!\S)/gm, "$1Int$2 @db.TinyInt");
 
 function addField(model, line) {
@@ -43,7 +46,10 @@ function addField(model, line) {
 
 for (const [child, field, fk, parent, back, name] of RELATIONS) {
   const rel = name ? `"${name}", ` : "";
-  addField(child, `${field} ${parent}? @relation(${rel}fields: [${fk}], references: [id], onDelete: NoAction, onUpdate: NoAction)`);
+  addField(
+    child,
+    `${field} ${parent}? @relation(${rel}fields: [${fk}], references: [id], onDelete: NoAction, onUpdate: NoAction)`,
+  );
   addField(parent, `${back} ${child}[]${name ? ` @relation("${name}")` : ""}`);
 }
 
@@ -52,6 +58,7 @@ fs.writeFileSync(file, src);
 const fields = {};
 for (const [, model, body] of src.matchAll(/^model (\w+) \{\n([\s\S]*?)^\}/gm)) {
   fields[model] = {};
-  for (const [, name, type, mod] of body.matchAll(/^\s+(\w+)\s+(\w+)(\[\]|\?)?/gm)) fields[model][name] = type + (mod ?? "");
+  for (const [, name, type, mod] of body.matchAll(/^\s+(\w+)\s+(\w+)(\[\]|\?)?/gm))
+    fields[model][name] = type + (mod ?? "");
 }
 fs.writeFileSync(path.join(dir, "fields.json"), JSON.stringify(fields));

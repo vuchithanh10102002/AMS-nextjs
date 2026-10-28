@@ -9,7 +9,10 @@ export const city: ModuleDef = {
   positions: true,
   statusToggle: true,
   options: {
-    miens: async () => (await db.miens.findMany({ select: { id: true, title: true }, orderBy: { id: "asc" } })).map((m) => ({ value: String(m.id), label: String(m.title ?? "").trim() })),
+    miens: async () =>
+      (await db.miens.findMany({ select: { id: true, title: true }, orderBy: { id: "asc" } })).map(
+        (m) => ({ value: String(m.id), label: String(m.title ?? "").trim() }),
+      ),
   },
   list: {
     pageSize: 100,
@@ -37,14 +40,20 @@ export const city: ModuleDef = {
   hooks: {
     beforeSave: ({ main }, ctx) => {
       if (main.mien_id === "") main.mien_id = null;
-      if (ctx.isNew || main.slug !== undefined) main.slug = slugify(String(main.slug || main.title || ctx.before?.title || ""));
+      if (ctx.isNew || main.slug !== undefined)
+        main.slug = slugify(String(main.slug || main.title || ctx.before?.title || ""));
       if (ctx.isNew) {
         main.pos = 1;
         main.status = 1;
       }
     },
     decorate: async (rows) => {
-      const miens = new Map((await db.miens.findMany({ select: { id: true, title: true } })).map((m) => [m.id, m.title]));
+      const miens = new Map(
+        (await db.miens.findMany({ select: { id: true, title: true } })).map((m) => [
+          m.id,
+          m.title,
+        ]),
+      );
       for (const r of rows) r._mien = miens.get(Number(r.mien_id)) ?? "";
     },
     afterDelete: async (ids) => {

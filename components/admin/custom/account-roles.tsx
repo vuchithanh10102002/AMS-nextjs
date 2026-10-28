@@ -12,7 +12,15 @@ const ACTS = [
 ];
 
 export function AccountRoles({ field, value }: { field: ClientField; value: unknown }) {
-  const [roles, setRoles] = useState(() => new Set(String(value ?? "").split(",").map((s) => s.trim()).filter(Boolean)));
+  const [roles, setRoles] = useState(
+    () =>
+      new Set(
+        String(value ?? "")
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean),
+      ),
+  );
   const groups = useMemo(() => {
     const out: { title: string; items: { key: string; title: string }[] }[] = [];
     for (const o of field.options ?? []) {
@@ -38,9 +46,11 @@ export function AccountRoles({ field, value }: { field: ClientField; value: unkn
   return (
     <div className="flex flex-col gap-2">
       <input type="hidden" name="_roles" value="1" />
-      {[...roles].filter((r) => all.includes(r)).map((r) => (
-        <input key={r} type="hidden" name="role" value={r} />
-      ))}
+      {[...roles]
+        .filter((r) => all.includes(r))
+        .map((r) => (
+          <input key={r} type="hidden" name="role" value={r} />
+        ))}
       <div className="flex gap-2">
         <Button type="button" size="sm" variant="outline" onClick={() => set(all, true)}>
           Chọn tất cả
@@ -61,8 +71,15 @@ export function AccountRoles({ field, value }: { field: ClientField; value: unkn
                     <input
                       type="checkbox"
                       className="size-4 accent-primary"
-                      checked={all.filter((k) => k.endsWith(`_${a.key}`)).every((k) => roles.has(k))}
-                      onChange={(e) => set(all.filter((k) => k.endsWith(`_${a.key}`)), e.target.checked)}
+                      checked={all
+                        .filter((k) => k.endsWith(`_${a.key}`))
+                        .every((k) => roles.has(k))}
+                      onChange={(e) =>
+                        set(
+                          all.filter((k) => k.endsWith(`_${a.key}`)),
+                          e.target.checked,
+                        )
+                      }
                     />
                   </label>
                 </th>
@@ -94,7 +111,10 @@ function GroupRows({
   return (
     <>
       <tr className="border-t bg-muted/30">
-        <td colSpan={5} className="px-3 py-1.5 text-xs font-semibold uppercase text-muted-foreground">
+        <td
+          colSpan={5}
+          className="px-3 py-1.5 text-xs font-semibold uppercase text-muted-foreground"
+        >
           {title}
         </td>
       </tr>
@@ -116,7 +136,12 @@ function GroupRows({
             </td>
             {keys.map((k) => (
               <td key={k} className="px-3 py-1.5 text-center">
-                <input type="checkbox" className="size-4 accent-primary" checked={roles.has(k)} onChange={(e) => set([k], e.target.checked)} />
+                <input
+                  type="checkbox"
+                  className="size-4 accent-primary"
+                  checked={roles.has(k)}
+                  onChange={(e) => set([k], e.target.checked)}
+                />
               </td>
             ))}
           </tr>

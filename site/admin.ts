@@ -2,7 +2,25 @@ import type { Field, FilterDef, ModuleDef } from "@/lib/modules/types";
 
 const TAB = "English";
 
-export const offModules = ["combo", "size", "video", "tag", "color", "coupon", "flashsale", "comment", "cart", "subcriber", "customer", "banner", "team", "city", "district", "mien", "filter"];
+export const offModules = [
+  "combo",
+  "size",
+  "video",
+  "tag",
+  "color",
+  "coupon",
+  "flashsale",
+  "comment",
+  "cart",
+  "subcriber",
+  "customer",
+  "banner",
+  "team",
+  "city",
+  "district",
+  "mien",
+  "filter",
+];
 
 export const menuTitles: Record<string, string> = {
   hang: "Thương hiệu",
@@ -13,7 +31,13 @@ export const menuTitles: Record<string, string> = {
 const seo: Field[] = [
   { name: "seo_title_en", label: "SEO Title (EN)", type: "text", tab: TAB },
   { name: "seo_keyword_en", label: "SEO Keywords (EN)", type: "text", tab: TAB },
-  { name: "seo_description_en", label: "SEO Description (EN)", type: "textarea", rows: 4, tab: TAB },
+  {
+    name: "seo_description_en",
+    label: "SEO Description (EN)",
+    type: "textarea",
+    rows: 4,
+    tab: TAB,
+  },
 ];
 
 type Patch = {
@@ -29,7 +53,11 @@ type Patch = {
 function patch(def: ModuleDef, p: Patch): ModuleDef {
   const hide = new Set(p.hide ?? []);
   const cols = new Set(p.columns ?? []);
-  const base = p.replace ?? (def.form?.fields ?? []).filter((f) => !hide.has(f.name)).map((f) => (p.set?.[f.name] ? { ...f, ...p.set[f.name] } : f));
+  const base =
+    p.replace ??
+    (def.form?.fields ?? [])
+      .filter((f) => !hide.has(f.name))
+      .map((f) => (p.set?.[f.name] ? { ...f, ...p.set[f.name] } : f));
   const fields = [...base, ...(p.add ?? [])];
   const tabs = def.form?.tabs ?? [];
   return {
@@ -41,22 +69,50 @@ function patch(def: ModuleDef, p: Patch): ModuleDef {
       toggles: def.list.toggles?.filter((t) => !cols.has(t)),
       filters: def.list.filters?.map((x) => ({ ...x, ...p.filters?.[x.name] }) as FilterDef),
     },
-    form: { tabs: fields.some((f) => f.tab === TAB) && !tabs.includes(TAB) ? [...tabs, TAB] : tabs, fields },
+    form: {
+      tabs: fields.some((f) => f.tab === TAB) && !tabs.includes(TAB) ? [...tabs, TAB] : tabs,
+      fields,
+    },
   };
 }
 
 const patches: Record<string, (def: ModuleDef) => ModuleDef> = {
   product: (def) =>
     patch(def, {
-      hide: ["price_off", "price", "price_vip", "price_gold", "price_member", "gender", "sizes", "colors", "flashsale_id", "extra", "variants", "filter_items"],
+      hide: [
+        "price_off",
+        "price",
+        "price_vip",
+        "price_gold",
+        "price_member",
+        "gender",
+        "sizes",
+        "colors",
+        "flashsale_id",
+        "extra",
+        "variants",
+        "filter_items",
+      ],
       set: { hang_id: { label: "Thương hiệu" }, content_2: { label: "Đặc tính kỹ thuật (tab)" } },
       filters: { s: { label: "Tìm theo tên" }, hang_id: { label: "Thương hiệu" } },
       columns: ["price", "footer_1", "footer_2", "footer_3", "footer_4", "top_search", "featured"],
       add: [
         { name: "title_en", label: "Tên sản phẩm (EN)", type: "text", target: "node", tab: TAB },
-        { name: "description_en", label: "Mô tả sản phẩm (EN)", type: "editor", height: 300, tab: TAB },
+        {
+          name: "description_en",
+          label: "Mô tả sản phẩm (EN)",
+          type: "editor",
+          height: 300,
+          tab: TAB,
+        },
         { name: "content_en", label: "Nội dung (EN)", type: "editor", height: 500, tab: TAB },
-        { name: "content_2_en", label: "Đặc tính kỹ thuật (EN)", type: "editor", height: 300, tab: TAB },
+        {
+          name: "content_2_en",
+          label: "Đặc tính kỹ thuật (EN)",
+          type: "editor",
+          height: 300,
+          tab: TAB,
+        },
         ...seo,
       ],
     }),
@@ -73,7 +129,11 @@ const patches: Record<string, (def: ModuleDef) => ModuleDef> = {
     patch(def, {
       hide: ["template_news", "page_title", "sidebar"],
       set: {
-        ctype: { options: def.form?.fields.find((f) => f.name === "ctype")?.options?.filter((o) => o.value !== "document") },
+        ctype: {
+          options: def.form?.fields
+            .find((f) => f.name === "ctype")
+            ?.options?.filter((o) => o.value !== "document"),
+        },
         template_page: {
           options: [
             { value: "gioi-thieu", label: "Giới thiệu" },
@@ -83,8 +143,22 @@ const patches: Record<string, (def: ModuleDef) => ModuleDef> = {
       },
       add: [
         { name: "title_en", label: "Tên mục lục (EN)", type: "text", target: "node", tab: TAB },
-        { name: "content_en", label: "Nội dung Page (EN)", type: "editor", height: 400, tab: TAB, props: { show: ["page", "document"] } },
-        { name: "description_en", label: "Mô tả (EN)", type: "editor", height: 300, tab: TAB, props: { hide: ["page", "link"] } },
+        {
+          name: "content_en",
+          label: "Nội dung Page (EN)",
+          type: "editor",
+          height: 400,
+          tab: TAB,
+          props: { show: ["page", "document"] },
+        },
+        {
+          name: "description_en",
+          label: "Mô tả (EN)",
+          type: "editor",
+          height: 300,
+          tab: TAB,
+          props: { hide: ["page", "link"] },
+        },
         ...seo,
       ],
     }),

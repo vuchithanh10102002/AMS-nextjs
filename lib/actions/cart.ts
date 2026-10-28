@@ -8,8 +8,10 @@ import { orderStatus } from "@/lib/order-status";
 export async function setCartStatus(id: number, status: number) {
   try {
     await authorize("cart", "edit");
-    if (!orderStatus.some((s) => Number(s.value) === status)) throw new Error("Trạng thái không hợp lệ");
-    if (!(await db.order_bills.findUnique({ where: { id }, select: { id: true } }))) throw new Error("Không tìm thấy đơn hàng");
+    if (!orderStatus.some((s) => Number(s.value) === status))
+      throw new Error("Trạng thái không hợp lệ");
+    if (!(await db.order_bills.findUnique({ where: { id }, select: { id: true } })))
+      throw new Error("Không tìm thấy đơn hàng");
     await db.order_bills.updateMany({ where: { id }, data: { status } });
     revalidatePath("/admin", "layout");
     return { ok: true, message: "Đã đổi trạng thái" };

@@ -15,7 +15,9 @@ export default async function CategoryListPage({ searchParams }: PageProps<"/adm
   const admin = await requireAdmin();
   if (!can(admin, "category", "list")) redirect("/admin?denied=1");
   const sp = await searchParams;
-  const params = Object.fromEntries(Object.entries(sp).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]));
+  const params = Object.fromEntries(
+    Object.entries(sp).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]),
+  );
   const [rows, module] = await Promise.all([categoryTreeRows(params), toClient(def, admin)]);
   return (
     <ListView

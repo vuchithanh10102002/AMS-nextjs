@@ -30,7 +30,9 @@ function sign(payload: string) {
 }
 
 export function encodeSession(adminId: number) {
-  const payload = Buffer.from(JSON.stringify({ id: adminId, exp: Date.now() + MAX_AGE * 1000 })).toString("base64url");
+  const payload = Buffer.from(
+    JSON.stringify({ id: adminId, exp: Date.now() + MAX_AGE * 1000 }),
+  ).toString("base64url");
   return `${payload}.${sign(payload)}`;
 }
 
@@ -69,7 +71,17 @@ export async function currentAdmin(): Promise<Admin | null> {
   if (!s) return null;
   return db.admins.findUnique({
     where: { id: s.id },
-    select: { id: true, parent_id: true, username: true, fullname: true, email: true, phone: true, image: true, role: true, status: true },
+    select: {
+      id: true,
+      parent_id: true,
+      username: true,
+      fullname: true,
+      email: true,
+      phone: true,
+      image: true,
+      role: true,
+      status: true,
+    },
   }) as Promise<Admin | null>;
 }
 

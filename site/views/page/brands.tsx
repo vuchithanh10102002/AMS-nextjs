@@ -13,7 +13,13 @@ export async function Brands({ cur }: { cur: Cat }) {
   const rootLink = root ? catLink(root) : "/";
   return (
     <>
-      <Hero title={s.tr(cur.node, "title")} image={cur.image} desc={s.tr(cur, "description")} descAdm={cur.node.id} crumbHtml={await crumbHtml(cur)} />
+      <Hero
+        title={s.tr(cur.node, "title")}
+        image={cur.image}
+        desc={s.tr(cur, "description")}
+        descAdm={cur.node.id}
+        crumbHtml={await crumbHtml(cur)}
+      />
       <section className="ams-th">
         <div className="wrap">
           <div className="row clearfix">
@@ -23,12 +29,19 @@ export async function Brands({ cur }: { cur: Cat }) {
                 <div key={h.id} className="ams-th-col">
                   <div className="ams-th-item">
                     <a href={href} className="ams-th-logo">
-                      {h.image ? <img src={src(h.image)} alt={h.title ?? undefined} loading="lazy" /> : null}
+                      {h.image ? (
+                        <img src={src(h.image)} alt={h.title ?? undefined} loading="lazy" />
+                      ) : null}
                     </a>
-                    <h2 className="ams-th-name" dangerouslySetInnerHTML={{ __html: h.title + s.adm("hang", h.id) }} />
+                    <h2
+                      className="ams-th-name"
+                      dangerouslySetInnerHTML={{ __html: h.title + s.adm("hang", h.id) }}
+                    />
                     <a href={href} className="ams-news-more">
                       {s.t("general_text_65")}
-                      <svg width="10" height="10"><use href="#i-arrow-sm"></use></svg>
+                      <svg width="10" height="10">
+                        <use href="#i-arrow-sm"></use>
+                      </svg>
                     </a>
                   </div>
                 </div>

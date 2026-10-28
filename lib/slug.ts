@@ -4,7 +4,10 @@ import { slugify } from "./slug-client";
 export { slugify };
 
 export async function slugTaken(slug: string, excludeNodeId?: number | null) {
-  const row = await db.nodes.findFirst({ where: { slug, id: { not: excludeNodeId ?? 0 } }, select: { id: true } });
+  const row = await db.nodes.findFirst({
+    where: { slug, id: { not: excludeNodeId ?? 0 } },
+    select: { id: true },
+  });
   return !!row;
 }
 

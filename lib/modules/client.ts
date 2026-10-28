@@ -10,19 +10,25 @@ export async function toClient(def: ModuleDef, admin: Admin): Promise<ClientModu
     if (fixed) return fixed;
     const k = key ?? (ctype !== undefined ? `cat:${[ctype].flat().join(",")}` : "");
     if (!k) return undefined;
-    if (!cache.has(k)) cache.set(k, key ? (await def.options?.[key]?.()) ?? [] : await categoryOptions(ctype));
+    if (!cache.has(k))
+      cache.set(k, key ? ((await def.options?.[key]?.()) ?? []) : await categoryOptions(ctype));
     return cache.get(k);
   };
   const perm = def.perm ?? def.key;
   const fields = await Promise.all(
     (def.form?.fields ?? []).map(async ({ optionsKey, ...f }) => ({
       ...f,
-      options: await resolve(optionsKey, f.type === "categories" ? f.ctype ?? "" : undefined, f.options),
+      options: await resolve(
+        optionsKey,
+        f.type === "categories" ? (f.ctype ?? "") : undefined,
+        f.options,
+      ),
     })),
   );
   const filters = await Promise.all(
     (def.list.filters ?? []).map(async (f) => {
-      if (f.kind === "select") return { ...f, options: await resolve(f.optionsKey, undefined, f.options) };
+      if (f.kind === "select")
+        return { ...f, options: await resolve(f.optionsKey, undefined, f.options) };
       if (f.kind === "category") return { ...f, options: await resolve(undefined, f.ctype ?? "") };
       return f;
     }),
@@ -43,6 +49,10 @@ export async function toClient(def: ModuleDef, admin: Admin): Promise<ClientModu
     toggles: def.list.toggles ?? [],
     tabs: def.form?.tabs ?? [],
     fields,
-    can: { add: can(admin, perm, "add"), edit: can(admin, perm, "edit"), delete: can(admin, perm, "delete") },
+    can: {
+      add: can(admin, perm, "add"),
+      edit: can(admin, perm, "edit"),
+      delete: can(admin, perm, "delete"),
+    },
   };
 }

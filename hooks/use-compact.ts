@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
 
-export function useCompact(
-  ref: React.RefObject<HTMLElement | null>,
-  breakpoint = 760
-) {
+export function useCompact(ref: React.RefObject<HTMLElement | null>, breakpoint = 760) {
   const [isCompact, setIsCompact] = useState(false);
 
   useEffect(() => {

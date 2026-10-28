@@ -1,9 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from "react";
 import { ChevronRight, File, Folder, FolderPlus, Loader2, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
 import { isImage, previewUrl } from "@/lib/media";
@@ -45,9 +51,15 @@ export function MediaPicker({
           setItems(data.items);
           setDir(data.dir || d);
         })
-        .catch((e) => toast.add({ type: "error", title: "Lỗi", description: e instanceof Error ? e.message : "Không tải được thư mục" }))
+        .catch((e) =>
+          toast.add({
+            type: "error",
+            title: "Lỗi",
+            description: e instanceof Error ? e.message : "Không tải được thư mục",
+          }),
+        )
         .finally(() => setLoading(false)),
-    []
+    [],
   );
 
   const load = (d: string) => {
@@ -64,8 +76,10 @@ export function MediaPicker({
     }
   }
 
+  const reload = useEffectEvent(() => show(dir, getDir(dir)));
+
   useEffect(() => {
-    if (open) show(dir, getDir(dir));
+    if (open) reload();
   }, [open]);
 
   const post = async (body: FormData) => {
@@ -86,7 +100,11 @@ export function MediaPicker({
       await load(dir);
       setSelected((s) => (multiple ? [...s, ...data.files] : data.files.slice(0, 1)));
     } catch (e) {
-      toast.add({ type: "error", title: "Upload lỗi", description: e instanceof Error ? e.message : "" });
+      toast.add({
+        type: "error",
+        title: "Upload lỗi",
+        description: e instanceof Error ? e.message : "",
+      });
       setLoading(false);
     }
   };
@@ -135,20 +153,35 @@ export function MediaPicker({
             {crumbs.map((c, i) => (
               <span key={i} className="flex items-center gap-1 shrink-0">
                 {i > 0 && <ChevronRight className="size-3 text-muted-foreground" />}
-                <button type="button" className="hover:underline" onClick={() => load(crumbs.slice(0, i + 1).join("/"))}>
+                <button
+                  type="button"
+                  className="hover:underline"
+                  onClick={() => load(crumbs.slice(0, i + 1).join("/"))}
+                >
                   {c}
                 </button>
               </span>
             ))}
           </div>
-          <Input value={folder} onChange={(e) => setFolder(e.target.value)} placeholder="Thư mục mới" className="w-40" />
+          <Input
+            value={folder}
+            onChange={(e) => setFolder(e.target.value)}
+            placeholder="Thư mục mới"
+            className="w-40"
+          />
           <Button type="button" variant="outline" onClick={mkdir}>
             <FolderPlus /> Tạo
           </Button>
           <Button type="button" onClick={() => fileRef.current?.click()}>
             <Upload /> Tải lên
           </Button>
-          <input ref={fileRef} type="file" multiple hidden onChange={(e) => upload(e.target.files).then(() => (e.target.value = ""))} />
+          <input
+            ref={fileRef}
+            type="file"
+            multiple
+            hidden
+            onChange={(e) => upload(e.target.files).then(() => (e.target.value = ""))}
+          />
         </div>
         <div
           className="relative flex-1 min-h-72 overflow-y-auto rounded-lg border bg-muted/30 p-2"
@@ -164,7 +197,9 @@ export function MediaPicker({
             </div>
           )}
           {!items.length && !loading && (
-            <p className="py-16 text-center text-sm text-muted-foreground">Thư mục trống. Kéo thả file vào đây để tải lên.</p>
+            <p className="py-16 text-center text-sm text-muted-foreground">
+              Thư mục trống. Kéo thả file vào đây để tải lên.
+            </p>
           )}
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-7">
             {items.map((item) => (
@@ -174,7 +209,11 @@ export function MediaPicker({
                   "group relative flex flex-col overflow-hidden rounded-md border bg-card text-xs cursor-pointer",
                   selected.includes(item.path) && "ring-2 ring-primary",
                 )}
-                onClick={() => (item.dir ? load(item.path.replace(/^app\/webroot\/uploads\//, "")) : toggle(item.path))}
+                onClick={() =>
+                  item.dir
+                    ? load(item.path.replace(/^app\/webroot\/uploads\//, ""))
+                    : toggle(item.path)
+                }
                 onDoubleClick={() => {
                   if (!item.dir) {
                     onSelect([item.path]);
@@ -186,7 +225,12 @@ export function MediaPicker({
                   {item.dir ? (
                     <Folder className="size-10 text-primary" />
                   ) : isImage(item.name) ? (
-                    <img src={previewUrl(item.path)} alt="" loading="lazy" className="h-full w-full object-cover" />
+                    <img
+                      src={previewUrl(item.path)}
+                      alt=""
+                      loading="lazy"
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     <File className="size-10 text-muted-foreground" />
                   )}

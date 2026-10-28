@@ -16,13 +16,37 @@ export default async function CartDetailPage({ params }: PageProps<"/admin/cart/
   const bill = await db.order_bills.findUnique({ where: { id } });
   if (!bill) notFound();
   const rows = (
-    await db.orders.findMany({ where: { bill_id: id }, orderBy: { id: "asc" }, include: { node: { select: { type: true, title: true, slug: true } } } })
-  ).map(({ node, ...o }) => ({ ...o, node_type: node?.type ?? null, node_title: node?.title ?? null, node_slug: node?.slug ?? null }));
-  const comboNodes = rows.filter((r) => r.node_type === "combo").map((r) => r.node_id).filter((n): n is number => n != null);
+    await db.orders.findMany({
+      where: { bill_id: id },
+      orderBy: { id: "asc" },
+      include: { node: { select: { type: true, title: true, slug: true } } },
+    })
+  ).map(({ node, ...o }) => ({
+    ...o,
+    node_type: node?.type ?? null,
+    node_title: node?.title ?? null,
+    node_slug: node?.slug ?? null,
+  }));
+  const comboNodes = rows
+    .filter((r) => r.node_type === "combo")
+    .map((r) => r.node_id)
+    .filter((n): n is number => n != null);
   const combos = comboNodes.length
-    ? await db.combos.findMany({ where: { node_id: { in: comboNodes } }, select: { node_id: true, title: true, product_id: true } })
+    ? await db.combos.findMany({
+        where: { node_id: { in: comboNodes } },
+        select: { node_id: true, title: true, product_id: true },
+      })
     : [];
-  const productIds = [...new Set(combos.flatMap((c) => String(c.product_id ?? "").split(",").map(Number).filter(Boolean)))];
+  const productIds = [
+    ...new Set(
+      combos.flatMap((c) =>
+        String(c.product_id ?? "")
+          .split(",")
+          .map(Number)
+          .filter(Boolean),
+      ),
+    ),
+  ];
   const products = productIds.length
     ? (
         await db.products.findMany({
@@ -51,13 +75,20 @@ export default async function CartDetailPage({ params }: PageProps<"/admin/cart/
               .filter(Boolean)
               .map((pid) => products.find((p) => p.id === pid))
               .filter(Boolean)
-              .map((p) => ({ title: p!.title ?? "", image: p!.image, price: Number(p!.price) || 0 })),
+              .map((p) => ({
+                title: p!.title ?? "",
+                image: p!.image,
+                price: Number(p!.price) || 0,
+              })),
           }
         : null,
     };
   });
   const customer = bill.customer_id
-    ? await db.customers.findUnique({ where: { id: bill.customer_id }, select: { id: true, fullname: true, username: true, phone: true, email: true, level: true } })
+    ? await db.customers.findUnique({
+        where: { id: bill.customer_id },
+        select: { id: true, fullname: true, username: true, phone: true, email: true, level: true },
+      })
     : null;
   return (
     <CartDetail

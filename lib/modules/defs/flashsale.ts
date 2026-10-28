@@ -23,7 +23,14 @@ export const flashsale: ModuleDef = {
   form: {
     fields: [
       { name: "title", label: "Chương trình ưu đãi", type: "text", required: true },
-      { name: "expired", label: "Ngày hết hạn", type: "date", storage: "unix", half: true, help: "Hết hạn lúc 23:59:59 của ngày đã chọn" },
+      {
+        name: "expired",
+        label: "Ngày hết hạn",
+        type: "date",
+        storage: "unix",
+        half: true,
+        help: "Hết hạn lúc 23:59:59 của ngày đã chọn",
+      },
       { name: "price_percent", label: "Giảm giá (%)", type: "number", half: true },
       { name: "status", label: "Hiển thị", type: "switch", default: 1 },
       { name: "image", label: "Hình ảnh", type: "image" },
@@ -34,7 +41,8 @@ export const flashsale: ModuleDef = {
     beforeSave: ({ main }, ctx) => {
       if (main.expired) main.expired = Number(main.expired) + 86399;
       const pct = Number(main.price_percent ?? 0);
-      if (!Number.isFinite(pct) || pct < 0 || pct > 100) throw new Error("Giảm giá phải từ 0 đến 100%");
+      if (!Number.isFinite(pct) || pct < 0 || pct > 100)
+        throw new Error("Giảm giá phải từ 0 đến 100%");
       main.price_percent = Math.round(pct);
       if (ctx.isNew) {
         main.created = Math.floor(Date.now() / 1000);
@@ -42,7 +50,10 @@ export const flashsale: ModuleDef = {
       }
     },
     afterDelete: async (ids) => {
-      await db.products.updateMany({ where: { flashsale_id: { in: ids } }, data: { flashsale_id: null } });
+      await db.products.updateMany({
+        where: { flashsale_id: { in: ids } },
+        data: { flashsale_id: null },
+      });
     },
   },
 };

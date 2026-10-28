@@ -12,7 +12,7 @@ export function RouteLoaderBar({ className }: { className?: string }) {
       className={cn(
         "absolute top-0 left-0 h-[3px] bg-primary transition-all duration-300 ease-out z-50",
         loading ? "w-full opacity-100" : "w-0 opacity-0",
-        className
+        className,
       )}
       style={{
         transitionDuration: loading ? "2s" : "300ms",

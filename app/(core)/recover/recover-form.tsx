@@ -10,7 +10,10 @@ import GridLayout from "@/components/grid-layout";
 import { requestReset, resetPassword, type RecoverState } from "@/lib/actions/recover";
 
 export function RecoverForm({ token, valid }: { token?: string; valid?: boolean }) {
-  const [state, action, pending] = useActionState<RecoverState, FormData>(token ? resetPassword : requestReset, {});
+  const [state, action, pending] = useActionState<RecoverState, FormData>(
+    token ? resetPassword : requestReset,
+    {},
+  );
 
   return (
     <GridLayout>
@@ -20,13 +23,19 @@ export function RecoverForm({ token, valid }: { token?: string; valid?: boolean 
             <form action={action}>
               <FieldGroup>
                 <div className="flex flex-col items-center gap-2 text-center">
-                  <h1 className="text-2xl font-bold">{token ? "Đặt mật khẩu mới" : "Quên mật khẩu"}</h1>
+                  <h1 className="text-2xl font-bold">
+                    {token ? "Đặt mật khẩu mới" : "Quên mật khẩu"}
+                  </h1>
                   <p className="text-balance text-muted-foreground">
-                    {token ? "Nhập mật khẩu mới cho tài khoản quản trị" : "Nhập email của tài khoản quản trị"}
+                    {token
+                      ? "Nhập mật khẩu mới cho tài khoản quản trị"
+                      : "Nhập email của tài khoản quản trị"}
                   </p>
                 </div>
                 {token && !valid ? (
-                  <p className="text-sm text-destructive text-center">Đường dẫn không hợp lệ hoặc đã hết hạn.</p>
+                  <p className="text-sm text-destructive text-center">
+                    Đường dẫn không hợp lệ hoặc đã hết hạn.
+                  </p>
                 ) : state.done ? (
                   <p className="text-sm text-center">{state.done}</p>
                 ) : token ? (
@@ -35,13 +44,27 @@ export function RecoverForm({ token, valid }: { token?: string; valid?: boolean 
                     <Field>
                       <FieldLabel htmlFor="password">Mật khẩu mới</FieldLabel>
                       <InputGroup className="bg-white">
-                        <InputGroupInput id="password" name="password" type="password" autoComplete="new-password" required minLength={6} />
+                        <InputGroupInput
+                          id="password"
+                          name="password"
+                          type="password"
+                          autoComplete="new-password"
+                          required
+                          minLength={6}
+                        />
                       </InputGroup>
                     </Field>
                     <Field>
                       <FieldLabel htmlFor="confirm">Nhập lại mật khẩu</FieldLabel>
                       <InputGroup className="bg-white">
-                        <InputGroupInput id="confirm" name="confirm" type="password" autoComplete="new-password" required minLength={6} />
+                        <InputGroupInput
+                          id="confirm"
+                          name="confirm"
+                          type="password"
+                          autoComplete="new-password"
+                          required
+                          minLength={6}
+                        />
                       </InputGroup>
                       {state.error && <p className="text-sm text-destructive">{state.error}</p>}
                     </Field>
@@ -54,7 +77,13 @@ export function RecoverForm({ token, valid }: { token?: string; valid?: boolean 
                     <Field>
                       <FieldLabel htmlFor="email">Email</FieldLabel>
                       <InputGroup className="bg-white">
-                        <InputGroupInput id="email" name="email" type="email" autoComplete="email" required />
+                        <InputGroupInput
+                          id="email"
+                          name="email"
+                          type="email"
+                          autoComplete="email"
+                          required
+                        />
                       </InputGroup>
                       {state.error && <p className="text-sm text-destructive">{state.error}</p>}
                     </Field>

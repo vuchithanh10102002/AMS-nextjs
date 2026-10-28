@@ -26,18 +26,28 @@ export function LoginForm() {
                 <FieldGroup>
                   <div className="flex flex-col items-center gap-2 text-center">
                     <h1 className="text-2xl font-bold">Đăng nhập quản trị</h1>
-                    <p className="text-balance text-muted-foreground">Nhập tài khoản admin của website</p>
+                    <p className="text-balance text-muted-foreground">
+                      Nhập tài khoản admin của website
+                    </p>
                   </div>
                   <Field>
                     <FieldLabel htmlFor="username">Username</FieldLabel>
                     <InputGroup className="bg-white">
-                      <InputGroupInput id="username" name="username" autoComplete="username" required />
+                      <InputGroupInput
+                        id="username"
+                        name="username"
+                        autoComplete="username"
+                        required
+                      />
                     </InputGroup>
                   </Field>
                   <Field>
                     <div className="flex items-center">
                       <FieldLabel htmlFor="password">Password</FieldLabel>
-                      <Link href="/recover" className="ml-auto text-sm underline-offset-2 hover:underline">
+                      <Link
+                        href="/recover"
+                        className="ml-auto text-sm underline-offset-2 hover:underline"
+                      >
                         Quên mật khẩu?
                       </Link>
                     </div>
@@ -71,7 +81,11 @@ export function LoginForm() {
                 </FieldGroup>
               </form>
               <div className="relative hidden bg-muted md:block">
-                <Image src={meeting} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                <Image
+                  src={meeting}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
               </div>
             </CardContent>
           </Card>

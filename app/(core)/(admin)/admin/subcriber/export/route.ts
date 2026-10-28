@@ -17,7 +17,9 @@ export async function GET(request: Request) {
   const rows = await db.subcribers.findMany({
     where: {
       ...(s ? { email: { contains: s } } : {}),
-      ...(from || to ? { created: { ...(from ? { gte: from } : {}), ...(to ? { lte: to } : {}) } } : {}),
+      ...(from || to
+        ? { created: { ...(from ? { gte: from } : {}), ...(to ? { lte: to } : {}) } }
+        : {}),
     },
     select: { id: true, email: true, created: true },
     orderBy: { id: "desc" },
@@ -27,8 +29,12 @@ export async function GET(request: Request) {
     const safe = /^[=+\-@\t\r]/.test(t) ? `'${t}` : t;
     return `"${safe.replace(/"/g, '""')}"`;
   };
-  const fmt = (n: number | null) => (n ? new Date(n * 1000).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" }) : "");
-  const csv = ["STT,Email,Ngày đăng ký", ...rows.map((r, i) => [i + 1, cell(r.email), cell(fmt(r.created))].join(","))].join("\r\n");
+  const fmt = (n: number | null) =>
+    n ? new Date(n * 1000).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" }) : "";
+  const csv = [
+    "STT,Email,Ngày đăng ký",
+    ...rows.map((r, i) => [i + 1, cell(r.email), cell(fmt(r.created))].join(",")),
+  ].join("\r\n");
   const stamp = new Date().toISOString().slice(0, 10);
   return new Response("﻿" + csv, {
     headers: {
