@@ -1,7 +1,7 @@
 // components/route-loader-provider.tsx
 "use client";
 
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
 const RouteLoaderContext = createContext<{
@@ -47,8 +47,8 @@ export function RouteLoaderProvider({ children }: { children: React.ReactNode })
     return () => document.removeEventListener("click", handleClick);
   }, [pathname]);
 
-  const start = () => setLoading(true);
-  const done = () => setLoading(false);
+  const start = useCallback(() => setLoading(true), []);
+  const done = useCallback(() => setLoading(false), []);
 
   return (
     <RouteLoaderContext.Provider value={{ loading, start, done }}>

@@ -2,6 +2,7 @@ import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { db } from "./db";
 
 export const SESSION_COOKIE = "nh_admin";
@@ -67,7 +68,9 @@ export async function clearSession() {
 }
 
 export async function currentAdmin(): Promise<Admin | null> {
-  const s = decodeSession((await cookies()).get(SESSION_COOKIE)?.value);
+  const token = (await cookies()).get(SESSION_COOKIE)?.value;
+  await connection();
+  const s = decodeSession(token);
   if (!s) return null;
   return db.admins.findUnique({
     where: { id: s.id },

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { after } from "next/server";
+import { after, connection } from "next/server";
 import { Shell } from "@/site/components/layout/shell";
 import { site } from "@/site/lib/ctx";
 import { pageMeta } from "@/site/lib/meta";
@@ -63,6 +63,7 @@ export default async function SlugPage({ params, searchParams }: PageProps<"/[..
     return <Shell here={{ cur }}>{view}</Shell>;
   }
   const nodeId = r.data.node_id;
+  await connection();
   after(() => countView(nodeId));
   return (
     <Shell here={{ cur: r.cat }}>

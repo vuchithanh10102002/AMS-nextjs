@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     globalNotFound: true,
+    instantInsights: { validationLevel: "manual-warning" },
     serverActions: { bodySizeLimit: "20mb" },
   },
   env: { NEXT_PUBLIC_SITE_PATH: sitePath },
