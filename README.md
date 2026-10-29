@@ -125,61 +125,9 @@ node shotdiff.js
 
 Chạy bằng Git Bash thì thêm `MSYS_NO_PATHCONV=1` trước lệnh.
 
-## Lên server (VPS Linux)
+## Lên server
 
-Cần Node.js 20+, MySQL/MariaDB, pm2 (`npm i -g pm2`), nginx.
-
-1. Database: tạo DB rồi import `database/ams.sql` (xem mục Database). Ảnh upload chép nguyên thư mục `app/webroot/uploads/` của bản CK2 sang server, ví dụ `/var/www/ams-data/app/webroot/uploads/`.
-2. Lấy code và cài:
-
-   ```bash
-   git clone https://github.com/vuchithanh10102002/AMS-nextjs.git /var/www/ams-next
-   cd /var/www/ams-next
-   npm ci
-   ```
-
-3. Tạo `.env.local` (mẫu ở `.env.example`):
-
-   ```env
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_USER=ams
-   DB_PASS=<mật khẩu>
-   DB_NAME=ams
-   SESSION_SECRET=<chuỗi mới, không dùng lại của máy dev>
-   SITE_URL=https://<tên miền>/
-   CK2_ROOT=/var/www/ams-data
-   SITE_INDEX=1
-   ```
-
-   `SITE_INDEX=1` chỉ đặt khi chạy tên miền thật; site thử để trống cho khỏi bị index.
-
-4. Build và chạy. Lúc build Next đọc DB để dựng trang tĩnh nên DB phải kết nối được:
-
-   ```bash
-   npm run build
-   pm2 start ecosystem.config.js
-   pm2 save && pm2 startup
-   ```
-
-5. nginx chuyển tiếp về cổng 3200:
-
-   ```nginx
-   server {
-     server_name <tên miền>;
-     client_max_body_size 20m;
-     location / {
-       proxy_pass http://127.0.0.1:3200;
-       proxy_set_header Host $host;
-       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-       proxy_set_header X-Forwarded-Proto $scheme;
-     }
-   }
-   ```
-
-   HTTPS: `certbot --nginx -d <tên miền>`.
-
-Cập nhật code: `git pull && npm ci && npm run build && pm2 reload ams-next`.
+Xem `DEPLOY.md`: VPS Linux, pm2, nginx, HTTPS, `.env.local`, cập nhật code, sao lưu, lỗi thường gặp.
 
 ## Database
 
