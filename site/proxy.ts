@@ -11,11 +11,22 @@ export function siteProxy(request: NextRequest) {
     res.cookies.set("active_editor", editor, { path: "/", sameSite: "lax" });
     return res;
   }
+  const en = pathname === "/en" || pathname.startsWith("/en/");
+  const path = en ? pathname.slice(3) || "/" : pathname;
+  if (lang === "vi" || lang === "en") {
+    const url = request.nextUrl.clone();
+    url.searchParams.delete("lang");
+    url.pathname = lang === "en" ? (path === "/" ? "/en" : "/en" + path) : path;
+    const res = NextResponse.redirect(url, 301);
+    res.cookies.delete("lang");
+    return res;
+  }
   const headers = new Headers(request.headers);
-  headers.set("x-site-path", pathname);
-  if (lang === "vi" || lang === "en") headers.set("x-site-lang", lang);
-  const res = NextResponse.next({ request: { headers } });
-  if (lang === "vi" || lang === "en")
-    res.cookies.set("lang", lang, { path: "/", sameSite: "lax", maxAge: 60 * 60 * 24 * 365 });
-  return res;
+  headers.set("x-site-path", path);
+  headers.set("x-site-search", request.nextUrl.search);
+  headers.set("x-site-lang", en ? "en" : "vi");
+  if (!en) return NextResponse.next({ request: { headers } });
+  const url = request.nextUrl.clone();
+  url.pathname = path;
+  return NextResponse.rewrite(url, { request: { headers } });
 }

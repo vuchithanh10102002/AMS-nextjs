@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { cacheLife, cacheTag } from "next/cache";
-import { cookies, headers } from "next/headers";
+import { headers } from "next/headers";
 import { db } from "@/lib/db";
 
 export type Lang = "vi" | "en";
@@ -9,9 +9,7 @@ export type Lang = "vi" | "en";
 type LangRow = { vi: string | null; en: string | null };
 
 export const getLang = cache(async (): Promise<Lang> => {
-  const forced = (await headers()).get("x-site-lang");
-  const value = forced || (await cookies()).get("lang")?.value;
-  return value === "en" ? "en" : "vi";
+  return (await headers()).get("x-site-lang") === "en" ? "en" : "vi";
 });
 
 async function getLangRows(): Promise<Record<string, LangRow>> {

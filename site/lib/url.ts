@@ -24,6 +24,12 @@ export function queryString(q: Query) {
   return u.toString();
 }
 
+export function withLang(href: string, lang: string) {
+  if (lang !== "en" || !href.startsWith("/") || href.startsWith("//")) return href;
+  if (href === "/en" || href.startsWith("/en/")) return href;
+  return href === "/" ? "/en" : "/en" + href;
+}
+
 export function langHref(v: string) {
   return v === "" || v === "#" || v.includes(":") ? v : "/" + v.replace(/^\/+/, "");
 }

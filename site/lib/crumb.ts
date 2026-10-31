@@ -1,5 +1,4 @@
 import "server-only";
-import { siteUrl } from "@/lib/site";
 import { site } from "./ctx";
 import { categoryById, type Cat } from "./queries/category";
 import type { NewsRow, ProductRow } from "./queries/node";
@@ -17,10 +16,10 @@ async function upTree(cat: Cat, ret: Cat[] = []): Promise<Cat[]> {
 
 export async function crumbHtml(cur: Cat | null, single?: ProductRow | NewsRow | null) {
   const s = await site();
-  const base = siteUrl();
+  const base = s.base;
   const suf = s.lang === "vi" ? "" : `_${s.lang}`;
   const items: { link: string; title: string }[] = [
-    { link: base, title: s.t("home") || (s.lang === "vi" ? "Trang chủ" : "Home") },
+    { link: s.home, title: s.t("home") || (s.lang === "vi" ? "Trang chủ" : "Home") },
   ];
   const links: string[] = [];
   if (cur) {

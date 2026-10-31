@@ -2,8 +2,9 @@ import "server-only";
 import { cache } from "react";
 import { cookies, headers } from "next/headers";
 import { currentAdmin } from "@/lib/session";
-import { getSettings } from "@/lib/site";
+import { getSettings, siteUrl } from "@/lib/site";
 import { translator } from "./i18n";
+import { withLang } from "./url";
 
 const MODES = [
   "editor",
@@ -45,7 +46,10 @@ export const site = cache(async () => {
                 </a>`;
   };
   const ta = (key: string, mode?: string) => tt.t(key) + adm("lang", key, mode);
-  return { ...tt, settings, editor, mobile, adm, ta };
+  const u = (href: string) => withLang(href, tt.lang);
+  const home = tt.lang === "en" ? siteUrl() + "en" : siteUrl();
+  const base = tt.lang === "en" ? siteUrl() + "en/" : siteUrl();
+  return { ...tt, settings, editor, mobile, adm, ta, u, home, base };
 });
 
 export type Site = Awaited<ReturnType<typeof site>>;

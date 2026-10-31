@@ -22,8 +22,8 @@ export async function NewsList({
   base: string;
 }) {
   const s = await site();
-  const data = await newsList(cur.id, page, 9);
-  if (outOfRange(data)) redirect("/404.html");
+  const data = await newsList(cur.id, page, 12);
+  if (outOfRange(data)) redirect(s.u("/404.html"));
   return (
     <>
       <Hero

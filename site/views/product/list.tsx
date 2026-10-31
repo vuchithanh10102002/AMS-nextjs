@@ -34,7 +34,7 @@ export async function ProductList({
   const s = await site();
   const { t, tr } = s;
   const root = await rootOf(cur);
-  const rootLink = catLink(root);
+  const rootLink = s.u(catLink(root));
   const groups = await childrenOf(root);
   const hangs = await getHangs();
   const selCat = ids(one(q, "cat"));
@@ -65,7 +65,7 @@ export async function ProductList({
     { brand: one(q, "brand"), cat: one(q, "cat"), items, sort: one(q, "sort"), page },
     16,
   );
-  if (outOfRange(data)) redirect("/404.html");
+  if (outOfRange(data)) redirect(s.u("/404.html"));
   const facets = await Promise.all(
     groups.map(async (g) => ({
       g,

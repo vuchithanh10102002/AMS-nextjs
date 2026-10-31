@@ -6,7 +6,7 @@ import { Adm } from "./adm";
 
 export async function ProductItem({ v, tag = "h2" }: { v: ProductRow; tag?: "h2" | "h3" }) {
   const s = await site();
-  const href = link(v.slug);
+  const href = s.u(link(v.slug));
   const name = s.tr(v, "title");
   const desc = s.tr(v, "description");
   const m = desc.match(/<p[^>]*>([\s\S]*?)<\/p>/);

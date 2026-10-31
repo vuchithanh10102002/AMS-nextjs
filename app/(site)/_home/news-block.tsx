@@ -28,7 +28,7 @@ export async function HomeNewsBlock({
             className="ams-title wow animate__fadeInUp"
             dangerouslySetInnerHTML={{ __html: s.ta(title, "text") }}
           />
-          <a href={catLink(cat)} className="ams-btn wow animate__fadeInRight">
+          <a href={s.u(catLink(cat))} className="ams-btn wow animate__fadeInRight">
             {t("home_text_16")}
             <svg width="17" height="14">
               <use href="#i-arrow"></use>
@@ -40,7 +40,7 @@ export async function HomeNewsBlock({
           className={`owl-carousel ${hook} ams-news-slider ams-dot-slider wow animate__fadeInUp`}
         >
           {items.map((v) => {
-            const href = link(v.slug);
+            const href = s.u(link(v.slug));
             return (
               <div key={v.node_id} className="ams-news-item">
                 <a href={href} className="wrap-img img-100 ams-news-img">

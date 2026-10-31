@@ -3,7 +3,6 @@ import { Hero } from "@/site/components/hero";
 import { Shell } from "@/site/components/layout/shell";
 import { site } from "@/site/lib/ctx";
 import { pageMeta } from "@/site/lib/meta";
-import { siteUrl } from "@/lib/site";
 
 export async function generateMetadata(): Promise<Metadata> {
   const s = await site();
@@ -25,7 +24,7 @@ export default async function ContactPage() {
         title={title}
         image={t("contact_text_2")}
         crumbs={[
-          { link: siteUrl(), title: t("header_text_5") },
+          { link: s.home, title: t("header_text_5") },
           { link: "", title },
         ]}
       />

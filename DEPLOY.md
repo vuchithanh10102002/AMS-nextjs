@@ -106,7 +106,6 @@ DB_NAME=ams
 SESSION_SECRET=<chuỗi mới, xem lệnh dưới>
 SITE_URL=https://<tên miền>/
 CK2_ROOT=/var/www/ams-data
-SITE_INDEX=
 ```
 
 Sinh `SESSION_SECRET` (đừng dùng lại chuỗi của máy dev):
@@ -121,9 +120,8 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 | `SESSION_SECRET` | Ngắn hơn 32 ký tự thì app báo lỗi. Đổi chuỗi này là mọi phiên admin bị đăng xuất |
 | `SITE_URL` | Đúng tên miền thật, có `https://` và dấu `/` cuối. Dùng cho canonical, sitemap, link tuyệt đối. Chạy trong thư mục con thì ghi cả đường dẫn, ví dụ `https://abc.vn/ams/` |
 | `CK2_ROOT` | Thư mục **chứa** `app/webroot/uploads/`, không phải chính thư mục `uploads` |
-| `SITE_INDEX` | Để trống thì mọi trang có `noindex,nofollow` (hợp với site thử). Chỉ đặt `1` khi chạy tên miền thật |
 
-Sửa `SITE_URL` hoặc `SITE_INDEX` xong phải build lại (mục 8), vì một số trang được dựng lúc build.
+Sửa `SITE_URL` xong phải build lại (mục 8), vì một số trang được dựng lúc build. Meta robots `noindex,nofollow` cố định ở `site/lib/meta.ts`, khi chạy tên miền thật muốn cho index thì sửa ở đó rồi build lại.
 
 ## 7. Build và chạy bằng pm2
 
@@ -206,12 +204,12 @@ echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 
 ## 10. Kiểm tra sau khi lên
 
-- [ ] `https://<tên miền>/` và `https://<tên miền>/?lang=en` hiện đủ, ảnh không vỡ
+- [ ] `https://<tên miền>/` và `https://<tên miền>/en` hiện đủ, ảnh không vỡ
 - [ ] Mở vài trang danh mục, sản phẩm, tin, `/lien-he`, `/san-pham`
 - [ ] URL rác như `/abc-xyz.html` chuyển sang `/404.html`
 - [ ] `https://<tên miền>/sitemap.xml` có link đúng tên miền thật (sai thì `SITE_URL` sai)
 - [ ] `https://<tên miền>/robots.txt` có nội dung
-- [ ] Xem nguồn trang: meta robots đúng ý (`noindex` khi `SITE_INDEX` trống, không có khi `=1`)
+- [ ] Xem nguồn trang: meta robots `noindex, nofollow`
 - [ ] `/admin`: đăng nhập, sửa thử 1 khoá ngôn ngữ, upload 1 ảnh (kiểm tra quyền ghi `CK2_ROOT`)
 - [ ] Gửi form liên hệ / báo giá, kiểm tra bản ghi trong admin
 - [ ] `pm2 logs ams-next --lines 50` không có lỗi

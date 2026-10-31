@@ -23,7 +23,7 @@ export async function HomeCategories() {
                 className="col-xs-6 col-sm-4 col-md-1-5 wow animate__fadeInUp"
                 data-wow-delay={`${k / 10}s`}
               >
-                <a href={catLink(v)} className="ams-index-cat-item">
+                <a href={s.u(catLink(v))} className="ams-index-cat-item">
                   <span className="wrap-img img-100">
                     <img src={src(v.image)} alt={tr(v.node, "title")} loading="lazy" />
                   </span>

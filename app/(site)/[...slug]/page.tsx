@@ -43,9 +43,9 @@ export async function generateMetadata({ params }: PageProps<"/[...slug]">): Pro
 export default async function SlugPage({ params, searchParams }: PageProps<"/[...slug]">) {
   const [{ slug }, q] = await Promise.all([params, searchParams]);
   if (slug.join("/") === "404.html") return <Page404 />;
-  const r = await resolve(slug);
-  if (!r) redirect("/404.html");
-  if (r.kind === "redirect") redirect(r.to);
+  const [r, s] = await Promise.all([resolve(slug), site()]);
+  if (!r) redirect(s.u("/404.html"));
+  if (r.kind === "redirect") redirect(s.u(r.to));
   if (r.kind === "category") {
     const { cur, page, base } = r;
     const view =

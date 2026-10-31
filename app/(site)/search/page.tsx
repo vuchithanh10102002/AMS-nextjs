@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { siteUrl } from "@/lib/site";
 import { Adm } from "@/site/components/adm";
 import { Hero } from "@/site/components/hero";
 import { Shell } from "@/site/components/layout/shell";
@@ -38,10 +37,10 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
       ? { type: "news" as const, data: await newsSearch(key, page, 20) }
       : { type: "product" as const, data: await productSearch(key, page, 12) };
   const { data } = found;
-  if (outOfRange(data)) redirect("/404.html");
+  if (outOfRange(data)) redirect(s.u("/404.html"));
   const total = data.rows.length ? data.total : 0;
   const title = t("general_text_25");
-  const base = siteUrl();
+  const base = s.base;
   const esc = (v: string) =>
     v
       .replace(/&/g, "&amp;")
@@ -55,7 +54,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
       <Hero
         title={title}
         crumbs={[
-          { link: base, title: t("header_text_5") },
+          { link: s.home, title: t("header_text_5") },
           { link: "", title },
         ]}
       />

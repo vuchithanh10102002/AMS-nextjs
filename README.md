@@ -37,7 +37,8 @@ CK2_ROOT=C:/xampp/htdocs/ams
 | `SESSION_SECRET` | Khoá ký cookie đăng nhập admin. Ngắn hơn 32 ký tự là báo lỗi |
 | `SITE_URL` | Địa chỉ gốc của site, dùng cho link tuyệt đối, sitemap, canonical |
 | `CK2_ROOT` | Thư mục gốc bản CK2, nơi chứa `app/webroot/uploads/` |
-| `SITE_INDEX` | `1` = cho máy tìm kiếm index. Bỏ trống thì mọi trang có meta robots noindex,nofollow như bản CK2 |
+
+Mọi trang có meta robots `noindex,nofollow` (cố định ở `site/lib/meta.ts`, mở index thì sửa ở đó).
 
 Sinh `SESSION_SECRET`:
 
@@ -51,7 +52,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 npx next dev -p 3200
 ```
 
-- Site: http://localhost:3200/ (bản tiếng Anh: `?lang=en`)
+- Site: http://localhost:3200/ (bản tiếng Anh: thêm `/en` trước đường dẫn, ví dụ `/en/gioi-thieu.html`; link cũ `?lang=en` tự chuyển 301)
 - Admin: http://localhost:3200/admin, đăng nhập bằng tài khoản admin trong DB (mật khẩu MD5 như CK2)
 
 Phải chạy cổng 3200 cho khớp `SITE_URL` và các script đối chiếu.
@@ -67,6 +68,7 @@ npx next start -p 3200
 
 | Lệnh | Việc |
 |---|---|
+| `npm run db:check` | Thử kết nối DB theo `.env.local`, in nguyên nhân nếu lỗi (MySQL chưa chạy, sai mật khẩu, chưa có DB…) |
 | `npm run lint` | Kiểm tra ESLint |
 | `npm run format` | Format toàn bộ code bằng Prettier (cấu hình `.prettierrc.json`, bỏ qua `public/`, `database/`) |
 | `npm run format:check` | Kiểm tra code đã format chưa, không sửa |

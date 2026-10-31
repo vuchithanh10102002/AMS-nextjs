@@ -1,7 +1,8 @@
 import { site } from "@/site/lib/ctx";
 import { categoryByTemplate, childrenOf, menuRoots, type Cat } from "@/site/lib/queries/category";
 import { getHangs } from "@/site/lib/queries/rows";
-import { catLink, src } from "@/site/lib/url";
+import { headers } from "next/headers";
+import { catLink, src, withLang } from "@/site/lib/url";
 import { Adm } from "@/site/components/adm";
 
 export type Here = { home?: boolean; contact?: boolean; cur?: Cat | null; search?: string };
@@ -15,6 +16,9 @@ export async function Header({ here }: { here: Here }) {
   const { t, tr } = s;
   const cur = here.cur && here.cur.lft != null && here.cur.id ? here.cur : null;
   const en = s.lang === "en";
+  const h = await headers();
+  const viHref = (h.get("x-site-path") ?? "/") + (h.get("x-site-search") ?? "");
+  const enHref = withLang(viHref, "en");
   const roots = await menuRoots();
   const subs = await Promise.all(roots.map((v) => childrenOf(v)));
   const th = await categoryByTemplate("thuong-hieu");
@@ -35,7 +39,7 @@ export async function Header({ here }: { here: Here }) {
           <ul className="ams-topbar-links">
             {[1, 2, 3].map((i) => (
               <li key={i}>
-                <a href={langLink(t(`header_text_${i}_link`))}>{t(`header_text_${i}`)}</a>
+                <a href={s.u(langLink(t(`header_text_${i}_link`)))}>{t(`header_text_${i}`)}</a>
                 <Adm m="lang" v={`header_text_${i}`} mode="text_link" />
               </li>
             ))}
@@ -56,7 +60,7 @@ export async function Header({ here }: { here: Here }) {
                   <use href="#i-menu"></use>
                 </svg>
               </button>
-              <a href="/" className="ams-logo">
+              <a href={s.u("/")} className="ams-logo">
                 <img
                   src={src(t("logo_header"))}
                   alt={s.settings.title}
@@ -66,7 +70,12 @@ export async function Header({ here }: { here: Here }) {
                 />
               </a>
               <Adm m="lang" v="logo_header" mode="image" />
-              <form className="ams-search form_search" action="/search" method="get" noValidate>
+              <form
+                className="ams-search form_search"
+                action={s.u("/search")}
+                method="get"
+                noValidate
+              >
                 <input
                   type="text"
                   name="s"
@@ -86,7 +95,11 @@ export async function Header({ here }: { here: Here }) {
               </button>
               <Adm m="lang" v="header_text_4" mode="text" />
               <div className="ams-lang lang_box">
-                <button type="button" className="ams-lang-toggle lang_toggle">
+                <button
+                  type="button"
+                  className="ams-lang-toggle lang_toggle"
+                  aria-label={en ? "Language: English" : "Ngôn ngữ: Tiếng Việt"}
+                >
                   <svg className="ams-flag" width="20" height="13">
                     <use href={`#i-flag-${en ? "en" : "vn"}`}></use>
                   </svg>
@@ -97,7 +110,7 @@ export async function Header({ here }: { here: Here }) {
                 </button>
                 <ul className="ams-lang-menu">
                   <li className={en ? undefined : "active"}>
-                    <a href="?lang=vi" className="lang_item" data-lang="VN" hrefLang="vi">
+                    <a href={viHref} className="lang_item" data-lang="VN" hrefLang="vi">
                       <svg className="ams-flag" width="20" height="13">
                         <use href="#i-flag-vn"></use>
                       </svg>
@@ -105,7 +118,7 @@ export async function Header({ here }: { here: Here }) {
                     </a>
                   </li>
                   <li className={en ? "active" : undefined}>
-                    <a href="?lang=en" className="lang_item" data-lang="EN" hrefLang="en">
+                    <a href={enHref} className="lang_item" data-lang="EN" hrefLang="en">
                       <svg className="ams-flag" width="20" height="13">
                         <use href="#i-flag-en"></use>
                       </svg>
@@ -120,7 +133,7 @@ export async function Header({ here }: { here: Here }) {
             <div className="wrap">
               <ul className="ams-nav-list">
                 <li className={here.home ? "active" : undefined}>
-                  <a href="/">{t("header_text_5")}</a>
+                  <a href={s.u("/")}>{t("header_text_5")}</a>
                   <Adm m="lang" v="header_text_5" mode="text" />
                 </li>
                 {roots.map((v, i) => {
@@ -137,7 +150,7 @@ export async function Header({ here }: { here: Here }) {
                     .join(" ");
                   return (
                     <li key={v.id} className={cls}>
-                      <a href={catLink(v)}>
+                      <a href={s.u(catLink(v))}>
                         {tr(v.node, "title")}
                         {sub.length > 0 && (
                           <svg className="ams-nav-down" width="8" height="5">
@@ -150,7 +163,7 @@ export async function Header({ here }: { here: Here }) {
                         <div className="ams-nav-mega">
                           {sub.map((c) => (
                             <div key={c.id} className="ams-nav-mega-col">
-                              <a href={catLink(c)} className="ams-nav-mega-head">
+                              <a href={s.u(catLink(c))} className="ams-nav-mega-head">
                                 {tr(c.node, "title")}
                               </a>
                               <Adm m="category" v={c.node.id} />
@@ -160,7 +173,7 @@ export async function Header({ here }: { here: Here }) {
                                     key={g.id}
                                     className={cur && cur.id == g.id ? "active" : undefined}
                                   >
-                                    <a href={catLink(g)}>{tr(g.node, "title")}</a>
+                                    <a href={s.u(catLink(g))}>{tr(g.node, "title")}</a>
                                     <Adm m="category" v={g.node.id} />
                                   </li>
                                 ))}
@@ -169,14 +182,17 @@ export async function Header({ here }: { here: Here }) {
                           ))}
                           {hangs.length > 0 && (
                             <div className="ams-nav-mega-col ams-nav-mega-brand">
-                              <a href={th ? catLink(th) : catLink(v)} className="ams-nav-mega-head">
+                              <a
+                                href={s.u(th ? catLink(th) : catLink(v))}
+                                className="ams-nav-mega-head"
+                              >
                                 {t("general_text_58")}
                               </a>
                               <Adm m="lang" v="general_text_58" mode="text" />
                               <ul className="ams-nav-mega-list">
                                 {hangs.map((h) => (
                                   <li key={h.id}>
-                                    <a href={`${catLink(v)}?brand=${h.id}`}>{h.title}</a>
+                                    <a href={s.u(`${catLink(v)}?brand=${h.id}`)}>{h.title}</a>
                                     <Adm m="hang" v={h.id} />
                                   </li>
                                 ))}
@@ -188,7 +204,7 @@ export async function Header({ here }: { here: Here }) {
                         <ul className="ams-nav-sub">
                           {sub.map((c) => (
                             <li key={c.id} className={cur && cur.id == c.id ? "active" : undefined}>
-                              <a href={catLink(c)}>{tr(c.node, "title")}</a>
+                              <a href={s.u(catLink(c))}>{tr(c.node, "title")}</a>
                               <Adm m="category" v={c.node.id} />
                             </li>
                           ))}
@@ -198,7 +214,7 @@ export async function Header({ here }: { here: Here }) {
                   );
                 })}
                 <li className={here.contact ? "active" : undefined}>
-                  <a href="/lien-he">{t("header_text_6")}</a>
+                  <a href={s.u("/lien-he")}>{t("header_text_6")}</a>
                   <Adm m="lang" v="header_text_6" mode="text" />
                 </li>
               </ul>

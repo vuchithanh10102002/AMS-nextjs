@@ -2,6 +2,7 @@ import "server-only";
 import type { Metadata } from "next";
 import { siteUrl } from "@/lib/site";
 import { site } from "./ctx";
+import { withLang } from "./url";
 
 const clean = (s: unknown) =>
   String(s ?? "")
@@ -26,12 +27,15 @@ export async function pageMeta(m: {
     title: { absolute: title },
     description: description || undefined,
     keywords: clean(m.keywords) || undefined,
-    robots: process.env.SITE_INDEX === "1" ? undefined : { index: false, follow: false },
-    alternates: { canonical: abs(m.path) },
+    robots: { index: false, follow: false },
+    alternates: {
+      canonical: abs(s.u(m.path)),
+      languages: { vi: abs(m.path), en: abs(withLang(m.path, "en")) },
+    },
     icons: fav ? { icon: [{ url: abs(fav), type: "image/png" }] } : undefined,
     openGraph: {
       siteName: clean(s.settings.title),
-      url: abs(m.path),
+      url: abs(s.u(m.path)),
       title,
       description,
       images: [abs(m.image || s.settings.image_share || "")],

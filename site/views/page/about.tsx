@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import { siteUrl } from "@/lib/site";
+import { mediaUrl } from "@/lib/site";
 import { Adm } from "@/site/components/adm";
 import { Hero } from "@/site/components/hero";
 import { Links } from "@/site/components/links";
@@ -14,7 +14,7 @@ export async function About({ cur }: { cur: Cat }) {
   const { t, tr } = s;
   const subs = await childrenOf(cur);
   const logo = s.settings.favicon ?? "";
-  const bg = siteUrl() + t("home_tab_4");
+  const bg = mediaUrl(t("home_tab_4"));
   return (
     <>
       <Hero title={tr(cur.node, "title")} image={cur.image} crumbHtml={await crumbHtml(cur)} />

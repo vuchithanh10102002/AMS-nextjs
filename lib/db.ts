@@ -156,6 +156,8 @@ function create() {
     password: process.env.DB_PASS ?? "",
     database: process.env.DB_NAME,
     connectionLimit: 10,
+    connectTimeout: 10000,
+    allowPublicKeyRetrieval: true,
   });
   return new PrismaClient({ adapter }).$extends({
     query: {

@@ -12,7 +12,8 @@
     "db:pull": "prisma db pull && node scripts/prisma-fix.js && prisma format && prisma generate",
     "db:generate": "prisma generate",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "db:check": "node scripts/db-check.js"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

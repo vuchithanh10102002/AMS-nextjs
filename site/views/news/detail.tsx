@@ -1,4 +1,3 @@
-import { siteUrl } from "@/lib/site";
 import { Adm } from "@/site/components/adm";
 import { Links } from "@/site/components/links";
 import { NewsItem } from "@/site/components/news-item";
@@ -19,7 +18,7 @@ export async function NewsDetail({ data, cat }: { data: NewsRow; cat: Cat | null
   const s = await site();
   const { t, tr } = s;
   const name = tr(data, "title");
-  const url = siteUrl() + link(data.slug).slice(1);
+  const url = s.base + link(data.slug).slice(1);
   const related = cat ? await newsIn(cat.id, 4, data.node_id) : [];
   return (
     <>
@@ -109,7 +108,7 @@ export async function NewsDetail({ data, cat }: { data: NewsRow; cat: Cat | null
               ))}
             </div>
             <div className="ams-nd-all">
-              <a href={catLink(cat)} className="ams-btn ams-btn-red">
+              <a href={s.u(catLink(cat))} className="ams-btn ams-btn-red">
                 {t("news_text_4")}
                 <svg width="17" height="14">
                   <use href="#i-arrow"></use>

@@ -3,7 +3,7 @@ import { site } from "@/site/lib/ctx";
 import { langHref, tel } from "@/site/lib/url";
 
 export async function HomeCta() {
-  const { t } = await site();
+  const { t, u } = await site();
   const hotline = t("company_hotline");
   return (
     <section className="ams-index-cta">
@@ -24,7 +24,7 @@ export async function HomeCta() {
             </div>
             <div className="col-xs-12 col-sm-6">
               <a
-                href={langHref(t("home_text_4_link"))}
+                href={u(langHref(t("home_text_4_link")))}
                 className="ams-index-cta-box ams-index-cta-quality"
               >
                 <span className="ams-index-cta-label">{t("home_text_4")}</span>

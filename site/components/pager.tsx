@@ -13,7 +13,7 @@ export async function Pager({
 }) {
   if (pages < 2) return null;
   const s = await site();
-  const href = (n: number) => `${base}${n > 1 ? `/page:${n}` : ""}${qs ? `?${qs}` : ""}`;
+  const href = (n: number) => `${s.u(base)}${n > 1 ? `/page:${n}` : ""}${qs ? `?${qs}` : ""}`;
   let start = Math.max(1, page - 4);
   const end = Math.min(pages, start + 8);
   start = Math.max(1, end - 8);

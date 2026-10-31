@@ -37,7 +37,7 @@ export async function Footer({ here }: { here: Here }) {
           <div className="wrap">
             <div className="ams-footer-inner clearfix">
               <div className="ams-footer-info">
-                <a href="/" className="ams-footer-logo">
+                <a href={s.u("/")} className="ams-footer-logo">
                   <img
                     src={src(t("logo_footer"))}
                     alt={settings.title}
@@ -81,7 +81,7 @@ export async function Footer({ here }: { here: Here }) {
                   <ul>
                     {cols[i - 1].map((v) => (
                       <li key={v.id}>
-                        <a href={catLink(v)}>{tr(v.node, "title")}</a>
+                        <a href={s.u(catLink(v))}>{tr(v.node, "title")}</a>
                         <Adm m="category" v={v.node.id} />
                       </li>
                     ))}
@@ -144,7 +144,7 @@ export async function Footer({ here }: { here: Here }) {
               <ul className="ams-footer-policy">
                 {cols[3].map((v) => (
                   <li key={v.id}>
-                    <a href={catLink(v)}>{tr(v.node, "title")}</a>
+                    <a href={s.u(catLink(v))}>{tr(v.node, "title")}</a>
                     <Adm m="category" v={v.node.id} />
                   </li>
                 ))}
@@ -157,7 +157,7 @@ export async function Footer({ here }: { here: Here }) {
       <div className="ams-overlay mm_overlay"></div>
       <nav className="ams-mm">
         <div className="ams-mm-head clearfix">
-          <a href="/" className="ams-mm-logo">
+          <a href={s.u("/")} className="ams-mm-logo">
             <img
               src={src(t("logo_header"))}
               alt={settings.title}
@@ -178,13 +178,13 @@ export async function Footer({ here }: { here: Here }) {
         </div>
         <ul className="ams-mm-list">
           <li className={here.home ? "active" : undefined}>
-            <a href="/">{t("header_text_5")}</a>
+            <a href={s.u("/")}>{t("header_text_5")}</a>
           </li>
           {roots.map((v, i) => {
             const sub = subs[i];
             return (
               <li key={v.id} className={sub.length ? "ams-mm-has" : undefined}>
-                <a href={catLink(v)}>{tr(v.node, "title")}</a>
+                <a href={s.u(catLink(v))}>{tr(v.node, "title")}</a>
                 {sub.length > 0 && (
                   <>
                     <button
@@ -201,7 +201,7 @@ export async function Footer({ here }: { here: Here }) {
                         const s3 = sub3.get(c.id) ?? [];
                         return (
                           <li key={c.id} className={s3.length ? "ams-mm-has" : undefined}>
-                            <a href={catLink(c)}>{tr(c.node, "title")}</a>
+                            <a href={s.u(catLink(c))}>{tr(c.node, "title")}</a>
                             {s3.length > 0 && (
                               <>
                                 <button
@@ -216,7 +216,7 @@ export async function Footer({ here }: { here: Here }) {
                                 <ul className="ams-mm-child">
                                   {s3.map((g) => (
                                     <li key={g.id}>
-                                      <a href={catLink(g)}>{tr(g.node, "title")}</a>
+                                      <a href={s.u(catLink(g))}>{tr(g.node, "title")}</a>
                                     </li>
                                   ))}
                                 </ul>
@@ -227,7 +227,7 @@ export async function Footer({ here }: { here: Here }) {
                       })}
                       {v.ctype === "product" && hangs.length > 0 && (
                         <li className="ams-mm-has">
-                          <a href={th ? catLink(th) : catLink(v)}>{t("general_text_58")}</a>
+                          <a href={s.u(th ? catLink(th) : catLink(v))}>{t("general_text_58")}</a>
                           <button
                             type="button"
                             className="ams-mm-toggle mm_toggle"
@@ -240,7 +240,7 @@ export async function Footer({ here }: { here: Here }) {
                           <ul className="ams-mm-child">
                             {hangs.map((h) => (
                               <li key={h.id}>
-                                <a href={`${catLink(v)}?brand=${h.id}`}>{h.title}</a>
+                                <a href={s.u(`${catLink(v)}?brand=${h.id}`)}>{h.title}</a>
                               </li>
                             ))}
                           </ul>
@@ -253,13 +253,13 @@ export async function Footer({ here }: { here: Here }) {
             );
           })}
           <li className={here.contact ? "active" : undefined}>
-            <a href="/lien-he">{t("header_text_6")}</a>
+            <a href={s.u("/lien-he")}>{t("header_text_6")}</a>
           </li>
         </ul>
         <ul className="ams-mm-sub">
           {[2, 3].map((i) => (
             <li key={i}>
-              <a href={langLink(t(`header_text_${i}_link`))}>{t(`header_text_${i}`)}</a>
+              <a href={s.u(langLink(t(`header_text_${i}_link`)))}>{t(`header_text_${i}`)}</a>
             </li>
           ))}
         </ul>

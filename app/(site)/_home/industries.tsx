@@ -71,7 +71,7 @@ export async function HomeIndustries() {
                   className="ams-index-ind-desc"
                   dangerouslySetInnerHTML={{ __html: tr(v, "description") }}
                 />
-                <a href={catLink(v)} className="ams-btn">
+                <a href={s.u(catLink(v))} className="ams-btn">
                   {t("home_text_8")}
                   <svg width="17" height="14">
                     <use href="#i-arrow"></use>

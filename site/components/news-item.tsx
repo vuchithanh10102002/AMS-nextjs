@@ -6,7 +6,7 @@ import { Adm } from "./adm";
 
 export async function NewsItem({ v, tag = "h2" }: { v: NewsRow; tag?: "h2" | "h3" }) {
   const s = await site();
-  const href = link(v.slug);
+  const href = s.u(link(v.slug));
   const name = s.tr(v, "title");
   const tags = await newsTags(v.node_id);
   const Tag = tag;

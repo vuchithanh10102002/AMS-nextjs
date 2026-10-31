@@ -10,7 +10,7 @@ export async function Brands({ cur }: { cur: Cat }) {
   const s = await site();
   const hangs = await getHangs();
   const root = (await allCategories()).find((c) => c.ctype === "product" && c.parent_id == null);
-  const rootLink = root ? catLink(root) : "/";
+  const rootLink = s.u(root ? catLink(root) : "/");
   return (
     <>
       <Hero
