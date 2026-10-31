@@ -33,7 +33,13 @@ export default function Home() {
       <HomePartners />
       <HomeBanner />
       <HomeReviews />
-      <HomeNewsBlock cls="ams-index-news" hook="news_slider" title="home_text_15" slug="tin-tuc" />
+      <HomeNewsBlock
+        cls="ams-index-news"
+        hook="news_slider"
+        title="home_text_15"
+        slug="tin-tuc"
+        featured
+      />
       <HomeNewsBlock
         cls="ams-index-event"
         hook="event_slider"

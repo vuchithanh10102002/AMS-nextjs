@@ -51,6 +51,7 @@ export async function newsIn(
   categoryId: number,
   limit: number,
   exceptNode?: number,
+  featured?: boolean,
 ): Promise<NewsRow[]> {
   "use cache";
   cacheLife("site");
@@ -58,6 +59,7 @@ export async function newsIn(
   const rows = await db.news.findMany({
     where: {
       ...(exceptNode ? { node_id: { not: exceptNode } } : {}),
+      ...(featured ? { featured: 1 } : {}),
       node: live(await treeIdsOf(categoryId)),
     },
     orderBy: nodeOrder(),
