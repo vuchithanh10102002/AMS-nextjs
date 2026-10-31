@@ -1,6 +1,7 @@
 import "server-only";
 import type { ModuleDef } from "./types";
-import { offModules, siteModule } from "@/site/admin";
+import { offModules } from "@/site/admin";
+import { siteModule } from "@/site/modules";
 import { hang } from "./defs/hang";
 import { news } from "./defs/news";
 import { banner } from "./defs/banner";

@@ -123,6 +123,7 @@ export type ModuleDef = {
     beforeSave?: (data: { node: Row; main: Row }, ctx: Ctx) => Promise<void> | void;
     afterSave?: (id: number, data: { node: Row; main: Row }, ctx: Ctx) => Promise<void> | void;
     afterDelete?: (ids: number[], rows: Row[]) => Promise<void> | void;
+    afterCopy?: (newId: number, srcId: number) => Promise<void> | void;
     decorate?: (rows: Row[]) => Promise<void> | void;
   };
 };

@@ -226,6 +226,12 @@ pm2 reload ams-next
 
 `pm2 reload` khởi động lại app mà không làm rớt kết nối. Build lỗi thì app cũ vẫn chạy, chỉ cần sửa rồi build lại.
 
+Bản cập nhật có file mới trong `database/migrations/` thì chạy file đó (theo thứ tự tên, mỗi file một lần) trước `pm2 reload`:
+
+```bash
+mysql -uams -p --default-character-set=utf8mb4 ams < database/migrations/<tên file>.sql
+```
+
 Sửa `prisma/schema.prisma` thì `npm ci` (qua `postinstall`) đã tự chạy `prisma generate`. Chỉ khi cấu trúc DB thay đổi mới cần `npm run db:pull` ở máy local, commit lại schema rồi mới pull lên server.
 
 ## 12. Sao lưu

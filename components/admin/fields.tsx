@@ -260,7 +260,7 @@ export function GalleryInput({ name, defaultValue }: { name: string; defaultValu
             }}
             className="group relative size-24 overflow-hidden rounded-md border bg-muted cursor-move"
           >
-            <img src={previewUrl(p)} alt="" className="h-full w-full object-cover" />
+            <img src={previewUrl(p)} alt="" className="h-full w-full object-contain" />
             <GripVertical className="absolute left-1 top-1 size-4 text-white drop-shadow" />
             <button
               type="button"

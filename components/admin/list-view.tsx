@@ -323,7 +323,7 @@ export function ListView({
                               <img
                                 src={previewUrl(String(v).split(",")[0])}
                                 alt=""
-                                className="h-12 w-16 rounded border object-cover bg-muted"
+                                className="h-12 w-16 rounded border object-contain bg-muted"
                               />
                             ) : (
                               "—"

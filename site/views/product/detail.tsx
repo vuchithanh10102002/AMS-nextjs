@@ -1,5 +1,5 @@
+import { db } from "@/lib/db";
 import { siteUrl } from "@/lib/site";
-import { Adm } from "@/site/components/adm";
 import { Links } from "@/site/components/links";
 import { ProductItem } from "@/site/components/product-item";
 import { site } from "@/site/lib/ctx";
@@ -17,6 +17,11 @@ export async function ProductDetail({ data, cat }: { data: ProductRow; cat: Cat 
   const hotline = t("company_hotline");
   const related = cat ? await productsIn(cat.id, 8, data.node_id) : [];
   const attrs = tr(data, "content_2");
+  const docs = await db.documents.findMany({
+    where: { node_id: data.node_id },
+    select: { title: true, title_en: true, link: true },
+    orderBy: [{ pos: "asc" }, { id: "asc" }],
+  });
   const base = siteUrl();
 
   return (
@@ -104,9 +109,15 @@ export async function ProductDetail({ data, cat }: { data: ProductRow; cat: Cat 
                 {t("product_text_3")}
               </button>
             )}
-            <button type="button" className="ams-pd-tab btn_pd_tab" data-tab={attrs !== "" ? 2 : 1}>
-              {t("product_text_4")}
-            </button>
+            {docs.length > 0 && (
+              <button
+                type="button"
+                className="ams-pd-tab btn_pd_tab"
+                data-tab={attrs !== "" ? 2 : 1}
+              >
+                {t("product_text_4")}
+              </button>
+            )}
           </div>
           <div className="ams-pd-panes">
             <div className="ams-pd-pane active">
@@ -128,29 +139,42 @@ export async function ProductDetail({ data, cat }: { data: ProductRow; cat: Cat 
                 <div className="ams-pd-attrs-box" dangerouslySetInnerHTML={{ __html: attrs }} />
               </div>
             )}
-            <div className="ams-pd-pane">
-              <h2
-                className="ams-pd-pane-title"
-                dangerouslySetInnerHTML={{ __html: s.ta("product_text_4", "text") }}
-              />
-              <ul className="ams-pd-docs">
-                {[5, 6].map((i) => (
-                  <li key={i}>
-                    <button
-                      type="button"
-                      className="btn_quote"
-                      data-product={strip(`${t(`product_text_${i}`)} – ${name}`)}
-                    >
-                      <svg width="17" height="14">
-                        <use href="#i-mail"></use>
-                      </svg>
-                      {t(`product_text_${i}`)}
-                    </button>
-                    <Adm m="lang" v={`product_text_${i}`} mode="text" />
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {docs.length > 0 && (
+              <div className="ams-pd-pane">
+                <h2
+                  className="ams-pd-pane-title"
+                  dangerouslySetInnerHTML={{ __html: s.ta("product_text_4", "text") }}
+                />
+                <ul className="ams-pd-docs">
+                  {docs.map((d, i) => {
+                    const label = tr(d, "title");
+                    return (
+                      <li key={i}>
+                        {d.link ? (
+                          <a href={src(d.link)} target="_blank" rel="noopener">
+                            <svg width="17" height="17">
+                              <use href="#i-link"></use>
+                            </svg>
+                            {label}
+                          </a>
+                        ) : (
+                          <button
+                            type="button"
+                            className="btn_quote"
+                            data-product={strip(`${label} – ${name}`)}
+                          >
+                            <svg width="17" height="14">
+                              <use href="#i-mail"></use>
+                            </svg>
+                            {label}
+                          </button>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       </section>

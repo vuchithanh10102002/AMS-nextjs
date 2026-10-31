@@ -156,6 +156,17 @@ const fields: Field[] = [
   money("price_member", "Giá MEMBER"),
   { name: "hang_id", label: "Hãng", type: "select", optionsKey: "hangs", half: true },
   {
+    name: "status",
+    label: "Trạng thái",
+    type: "select",
+    default: 1,
+    half: true,
+    options: [
+      { value: "1", label: "Hiện" },
+      { value: "0", label: "Ẩn" },
+    ],
+  },
+  {
     name: "gender",
     label: "Giới tính",
     type: "select",
@@ -244,9 +255,7 @@ const fields: Field[] = [
   },
 ];
 
-const hooks: NonNullable<ModuleDef["hooks"]> & {
-  afterCopy: (newId: number, srcId: number) => Promise<void>;
-} = {
+const hooks: NonNullable<ModuleDef["hooks"]> = {
   load: async (row) => {
     row.variants = await db.images.findMany({
       where: { node_id: row.id },

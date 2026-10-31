@@ -229,7 +229,7 @@ export function MediaPicker({
                       src={previewUrl(item.path)}
                       alt=""
                       loading="lazy"
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-contain"
                     />
                   ) : (
                     <File className="size-10 text-muted-foreground" />

@@ -8,6 +8,7 @@ import { ProductVariants } from "./product-variants";
 import { ProductFilters } from "./product-filters";
 import { ProductRating } from "./product-rating";
 import { NewsTags } from "./news-tags";
+import { ProductDocs } from "./product-docs";
 
 export const customFields: Record<string, ComponentType<any>> = {
   "account-roles": AccountRoles,
@@ -21,4 +22,5 @@ export const customFields: Record<string, ComponentType<any>> = {
   "product-filters": ProductFilters,
   "product-rating": ProductRating,
   "news-tags": NewsTags,
+  "product-docs": ProductDocs,
 };

@@ -354,6 +354,7 @@ export async function copyRecord(def: ModuleDef, id: number, admin: Admin) {
     const m: Row | null = await table(def.table).findUnique({ where: { id: row._mid } });
     if (m) await table(def.table).create({ data: { ...omit(m, "id"), node_id: nodeId } });
     await setLinkedCategories(nodeId, await linkedCategoryIds(id));
+    await def.hooks?.afterCopy?.(nodeId, id);
     return nodeId;
   }
   const found: Row | null = await table(def.table).findUnique({ where: { id } });

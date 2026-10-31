@@ -8567,7 +8567,8 @@ to {
   margin-top: 12px;
 }
 
-.ams-pd-docs button {
+.ams-pd-docs button,
+.ams-pd-docs a {
   padding: 0;
   border: 0;
   background: none;
@@ -8579,7 +8580,8 @@ to {
   transition: color var(--ease);
 }
 
-.ams-pd-docs button:hover {
+.ams-pd-docs button:hover,
+.ams-pd-docs a:hover {
   color: var(--red);
 }
 
