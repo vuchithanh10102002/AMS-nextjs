@@ -66,7 +66,7 @@ export async function Header({ here }: { here: Here }) {
                     media="(max-width: 767px)"
                     srcSet={src(t("logo_mobile") || t("logo_header"))}
                     width="196"
-                    height="28"
+                    height="40"
                   />
                   <img
                     src={src(t("logo_header"))}

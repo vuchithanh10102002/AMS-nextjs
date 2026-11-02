@@ -162,7 +162,7 @@ export async function Footer({ here }: { here: Here }) {
               src={src(t("logo_mobile") || t("logo_header"))}
               alt={settings.title}
               width="196"
-              height="28"
+              height="40"
               loading="lazy"
             />
           </a>
