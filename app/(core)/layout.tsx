@@ -30,12 +30,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         inter.variable,
       )}
     >
-      <RouteLoaderProvider>
-        <TooltipProvider>
-          <body>{children}</body>
-          <Toaster />
-        </TooltipProvider>
-      </RouteLoaderProvider>
+      <body>
+        <RouteLoaderProvider>
+          <TooltipProvider>
+            {children}
+            <Toaster />
+          </TooltipProvider>
+        </RouteLoaderProvider>
+      </body>
     </html>
   );
 }
