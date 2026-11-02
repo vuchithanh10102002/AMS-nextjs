@@ -9314,6 +9314,15 @@ to {
   }
 }
 
+.ams-mm-head {
+  position: relative;
+}
+
+.ams-mm-logo + .adm-glyphicon {
+  top: 8px;
+  left: 8px;
+}
+
 .ams-pd-call > .adm-glyphicon {
   top: 6px;
   right: -16px;

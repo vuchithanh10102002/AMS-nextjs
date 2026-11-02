@@ -166,6 +166,7 @@ export async function Footer({ here }: { here: Here }) {
               loading="lazy"
             />
           </a>
+          <Adm m="lang" v="logo_mobile" mode="image" />
           <button
             type="button"
             className="ams-mm-close btn_mm_close"
