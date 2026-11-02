@@ -38,7 +38,7 @@ export default function Home() {
         hook="news_slider"
         title="home_text_15"
         slug="tin-tuc"
-        featured
+        featuredFirst
       />
       <HomeNewsBlock
         cls="ams-index-event"

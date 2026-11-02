@@ -1,8 +1,16 @@
 // components/route-loader-provider.tsx
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
+import {
+  createContext,
+  Suspense,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 
 const RouteLoaderContext = createContext<{
   loading: boolean;
@@ -14,10 +22,15 @@ export function useRouteLoader() {
   return useContext(RouteLoaderContext);
 }
 
+function SearchWatch({ onChange }: { onChange: (q: string) => void }) {
+  const q = useSearchParams().toString();
+  useEffect(() => onChange(q), [q, onChange]);
+  return null;
+}
+
 export function RouteLoaderProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false);
   const pathname = usePathname();
-  // const searchParams = useSearchParams();
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [shownPath, setShownPath] = useState(pathname);
@@ -48,10 +61,24 @@ export function RouteLoaderProvider({ children }: { children: React.ReactNode })
   }, [pathname]);
 
   const start = useCallback(() => setLoading(true), []);
-  const done = useCallback(() => setLoading(false), []);
+  const done = useCallback(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setLoading(false);
+  }, []);
+  const shownSearch = useRef<string | null>(null);
+  const searchChanged = useCallback(
+    (q: string) => {
+      if (shownSearch.current !== null && shownSearch.current !== q) done();
+      shownSearch.current = q;
+    },
+    [done],
+  );
 
   return (
     <RouteLoaderContext.Provider value={{ loading, start, done }}>
+      <Suspense fallback={null}>
+        <SearchWatch onChange={searchChanged} />
+      </Suspense>
       {children}
     </RouteLoaderContext.Provider>
   );

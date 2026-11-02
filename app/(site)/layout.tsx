@@ -5,7 +5,7 @@ import { currentAdmin } from "@/lib/session";
 
 export const instant = false;
 
-const V = "1.0.7";
+const V = "1.0.9";
 const CSS = [
   "css/bootstrap.min.css",
   "css/owl.carousel.min.css",

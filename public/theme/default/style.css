@@ -4224,6 +4224,10 @@ svg {
   margin-top: 24px;
 }
 
+.ams-logo picture {
+  display: block;
+}
+
 .ams-logo img {
   display: block;
   width: 272px;
@@ -4622,9 +4626,9 @@ svg {
 
 .ams-mm-logo img {
   display: block;
-  width: 198px;
-  height: 32px;
-  margin-top: 4px;
+  width: 196px;
+  height: 28px;
+  margin-top: 6px;
 }
 
 .ams-mm-close {
@@ -5139,12 +5143,12 @@ svg {
   }
 
   .ams-logo {
-    margin-top: 16px;
+    margin-top: 18px;
   }
 
   .ams-logo img {
-    width: 198px;
-    height: 32px;
+    width: 196px;
+    height: 28px;
   }
 
   .ams-btn-menu {
@@ -9293,6 +9297,20 @@ to {
   position: relative;
 }
 
+.ams-logo + .adm-glyphicon + .adm-glyphicon {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .ams-logo + .adm-glyphicon {
+    display: none;
+  }
+
+  .ams-logo + .adm-glyphicon + .adm-glyphicon {
+    display: inline-block;
+  }
+}
+
 .ams-pd-call > .adm-glyphicon {
   top: 6px;
   right: -16px;
@@ -10240,11 +10258,12 @@ to {
 
 @media (max-width: 479px) {
   .ams-logo {
-    margin-top: calc(32px - (100vw - 268px) / 12.34);
+    width: calc(100% - 234px);
+    margin-top: calc(32px - (100% - 234px) / 14);
   }
 
   .ams-logo img {
-    width: calc(100vw - 268px);
+    width: 100%;
     height: auto;
   }
 }

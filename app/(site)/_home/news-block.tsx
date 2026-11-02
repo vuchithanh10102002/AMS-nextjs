@@ -9,17 +9,17 @@ export async function HomeNewsBlock({
   hook,
   title,
   slug,
-  featured,
+  featuredFirst,
 }: {
   cls: string;
   hook: string;
   title: string;
   slug: string;
-  featured?: boolean;
+  featuredFirst?: boolean;
 }) {
   const [s, cat] = await Promise.all([site(), categoryBySlug(slug)]);
   if (!cat) return null;
-  const items = await newsIn(cat.id, 8, undefined, featured);
+  const items = await newsIn(cat.id, 8, undefined, featuredFirst);
   if (!items.length) return null;
   const { t, tr } = s;
   return (

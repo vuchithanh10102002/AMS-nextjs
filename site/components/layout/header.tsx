@@ -61,15 +61,24 @@ export async function Header({ here }: { here: Here }) {
                 </svg>
               </button>
               <a href={s.u("/")} className="ams-logo">
-                <img
-                  src={src(t("logo_header"))}
-                  alt={s.settings.title}
-                  width="272"
-                  height="44"
-                  data-eager="1"
-                />
+                <picture>
+                  <source
+                    media="(max-width: 767px)"
+                    srcSet={src(t("logo_mobile") || t("logo_header"))}
+                    width="196"
+                    height="28"
+                  />
+                  <img
+                    src={src(t("logo_header"))}
+                    alt={s.settings.title}
+                    width="272"
+                    height="44"
+                    data-eager="1"
+                  />
+                </picture>
               </a>
               <Adm m="lang" v="logo_header" mode="image" />
+              <Adm m="lang" v="logo_mobile" mode="image" />
               <form
                 className="ams-search form_search"
                 action={s.u("/search")}

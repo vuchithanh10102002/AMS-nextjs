@@ -159,10 +159,10 @@ export async function Footer({ here }: { here: Here }) {
         <div className="ams-mm-head clearfix">
           <a href={s.u("/")} className="ams-mm-logo">
             <img
-              src={src(t("logo_header"))}
+              src={src(t("logo_mobile") || t("logo_header"))}
               alt={settings.title}
-              width="198"
-              height="32"
+              width="196"
+              height="28"
               loading="lazy"
             />
           </a>
