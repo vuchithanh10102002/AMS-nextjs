@@ -159,14 +159,14 @@ export async function Footer({ here }: { here: Here }) {
         <div className="ams-mm-head clearfix">
           <a href={s.u("/")} className="ams-mm-logo">
             <img
-              src={src(t("logo_mobile") || t("logo_header"))}
+              src={src(t("logo_menu_mobile") || t("logo_mobile") || t("logo_header"))}
               alt={settings.title}
               width="196"
               height="40"
               loading="lazy"
             />
           </a>
-          <Adm m="lang" v="logo_mobile" mode="image" />
+          <Adm m="lang" v="logo_menu_mobile" mode="image" />
           <button
             type="button"
             className="ams-mm-close btn_mm_close"
