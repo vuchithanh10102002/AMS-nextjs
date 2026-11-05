@@ -59,9 +59,9 @@ export function AccountRoles({ field, value }: { field: ClientField; value: unkn
           Bỏ chọn tất cả
         </Button>
       </div>
-      <div className="overflow-x-auto rounded-lg border">
+      <div className="max-h-[calc(100svh-5rem)] overflow-auto rounded-lg border">
         <table className="w-full text-sm">
-          <thead className="bg-muted/50">
+          <thead className="sticky top-0 z-10 bg-card [&_th]:bg-muted/50 [&_th]:shadow-[inset_0_-1px_0_var(--border)]">
             <tr>
               <th className="px-3 py-2 text-left font-medium">Module</th>
               {ACTS.map((a) => (

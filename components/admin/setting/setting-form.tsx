@@ -185,9 +185,9 @@ export function SettingForm({
               <p className="mb-3 text-sm text-muted-foreground">
                 Màu theo từng khối giao diện (#s1 – #s13). Để trống để dùng màu mặc định của theme.
               </p>
-              <div className="overflow-x-auto">
+              <div className="max-h-[calc(100svh-5rem)] overflow-auto">
                 <table className="w-full min-w-[720px] text-sm">
-                  <thead>
+                  <thead className="sticky top-0 z-10 bg-background shadow-[0_1px_0_var(--border)]">
                     <tr className="text-left">
                       <th className="w-16 py-2 font-medium">Khối</th>
                       {themeKeys.map((k) => (
