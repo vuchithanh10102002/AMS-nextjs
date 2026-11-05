@@ -5,7 +5,7 @@ import { currentAdmin } from "@/lib/session";
 
 export const instant = false;
 
-const V = "1.0.14";
+const V = "1.0.15";
 const CSS = [
   "css/bootstrap.min.css",
   "css/owl.carousel.min.css",
@@ -35,7 +35,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const admin = !s.mobile && (await currentAdmin());
   const t = s.t;
   const boot = `const level = '';const IS_HOME = ${home ? 1 : 0};const IS_MOBILE = ${s.mobile ? 1 : 0};const DOMAIN = ${JSON.stringify(siteUrl())};const csrfToken = "";`;
-  const tail = `const link_product = ${JSON.stringify(s.settings.link_category_product ?? "")};const colorButtonCancel = ${JSON.stringify(t("general_text_99"))};
+  const tail = `const colorButtonCancel = ${JSON.stringify(t("general_text_99"))};
 var head = document.getElementsByTagName("head")[0];var is_loaded = 0;
 function init_data(){if(is_loaded == 1) return false;var files = ${JSON.stringify(JS)};for (var file of files){var path = DOMAIN + "theme/default/" + file;if (file.indexOf("http://") == 0 || file.indexOf("https://") == 0) path = file;var s = document.createElement("script");s.src = path;s.async = false;head.append(s);}is_loaded = 1;}
 document.getElementsByTagName("body")[0].addEventListener("${s.mobile ? "touchstart" : "mouseover"}", init_data);`;
